@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Artivio Admin</title>
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <script src="assets/lucide.min.js"></script>
+  <link rel="stylesheet" href="navbar.css">
+  
+  <style>
+    :root { --primary: #6C2929; --bg: #faf6f5; --card: #ffffff; --border: #e5e7eb; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+    body { background: var(--bg); color: #333; }
+    .container { max-width: 1200px; margin: auto; padding: 20px; }
+    .header { background: var(--primary); color: white; padding: 20px 0; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+    .header-text h1 { margin: 0; font-size: 24px; }
+    .header-text p { color: #ead9d4; margin: 5px 0 0; font-size: 14px; }
+    .btn { padding: 8px 16px; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+    .btn-outline { background: white; color: var(--primary); }
+    .btn-primary { background: var(--primary); color: white; }
+    .tabs { display: flex; gap: 20px; background: white; padding: 0 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .tab { padding: 15px 10px; cursor: pointer; color: #666; font-weight: bold; text-decoration: none; display: inline-block; }
+    .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+    .settings-layout { display: flex; gap: 30px; margin-top: 30px; }
+    .sidebar { width: 250px; background: white; padding: 20px; border-radius: 10px; }
+    .sidebar button { width: 100%; padding: 12px; text-align: left; background: none; border: none; cursor: pointer; border-radius: 8px; margin-bottom: 5px; font-weight: 500; }
+    .sidebar button.active { background: var(--primary); color: white; }
+    .sidebar button:hover:not(.active) { background: #f0f0f0; }
+    .content { flex: 1; background: white; padding: 25px; border-radius: 10px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: 600; margin-bottom: 8px; }
+    input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f5f5f5; }
+    .message { padding: 10px; border-radius: 6px; margin-bottom: 15px; }
+    .message.success { background: #d1fae5; color: #065f46; }
+    .message.error { background: #fee2e2; color: #991b1b; }
+    @media (max-width: 768px) { .settings-layout { flex-direction: column; } }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo"><img src="no background 1.png" alt="Artivio Logo"><span class="artivio">Artivio</span></div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon"><i data-lucide="menu"></i></div>
+    </nav>
+  </div>
+</header>
+
+<div class="header">
+  <div class="container">
+    <div class="header-text"><h1>Settings</h1><p>Manage platform configuration</p></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <a href="admindashboard.html" class="tab active">Overview</a>
+  <a href="admin-users.html" class="tab">Users</a>
+  <a href="admin-products.html" class="tab">Products</a>
+  <a href="admin-courses.html" class="tab">Courses</a>
+  <a href="admin-orders.html" class="tab">Orders</a>
+  <a href="admin-analytics.html" class="tab">Analytics</a>
+  <a href="admin-settings.html" class="tab">Settings</a>
+</div>
+
+<div class="container">
+  <div class="settings-layout">
+    <div class="sidebar">
+      <button class="active" onclick="showSettings('general')">General</button>
+      <button onclick="showSettings('store')">Store</button>
+      <button onclick="showSettings('payment')">Payment</button>
+      <button onclick="showSettings('staff')">Staff Management</button>
+    </div>
+    
+    <div class="content">
+      <div id="general-settings">
+        <h2>General Settings</h2>
+        <div id="generalMsg" class="message" style="display:none"></div>
+        <div class="form-group"><label for="siteTitle">Site Title</label><input type="text" id="siteTitle" placeholder="Artivio"></div>
+        <div class="form-group"><label for="supportEmail">Support Email</label><input type="email" id="supportEmail" placeholder="support@artivio.com"></div>
+        <div class="form-group"><label for="primaryColor">Primary Color</label><input type="color" id="primaryColor" value="#6C2929"></div>
+        <button class="btn btn-primary" onclick="saveGeneralSettings()">Save Changes</button>
+      </div>
+      
+      <div id="store-settings" style="display:none">
+        <h2>Store Settings</h2>
+        <div id="storeMsg" class="message" style="display:none"></div>
+        <div class="form-group"><label for="currency">Currency</label><select id="currency"><option>EGP</option></select></div>
+        <div class="form-group"><label for="taxRate">Tax Rate (%)</label><input type="number" id="taxRate" value="10"></div>
+        <div class="form-group"><label for="lowStockAlert">Low Stock Alert</label><input type="number" id="lowStockAlert" value="5"></div>
+        <button class="btn btn-primary" onclick="saveStoreSettings()">Save Changes</button>
+      </div>
+      
+      <div id="payment-settings" style="display:none">
+        <h2>Payment Settings</h2>
+        <div id="paymentMsg" class="message" style="display:none"></div>
+        <div class="form-group"><label for="provider">Provider</label><select id="provider"><option>Stripe</option><option>Fake Payment (Demo)</option></select></div>
+        <div class="form-group"><label for="publicKey">Public Key</label><input type="text" id="publicKey" placeholder="pk_..."></div>
+        <div class="form-group"><label for="secretKey">Secret Key</label><input type="password" id="secretKey" placeholder="sk_..."></div>
+        <button class="btn btn-primary" onclick="savePaymentSettings()">Save Changes</button>
+      </div>
+      
+      <div id="staff-settings" style="display:none">
+        <h2>Staff Management</h2>
+        <button class="btn btn-primary" onclick="openAddStaffModal()" style="margin-bottom: 15px;">+ Add Staff Member</button>
+        <table id="staffTable"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody><tr><td colspan="4">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Staff Modal -->
+<div id="addStaffModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px;">
+    <h3 style="margin-bottom:20px;">Add Staff Member</h3>
+    <input type="text" id="staffName" placeholder="Full Name" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+    <input type="email" id="staffEmail" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+    <input type="password" id="staffPassword" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+    <select id="staffRole" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+      <option value="staff">Staff</option>
+      <option value="admin">Admin</option>
+    </select>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeAddStaffModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addStaff()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:7070';
+  
+  function getToken() { try { return localStorage.getItem('token'); } catch(e) { return null; } }
+  function authHeaders() { const token = getToken(); return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : {}; }
+
+  function showSettings(type) {
+    document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('general-settings').style.display = type === 'general' ? 'block' : 'none';
+    document.getElementById('store-settings').style.display = type === 'store' ? 'block' : 'none';
+    document.getElementById('payment-settings').style.display = type === 'payment' ? 'block' : 'none';
+    document.getElementById('staff-settings').style.display = type === 'staff' ? 'block' : 'none';
+    if (type === 'staff') loadStaff();
+  }
+
+  async function saveGeneralSettings() {
+    const data = { siteTitle: document.getElementById('siteTitle').value, supportEmail: document.getElementById('supportEmail').value, primaryColor: document.getElementById('primaryColor').value };
+    try {
+      await fetch(`${API_BASE}/api/settings/general`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+      showMessage('generalMsg', 'Settings saved!', 'success');
+    } catch(err) { showMessage('generalMsg', 'Error saving settings', 'error'); }
+  }
+
+  async function saveStoreSettings() {
+    const data = { currency: document.getElementById('currency').value, taxRate: parseFloat(document.getElementById('taxRate').value), lowStockAlert: parseInt(document.getElementById('lowStockAlert').value) };
+    try {
+      await fetch(`${API_BASE}/api/settings/store`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+      showMessage('storeMsg', 'Settings saved!', 'success');
+    } catch(err) { showMessage('storeMsg', 'Error saving settings', 'error'); }
+  }
+
+  async function savePaymentSettings() {
+    const data = { provider: document.getElementById('provider').value, publicKey: document.getElementById('publicKey').value, secretKey: document.getElementById('secretKey').value };
+    try {
+      await fetch(`${API_BASE}/api/settings/payment`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+      showMessage('paymentMsg', 'Settings saved!', 'success');
+    } catch(err) { showMessage('paymentMsg', 'Error saving settings', 'error'); }
+  }
+
+  async function loadStaff() {
+    try {
+      const res = await fetch(`${API_BASE}/api/staff`, { headers: authHeaders() });
+      const staff = await res.json();
+      const tbody = document.querySelector('#staffTable tbody');
+      tbody.innerHTML = staff.map(s => `<tr><td>${s.name}</td><td>${s.email}</td><td>${s.role}</td><td><button class="btn btn-outline" onclick="deleteStaff('${s.id}')" style="padding:5px 10px;">Delete</button></td></tr>`).join('');
+    } catch(err) { console.error(err); }
+  }
+
+  async function deleteStaff(id) {
+    if (!confirm('Delete this staff member?')) return;
+    try {
+      await fetch(`${API_BASE}/api/staff/${id}`, { method: 'DELETE', headers: authHeaders() });
+      loadStaff();
+    } catch(err) { alert('Failed to delete'); }
+  }
+
+  async function addStaff() {
+    const name = document.getElementById('staffName').value;
+    const email = document.getElementById('staffEmail').value;
+    const password = document.getElementById('staffPassword').value;
+    const role = document.getElementById('staffRole').value;
+    if (!name || !email || !password) { alert('All fields required'); return; }
+    try {
+      await fetch(`${API_BASE}/api/staff`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ name, email, password, role }) });
+      closeAddStaffModal();
+      loadStaff();
+    } catch(err) { alert('Failed to add staff'); }
+  }
+
+  function showMessage(elementId, message, type) {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.className = `message ${type}`;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 3000);
+  }
+
+  function openAddStaffModal() { document.getElementById('addStaffModal').style.display = 'flex'; }
+  function closeAddStaffModal() { document.getElementById('addStaffModal').style.display = 'none'; }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    if (window.lucide) lucide.createIcons();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role !== 'admin') { window.location.href = 'admin-login.html'; return; }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/settings`, { headers: authHeaders() });
+      const settings = await res.json();
+      if (settings.general) {
+        document.getElementById('siteTitle').value = settings.general.siteTitle || '';
+        document.getElementById('supportEmail').value = settings.general.supportEmail || '';
+        document.getElementById('primaryColor').value = settings.general.primaryColor || '#6C2929';
+      }
+      if (settings.store) {
+        document.getElementById('currency').value = settings.store.currency || 'EGP';
+        document.getElementById('taxRate').value = settings.store.taxRate || 10;
+        document.getElementById('lowStockAlert').value = settings.store.lowStockAlert || 5;
+      }
+      if (settings.payment) {
+        document.getElementById('provider').value = settings.payment.provider || 'Stripe';
+        document.getElementById('publicKey').value = settings.payment.publicKey || '';
+        document.getElementById('secretKey').value = settings.payment.secretKey || '';
+      }
+    } catch(err) { console.error('Error loading settings:', err); }
+    
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon && navLinks) menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+  });
+
+  window.showSettings = showSettings;
+  window.saveGeneralSettings = saveGeneralSettings;
+  window.saveStoreSettings = saveStoreSettings;
+  window.savePaymentSettings = savePaymentSettings;
+  window.openAddStaffModal = openAddStaffModal;
+  window.closeAddStaffModal = closeAddStaffModal;
+  window.addStaff = addStaff;
+  window.deleteStaff = deleteStaff;
+  window.loadStaff = loadStaff;
+</script>
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

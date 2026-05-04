@@ -1,0 +1,703 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile | Artivio</title>
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <script src="assets/lucide.min.js"></script>
+  <link rel="stylesheet" href="navbar.css">
+
+  <style>
+    :root {
+      --primary: #6C2929;
+      --bg: #fdf6ee;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .profile-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .profile-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .avatar-container {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 15px;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar i {
+      font-size: 50px;
+      color: white;
+    }
+
+    .avatar-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+      cursor: pointer;
+    }
+
+    .avatar-container:hover .avatar-overlay {
+      opacity: 1;
+    }
+
+    .avatar-overlay i {
+      font-size: 30px;
+      color: white;
+    }
+
+    .profile-header h2 {
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .profile-header p {
+      color: #666;
+    }
+
+    .info-section {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-section h3 {
+      color: var(--primary);
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .info-row {
+      display: flex;
+      margin-bottom: 12px;
+      padding: 8px 0;
+      flex-wrap: wrap;
+    }
+
+    .info-label {
+      width: 120px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .info-value {
+      flex: 1;
+      color: #333;
+    }
+
+    .edit-btn, .save-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+
+    .edit-btn:hover, .save-btn:hover {
+      background: #5a2222;
+    }
+
+    .cancel-btn {
+      background: #e5e7eb;
+      color: #333;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      margin-left: 10px;
+    }
+
+    .cancel-btn:hover {
+      background: #d1d5db;
+    }
+
+    /* Same style for both buttons */
+    .action-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      margin-top: 10px;
+      margin-right: 10px;
+    }
+
+    .action-btn:hover {
+      background: #5a2222;
+    }
+
+    .edit-field {
+      display: none;
+    }
+
+    .edit-field.active {
+      display: block;
+    }
+
+    .view-field {
+      display: block;
+    }
+
+    .view-field.hidden {
+      display: none;
+    }
+
+    input, select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .message.success {
+      background: #d1fae5;
+      color: #065f46;
+      display: block;
+    }
+
+    .message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      display: block;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--primary);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 12px;
+      background: #f9f9f9;
+      margin-top: 10px;
+    }
+
+    .upload-box i {
+      font-size: 30px;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px auto;
+        padding: 15px;
+      }
+      .profile-card {
+        padding: 20px;
+      }
+      .info-row {
+        flex-direction: column;
+      }
+      .info-label {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo">
+      <img src="no background 1.png" alt="Artivio Logo">
+      <span class="artivio">Artivio</span>
+    </div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="home.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon">
+        <i data-lucide="menu"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="avatar-container" onclick="document.getElementById('avatarInput').click()">
+        <div class="avatar" id="avatarPreview">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="avatar-overlay">
+          <i class="fa-solid fa-camera"></i>
+        </div>
+      </div>
+      <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
+      <h2 id="displayName">Loading...</h2>
+      <p id="displayEmail">Loading...</p>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <!-- Profile Information Section -->
+    <div class="info-section" id="profileInfo">
+      <h3>Personal Information</h3>
+      
+      <!-- Full Name -->
+      <div class="info-row">
+        <div class="info-label">Full Name:</div>
+        <div class="view-field" id="viewName">-</div>
+        <div class="edit-field" id="editNameField">
+          <input type="text" id="editName" placeholder="Enter your name">
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="info-row">
+        <div class="info-label">Email:</div>
+        <div class="view-field" id="viewEmail">-</div>
+        <div class="edit-field" id="editEmailField">
+          <input type="email" id="editEmail" placeholder="Enter your email">
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="info-row">
+        <div class="info-label">Phone:</div>
+        <div class="view-field" id="viewPhone">-</div>
+        <div class="edit-field" id="editPhoneField">
+          <input type="tel" id="editPhone" placeholder="+20 100 123 4567">
+        </div>
+      </div>
+
+      <!-- Gender -->
+      <div class="info-row">
+        <div class="info-label">Gender:</div>
+        <div class="view-field" id="viewGender">-</div>
+        <div class="edit-field" id="editGenderField">
+          <select id="editGender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Account Type -->
+      <div class="info-row">
+        <div class="info-label">Account Type:</div>
+        <div class="info-value" id="viewRole">-</div>
+      </div>
+
+      <!-- Member Since -->
+      <div class="info-row">
+        <div class="info-label">Member Since:</div>
+        <div class="info-value" id="viewJoined">-</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="info-row" id="actionButtons">
+        <button class="edit-btn" onclick="enableEditMode()">Edit Profile</button>
+        <button class="save-btn" id="saveBtn" onclick="saveProfile()" style="display: none;">Save Changes</button>
+        <button class="cancel-btn" id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Password Management Section -->
+    <div class="info-section">
+      <h3>Password Management</h3>
+      <div class="info-row">
+        <button class="action-btn" onclick="showChangePassword()">Change Password</button>
+        <button class="action-btn" onclick="showForgotPassword()">Forgot Password?</button>
+      </div>
+      
+      <!-- Change Password Form -->
+      <div id="changePasswordSection" style="display: none; margin-top: 15px;">
+        <div class="info-row">
+          <label for="currentPassword" class="info-label">Current Password:</label>
+          <input type="password" id="currentPassword" style="width: 100%; max-width: 300px;">
+        </div>
+        <div class="info-row">
+          <label for="newPassword" class="info-label">New Password:</label>
+          <input type="password" id="newPassword" style="width: 100%; max-width: 300px;">
+        </div>
+        <div class="info-row">
+          <label for="confirmPassword" class="info-label">Confirm Password:</label>
+          <input type="password" id="confirmPassword" style="width: 100%; max-width: 300px;">
+        </div>
+        <button class="save-btn" onclick="changePassword()">Update Password</button>
+        <button class="cancel-btn" onclick="hideChangePassword()">Cancel</button>
+      </div>
+
+      <!-- Forgot Password Form -->
+      <div id="forgotPasswordSection" style="display: none; margin-top: 15px;">
+        <div class="info-row">
+          <div class="info-label">Full Name:</div>
+          <input type="text" id="forgotName" placeholder="Enter your full name" style="width: 100%; max-width: 300px;">
+        </div>
+        <div class="info-row">
+          <div class="info-label">Email:</div>
+          <input type="email" id="forgotEmail" placeholder="Enter your email" style="width: 100%; max-width: 300px;">
+        </div>
+        <div class="info-row">
+          <div class="info-label">New Password:</div>
+          <input type="password" id="forgotNewPassword" placeholder="Enter new password (min 6 characters)" style="width: 100%; max-width: 300px;">
+        </div>
+        <button class="save-btn" onclick="resetForgottenPassword()">Reset Password</button>
+        <button class="cancel-btn" onclick="hideForgotPassword()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:7070';
+  let userData = null;
+  let editMode = false;
+
+  function getToken() {
+    try { return localStorage.getItem('token'); } catch(e) { return null; }
+  }
+
+  function showMessage(message, type) {
+    const msgDiv = document.getElementById('message');
+    msgDiv.textContent = message;
+    msgDiv.className = `message ${type}`;
+    msgDiv.style.display = 'block';
+    setTimeout(() => {
+      msgDiv.style.display = 'none';
+    }, 3000);
+  }
+
+  async function loadProfile() {
+    const token = getToken();
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        userData = data.data;
+        displayProfile();
+      }
+    } catch (err) {
+      console.error('Error loading profile:', err);
+      showMessage('Error loading profile', 'error');
+    }
+  }
+
+  function displayProfile() {
+    if (!userData) return;
+    
+    document.getElementById('displayName').textContent = userData.name;
+    document.getElementById('displayEmail').textContent = userData.email;
+    document.getElementById('viewName').textContent = userData.name;
+    document.getElementById('viewEmail').textContent = userData.email;
+    document.getElementById('viewPhone').textContent = userData.phone || 'Not provided';
+    document.getElementById('viewGender').textContent = userData.gender === 'male' ? 'Male' : (userData.gender === 'female' ? 'Female' : 'Not specified');
+    document.getElementById('viewRole').textContent = userData.role || 'Customer';
+    document.getElementById('viewJoined').textContent = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'Recently';
+    
+    // Set edit field values
+    document.getElementById('editName').value = userData.name || '';
+    document.getElementById('editEmail').value = userData.email || '';
+    document.getElementById('editPhone').value = userData.phone || '';
+    document.getElementById('editGender').value = userData.gender || 'male';
+    
+    // Load avatar if exists
+    if (userData.profileImage) {
+      const avatarDiv = document.querySelector('.avatar');
+      avatarDiv.innerHTML = `<img src="${API_BASE}/uploads/${userData.profileImage}" alt="Profile">`;
+    }
+  }
+
+  async function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('profileImage', file);
+    
+    const token = getToken();
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/users/upload-avatar`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        showMessage('Profile picture updated!', 'success');
+        const avatarDiv = document.querySelector('.avatar');
+        avatarDiv.innerHTML = `<img src="${API_BASE}/uploads/${data.data.profileImage}" alt="Profile">`;
+        userData.profileImage = data.data.profileImage;
+      } else {
+        showMessage(data.error || 'Upload failed', 'error');
+      }
+    } catch (err) {
+      showMessage('Network error', 'error');
+    }
+  }
+
+  function enableEditMode() {
+    editMode = true;
+    document.querySelectorAll('.view-field').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.edit-field').forEach(el => el.classList.add('active'));
+    document.getElementById('saveBtn').style.display = 'inline-block';
+    document.getElementById('cancelBtn').style.display = 'inline-block';
+    document.querySelector('.edit-btn').style.display = 'none';
+  }
+
+  function cancelEdit() {
+    editMode = false;
+    document.querySelectorAll('.view-field').forEach(el => el.classList.remove('hidden'));
+    document.querySelectorAll('.edit-field').forEach(el => el.classList.remove('active'));
+    document.getElementById('saveBtn').style.display = 'none';
+    document.getElementById('cancelBtn').style.display = 'none';
+    document.querySelector('.edit-btn').style.display = 'inline-block';
+    
+    // Reset values
+    document.getElementById('editName').value = userData.name || '';
+    document.getElementById('editEmail').value = userData.email || '';
+    document.getElementById('editPhone').value = userData.phone || '';
+    document.getElementById('editGender').value = userData.gender || 'male';
+  }
+
+  async function saveProfile() {
+    const name = document.getElementById('editName').value.trim();
+    const email = document.getElementById('editEmail').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+    const gender = document.getElementById('editGender').value;
+    
+    if (!name || !email) {
+      showMessage('Name and email are required', 'error');
+      return;
+    }
+    
+    const token = getToken();
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/users/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, email, phone, gender })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        userData = data.data;
+        displayProfile();
+        cancelEdit();
+        showMessage('Profile updated successfully!', 'success');
+        
+        // Update stored user data
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        storedUser.name = name;
+        storedUser.email = email;
+        localStorage.setItem('user', JSON.stringify(storedUser));
+      } else {
+        showMessage(data.error || 'Update failed', 'error');
+      }
+    } catch (err) {
+      showMessage('Network error', 'error');
+    }
+  }
+
+  function showChangePassword() {
+    document.getElementById('changePasswordSection').style.display = 'block';
+    document.getElementById('forgotPasswordSection').style.display = 'none';
+  }
+
+  function hideChangePassword() {
+    document.getElementById('changePasswordSection').style.display = 'none';
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  }
+
+  function showForgotPassword() {
+    document.getElementById('forgotPasswordSection').style.display = 'block';
+    document.getElementById('changePasswordSection').style.display = 'none';
+  }
+
+  function hideForgotPassword() {
+    document.getElementById('forgotPasswordSection').style.display = 'none';
+    document.getElementById('forgotName').value = '';
+    document.getElementById('forgotEmail').value = '';
+    document.getElementById('forgotNewPassword').value = '';
+  }
+
+  async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      showMessage('All password fields are required', 'error');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      showMessage('New password must be at least 6 characters', 'error');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      showMessage('New passwords do not match', 'error');
+      return;
+    }
+    
+    const token = getToken();
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/users/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        showMessage('Password changed successfully!', 'success');
+        hideChangePassword();
+      } else {
+        showMessage(data.error || 'Failed to change password', 'error');
+      }
+    } catch (err) {
+      showMessage('Network error', 'error');
+    }
+  }
+
+  async function resetForgottenPassword() {
+    const name = document.getElementById('forgotName').value.trim();
+    const email = document.getElementById('forgotEmail').value.trim();
+    const newPassword = document.getElementById('forgotNewPassword').value;
+    
+    if (!name || !email || !newPassword) {
+      showMessage('All fields are required', 'error');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      showMessage('Password must be at least 6 characters', 'error');
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/users/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, newPassword })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        showMessage('Password reset successfully! Please login with your new password.', 'success');
+        hideForgotPassword();
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+      } else {
+        showMessage(data.error || 'Failed to reset password', 'error');
+      }
+    } catch (err) {
+      showMessage('Network error', 'error');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) lucide.createIcons();
+    loadProfile();
+    
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon && navLinks) {
+      menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+    }
+  });
+</script>
+
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

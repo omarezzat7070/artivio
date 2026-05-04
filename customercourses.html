@@ -1,0 +1,686 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artivio | Handcraft Courses</title>
+  
+  <script src="assets/lucide.min.js"></script>
+  
+  <style>
+    :root {
+      --primary-burgundy: #6C2929;
+      --burgundy-dark: #5a2222;
+      --text-dark: #3d1616;
+      --text-gray: #666;
+      --bg-light: #fdfaf9;
+      --white: #ffffff;
+      --star-gold: #f5a623;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .nav-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .nav-logo img {
+      height: 40px;
+      width: auto;
+    }
+
+    .nav-logo .artivio {
+      font-family: 'Dancing Script', cursive;
+      font-size: 22px;
+      color: var(--text-dark);
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      flex-wrap: nowrap;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary-burgundy);
+    }
+
+    .menu-icon {
+      display: none;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .page-header {
+      text-align: center;
+      padding: 3rem 1rem 1.5rem;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: var(--text-gray);
+      font-size: 1.1rem;
+    }
+
+    .search-box {
+      max-width: 500px;
+      margin: 1.5rem auto 2rem;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 18px 14px 45px;
+      border: 2px solid #ddd;
+      border-radius: 40px;
+      font-size: 15px;
+      outline: none;
+      transition: 0.3s;
+      background: white;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary-burgundy);
+      box-shadow: 0 0 0 4px rgba(108,41,41,0.08);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #777;
+      width: 18px;
+      height: 18px;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--white);
+      color: var(--text-dark);
+      border: 2px solid var(--primary-burgundy);
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--primary-burgundy);
+      color: white;
+      border-color: var(--primary-burgundy);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 1.5rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .category-badge {
+      display: inline-block;
+      background: var(--primary-burgundy);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      margin-bottom: 10px;
+      width: fit-content;
+    }
+
+    .course-title {
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+      color: var(--text-dark);
+    }
+
+    .instructor {
+      font-size: 0.9rem;
+      color: var(--text-gray);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .description {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 1.2rem;
+      line-height: 1.4;
+      display: -webkit-box;
+      
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+      color: var(--text-gray);
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #f8f1ee;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .star-icon {
+      color: var(--star-gold);
+      fill: var(--star-gold);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 1rem;
+      margin-top: auto;
+    }
+
+    .price {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: var(--primary-burgundy);
+    }
+
+    .view-btn {
+      background: var(--primary-burgundy);
+      color: white;
+      padding: 10px 22px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .view-btn:hover {
+      background: var(--burgundy-dark);
+    }
+
+    .message-box {
+      text-align: center;
+      padding: 3rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .menu-icon {
+        display: block;
+      }
+      .nav-links.active {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        right: 0;
+        top: 70px;
+        background: #fff;
+        width: 220px;
+        padding: 20px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border-radius: 0 0 0 12px;
+      }
+    }
+
+    .icon-sm {
+      width: 18px;
+      height: 18px;
+    }
+
+    .icon-xs {
+      width: 14px;
+      height: 14px;
+    }
+
+    footer {
+      background: #6C2929;
+      color: #fff;
+      padding: 60px 0 20px;
+      margin-top: 40px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+      gap: 40px;
+      text-align: left;
+    }
+
+    .footer-box h3 {
+      color: #fff;
+      margin-bottom: 18px;
+      font-size: 22px;
+    }
+
+    .footer-box p,
+    .footer-box a {
+      color: #ddd;
+      text-decoration: none;
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .footer-box a:hover {
+      color: #fff;
+    }
+
+    .social-icons {
+      margin-top: 15px;
+    }
+
+    .social-icons a {
+      display: inline-block;
+      margin-right: 12px;
+      font-size: 18px;
+      color: #fff;
+      transition: 0.3s;
+    }
+
+    .social-icons a:hover {
+      color: #f5c9c9;
+      transform: translateY(-3px);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.15);
+      margin-top: 35px;
+      padding-top: 20px;
+      text-align: center;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .search-box {
+        width: 95%;
+      }
+      .search-box input {
+        font-size: 14px;
+        padding: 12px 16px 12px 42px;
+      }
+      .page-header h1 {
+        font-size: 2rem;
+      }
+      .footer-grid {
+        text-align: center;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo">
+      <a href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
+      <span class="artivio">Artivio</span>
+    </div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon">
+        <i data-lucide="menu"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="page-header">
+  <h1>Handcraft Courses</h1>
+  <p>Learn from master artisans and develop your craft skills</p>
+</div>
+
+<div class="search-box">
+  <i data-lucide="search" class="search-icon"></i>
+  <input type="text" id="searchInput" placeholder="Search courses..." />
+</div>
+
+<div class="container">
+  <div id="filters" class="filters"></div>
+  <div class="grid" id="coursesGrid"></div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-box">
+        <h3>Artivio</h3>
+        <p>Discover unique handmade products and learn creative skills through our trusted artisan community.</p>
+      </div>
+      <div class="footer-box">
+        <h3>Quick Links</h3>
+        <p><a href="index.html">Home</a></p>
+        <p><a href="product.html">Products</a></p>
+        <p><a href="customercourses.html">Courses</a></p>
+        <p><a href="about.html">About Us</a></p>
+      </div>
+      <div class="footer-box">
+        <h3>Contact Us</h3>
+        <p><i class="fa-solid fa-location-dot"></i> Cairo, Egypt</p>
+        <p><i class="fa-solid fa-phone"></i> +20 100 123 4567</p>
+        <p><i class="fa-solid fa-envelope"></i> support@artivio.com</p>
+        <div class="social-icons">
+          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-twitter"></i></a>
+          <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 Artivio. All Rights Reserved.
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function() {
+    const API_BASE = 'http://localhost:7070';
+    let selectedCategory = 'All';
+    let allCourses = [];
+    let searchQuery = '';
+
+    const coursesEl = document.getElementById('coursesGrid');
+    const filtersEl = document.getElementById('filters');
+    const searchInput = document.getElementById('searchInput');
+
+    function getDefaultImage(category) {
+      const defaults = {
+        'Pottery': 'assets/no-background.png',
+        'Jewelry': 'assets/no-background.png',
+        'Textiles': 'assets/no-background.png',
+        'Woodworking': 'assets/no-background.png',
+        'Painting': 'assets/no-background.png'
+      };
+      return defaults[category] || 'assets/no-background.png';
+    }
+
+    // Get ALL unique categories from the courses data
+    function getAllCategories() {
+      const categories = new Set();
+      categories.add('All');
+      
+      allCourses.forEach(course => {
+        if (course.category && course.category.trim()) {
+          categories.add(course.category.trim());
+        }
+      });
+      
+      return Array.from(categories);
+    }
+
+    function renderFilters() {
+      const categories = getAllCategories();
+      
+      filtersEl.innerHTML = '';
+      
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.textContent = cat;
+        btn.className = 'filter-btn';
+        if (cat === selectedCategory) btn.classList.add('active');
+        
+        btn.onclick = () => {
+          selectedCategory = cat;
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderCourses();
+        };
+        
+        filtersEl.appendChild(btn);
+      });
+      
+      console.log('Categories found:', categories);
+    }
+
+    function renderCourses() {
+      if (!allCourses.length) {
+        coursesEl.innerHTML = `
+          <div class="message-box">
+            <h3>No courses available</h3>
+            <p>We couldn't find any courses at the moment.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Filter by category
+      let filtered = selectedCategory === 'All' 
+        ? [...allCourses]
+        : allCourses.filter(c => c.category === selectedCategory);
+      
+      // Filter by search
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(course =>
+          (course.title && course.title.toLowerCase().includes(query)) ||
+          (course.description && course.description.toLowerCase().includes(query)) ||
+          (course.category && course.category.toLowerCase().includes(query)) ||
+          (course.artisan?.name && course.artisan.name.toLowerCase().includes(query))
+        );
+      }
+
+      if (!filtered.length) {
+        coursesEl.innerHTML = `
+          <div class="message-box">
+            <h3>No courses found</h3>
+            <p>${searchQuery ? `No results matching "${searchQuery}"` : `No courses in "${selectedCategory}" category.`}</p>
+            <p>Try another category or check back later.</p>
+          </div>
+        `;
+        return;
+      }
+
+      coursesEl.innerHTML = filtered.map(course => {
+        const imageUrl = course.image 
+          ? `${API_BASE}/uploads/${course.image}`
+          : getDefaultImage(course.category);
+        const instructor = course.artisan?.name || "Expert Artisan";
+        const studentsCount = course.students?.length || 0;
+        
+        return `
+          <div class="card">
+            <img src="${imageUrl}" class="card-img" alt="${escapeHtml(course.title)}" onerror="this.src='${getDefaultImage(course.category)}'">
+            <div class="card-content">
+              <div style="display: inline-block; background: var(--primary-burgundy); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; margin-bottom: 10px; width: fit-content;">
+                ${escapeHtml(course.category || 'Uncategorized')}
+              </div>
+              <h3 class="course-title">${escapeHtml(course.title)}</h3>
+              <p class="instructor"><i data-lucide="user" class="icon-xs"></i> ${escapeHtml(instructor)}</p>
+              <p class="description">${escapeHtml(course.description || 'Learn valuable craft skills from master artisans.')}</p>
+              <div class="stats">
+                <span class="stat-item"><i data-lucide="clock" class="icon-xs"></i> ${course.duration || 0} hrs</span>
+                <span class="stat-item"><i data-lucide="users" class="icon-xs"></i> ${studentsCount}</span>
+                <span class="stat-item"><i data-lucide="star" class="star-icon icon-xs"></i> ${course.rating || 0}</span>
+              </div>
+              <div class="card-footer">
+                <span class="price">LE${course.price || 0}</span>
+                <button class="view-btn" data-id="${course._id}">View Course</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          window.location.href = `course-detail.html?id=${btn.dataset.id}`;
+        });
+      });
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+
+    // Search functionality
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderCourses();
+      });
+    }
+
+    async function fetchCourses() {
+      try {
+        coursesEl.innerHTML = '<div class="message-box"><h3>Loading courses...</h3><p>Please wait while we fetch the latest courses.</p></div>';
+        
+        const response = await fetch(`${API_BASE}/api/courses`);
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          allCourses = result.data || [];
+          console.log(`Loaded ${allCourses.length} courses`);
+          console.log('Course categories:', [...new Set(allCourses.map(c => c.category))]);
+          
+          renderFilters();
+          renderCourses();
+        } else {
+          coursesEl.innerHTML = '<div class="message-box"><h3>Failed to load courses</h3><p>Please try again later.</p></div>';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        coursesEl.innerHTML = '<div class="message-box"><h3>Network Error</h3><p>Please check if the server is running.</p></div>';
+      }
+    }
+
+    // Mobile menu toggle
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon) {
+      menuIcon.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+      });
+    }
+
+    fetchCourses();
+  })();
+</script>
+
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

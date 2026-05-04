@@ -1,0 +1,321 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Analytics & Reports - Admin Dashboard</title>
+<style>
+    /* ----- ALL YOUR ORIGINAL STYLES (unchanged) ----- */
+    body { margin: 0; font-family: Arial, sans-serif; background: #faf6f5; }
+    .container { max-width: 1200px; margin: auto; padding: 20px; }
+    .header { background: #6C2929; color: white; padding: 20px 0; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+    .header-text h1 { margin: 0; }
+    .header-text p { color: #ead9d4; margin: 5px 0 0 0; }
+    .btn { padding: 8px 12px; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+    .btn-outline { background: white; color: #6C2929; }
+    .tabs { display: flex; gap: 20px; background: white; padding: 0 20px; border-bottom: 1px solid #ddd; }
+    .tab { padding: 15px 10px; cursor: pointer; color: #666; font-weight: bold; text-decoration: none; display: inline-block; }
+    .tab.active { color: #6C2929; border-bottom: 2px solid #6C2929; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid #6C2929; }
+    .card h3 { margin: 0; font-size: 14px; color: gray; text-transform: uppercase; }
+    .card p { font-size: 26px; margin: 10px 0 0 0; color: #3d1616; font-weight: bold; }
+    .analysis-section-centered { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 30px; justify-content: center; }
+    .chart-box-left, .chart-box-middle, .chart-box-right {
+      flex: 1; min-width: 280px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .chart-box-middle { flex: 1.2; min-width: 320px; }
+    .chart-box-left h2, .chart-box-middle h2, .chart-box-right h2 {
+      margin-top: 0; font-size: 18px; color: #3d1616; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;
+    }
+    .profit-comparison-bars { display: flex; align-items: flex-end; justify-content: center; gap: 50px; padding: 20px 10px; min-height: 220px; }
+    .profit-bar-group { text-align: center; flex: 0 0 auto; }
+    .profit-bar { width: 80px; border-radius: 8px 8px 0 0; position: relative; transition: height 0.2s ease; margin-bottom: 8px; }
+    .profit-bar-last { background: #b08e8e; }
+    .profit-bar-this { background: #6C2929; }
+    .profit-value { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: bold; color: #3d1616; white-space: nowrap; background: rgba(255,255,240,0.9); padding: 2px 6px; border-radius: 20px; }
+    .profit-label { margin-top: 10px; font-weight: bold; color: #5a3a3a; font-size: 14px; }
+    .growth-badge { text-align: center; color: #166534; font-weight: bold; margin-top: 10px; background: #eaf8e6; display: inline-block; width: 100%; padding: 8px 0; border-radius: 40px; font-size: 14px; }
+    .breakdown-item { margin-bottom: 15px; }
+    .breakdown-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; font-weight: bold; }
+    .progress-bg { background: #eee; height: 10px; border-radius: 5px; overflow: hidden; }
+    .progress-fill { background: #6C2929; height: 100%; border-radius: 5px; }
+    .detailed-graph { margin-top: 0; border-top: none; padding-top: 0; }
+    .detailed-title { font-size: 15px; font-weight: 600; color: #3d1616; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+    .legend { display: flex; gap: 20px; font-size: 13px; font-weight: normal; }
+    .legend-color { display: inline-block; width: 14px; height: 14px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+    .legend-last { background-color: #b08e8e; }
+    .legend-this { background-color: #6C2929; }
+    .monthly-bars { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+    .month-item { flex: 1; min-width: 55px; text-align: center; }
+    .bar-pair { display: flex; justify-content: center; gap: 4px; height: 160px; align-items: flex-end; margin-bottom: 8px; }
+    .single-bar { width: 28px; border-radius: 4px 4px 0 0; transition: height 0.2s; position: relative; }
+    .single-bar.last-year-bar { background-color: #b08e8e; }
+    .single-bar.this-year-bar { background-color: #6C2929; }
+    .month-label { font-size: 12px; font-weight: 600; color: #6b4c4c; margin-top: 8px; }
+    .tooltip-value { font-size: 10px; font-weight: bold; position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 2px 5px; border-radius: 6px; white-space: nowrap; display: none; pointer-events: none; z-index: 10; }
+    .single-bar:hover .tooltip-value { display: block; }
+    .summary-stats { display: flex; justify-content: space-between; margin-top: 18px; background: #faf0ed; padding: 12px 16px; border-radius: 12px; font-size: 13px; color: #3d1616; font-weight: 500; flex-wrap: wrap; gap: 10px; }
+    .summary-stats span { font-weight: bold; color: #6C2929; }
+    @media (max-width: 900px) { .analysis-section-centered { flex-direction: column; } .chart-box-left, .chart-box-middle, .chart-box-right { width: 100%; } }
+    @media (max-width: 700px) { .monthly-bars { gap: 2px; } .single-bar { width: 22px; } .month-item { min-width: 44px; } .summary-stats { font-size: 11px; flex-direction: column; align-items: center; text-align: center; } .profit-bar { width: 60px; } }
+    @media (max-width: 550px) { .single-bar { width: 20px; } .bar-pair { gap: 3px; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="container">
+    <div class="header-text">
+      <h1>Analytics & Reports</h1>
+      <p>Financial performance and category-wise revenue analysis</p>
+    </div>
+    <button class="btn btn-outline" onclick="window.print()">Export PDF</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <a href="admindashboard.html" class="tab active">Overview</a>
+  <a href="admin-users.html" class="tab">Users</a>
+  <a href="admin-products.html" class="tab">Products</a>
+  <a href="admin-courses.html" class="tab">Courses</a>
+  <a href="admin-orders.html" class="tab">Orders</a>
+  <a href="admin-analytics.html" class="tab">Analytics</a>
+  <a href="admin-settings.html" class="tab">Settings</a>
+</div>
+
+<div class="container">
+  <h2>Revenue by Category</h2>
+  <div class="grid" id="revenueCards">
+    <!-- dynamic cards will be inserted here -->
+  </div>
+
+  <div class="analysis-section-centered">
+    <!-- LEFT: Profit Comparison -->
+    <div class="chart-box-left">
+      <h2>Profit Comparison (Last Year vs This Year)</h2>
+      <div class="profit-comparison-bars" id="profitBars">
+        <div class="profit-bar-group">
+          <div class="profit-bar profit-bar-last" id="lastYearBar" style="height: 130px;">
+            <span class="profit-value" id="lastYearValue">EGP --</span>
+          </div>
+          <div class="profit-label">Last Year</div>
+        </div>
+        <div class="profit-bar-group">
+          <div class="profit-bar profit-bar-this" id="thisYearBar" style="height: 130px;">
+            <span class="profit-value" id="thisYearValue">EGP --</span>
+          </div>
+          <div class="profit-label">This Year</div>
+        </div>
+      </div>
+      <div class="growth-badge" id="growthBadge">--</div>
+    </div>
+
+    <!-- MIDDLE: Monthly Profit Breakdown -->
+    <div class="chart-box-middle">
+      <h2>📊 Monthly Profit Breakdown (Last Year vs This Year)</h2>
+      <div class="detailed-graph">
+        <div class="detailed-title">
+          <span>Monthly comparison</span>
+          <div class="legend">
+            <span><span class="legend-color legend-last"></span> Last Year</span>
+            <span><span class="legend-color legend-this"></span> This Year</span>
+          </div>
+        </div>
+        <div class="monthly-bars" id="monthlyBars">
+          <!-- bars will be generated by JS -->
+        </div>
+        <div class="summary-stats" id="summaryStats">
+          <!-- dynamic summary -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Revenue Share by Category -->
+    <div class="chart-box-right">
+      <h2>Revenue Share by Category</h2>
+      <div id="categoryBreakdown">
+        <!-- dynamic breakdown items -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+const token = localStorage.getItem("token");
+
+async function apiFetch(url, options = {}) {
+  const headers = { ...options.headers };
+  if (token && !headers.Authorization) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Request failed with status ${res.status}`);
+  return data;
+}
+
+// Helper: guess category from item name (fallback if no category field in order)
+function guessCategory(itemName) {
+  const name = itemName.toLowerCase();
+  if (name.includes('pottery') || name.includes('clay') || name.includes('ceramic')) return 'Pottery';
+  if (name.includes('crochet') || name.includes('knit') || name.includes('yarn')) return 'Crochet';
+  if (name.includes('paint') || name.includes('drawing') || name.includes('art') || name.includes('creative')) return 'Painting & Creative';
+  if (name.includes('bead') || name.includes('jewelry') || name.includes('necklace') || name.includes('bracelet')) return 'Beaded Jewelry';
+  return 'Other';
+}
+
+let allOrders = [];
+
+async function loadAnalytics() {
+  try {
+    // Fetch all paid orders (admin only)
+    const ordersData = await apiFetch('/api/orders');
+    allOrders = (ordersData.data || []).filter(order => order.paymentStatus === 'paid');
+    
+    // Process data
+    const categoryRevenue = {};
+    const monthlyData = {}; // { year-month: { amount, year } }
+    
+    for (const order of allOrders) {
+      const orderDate = new Date(order.createdAt);
+      const year = orderDate.getFullYear();
+      const month = orderDate.getMonth(); // 0-11
+      const monthKey = `${year}-${month}`;
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { amount: 0, year };
+      }
+      monthlyData[monthKey].amount += order.amount;
+      
+      // Process items for category revenue
+      for (const item of order.items) {
+        let category = item.category; // if stored directly
+        if (!category) {
+          // fallback: guess from name or try to fetch? For simplicity, guess.
+          category = guessCategory(item.name);
+        }
+        const itemRevenue = item.price * item.quantity;
+        categoryRevenue[category] = (categoryRevenue[category] || 0) + itemRevenue;
+      }
+    }
+    
+    // Update revenue cards
+    const revenueCardsContainer = document.getElementById('revenueCards');
+    revenueCardsContainer.innerHTML = '';
+    const categoriesOrder = ['Pottery', 'Crochet', 'Painting & Creative', 'Beaded Jewelry'];
+    for (const cat of categoriesOrder) {
+      const rev = categoryRevenue[cat] || 0;
+      revenueCardsContainer.innerHTML += `
+        <div class="card">
+          <h3>${cat} Revenue</h3>
+          <p>EGP ${rev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        </div>
+      `;
+    }
+    
+    // Update category breakdown (right box)
+    const totalRevenue = Object.values(categoryRevenue).reduce((sum, v) => sum + v, 0);
+    const breakdownContainer = document.getElementById('categoryBreakdown');
+    breakdownContainer.innerHTML = '';
+    for (const cat of categoriesOrder) {
+      const rev = categoryRevenue[cat] || 0;
+      const percent = totalRevenue ? ((rev / totalRevenue) * 100).toFixed(1) : 0;
+      breakdownContainer.innerHTML += `
+        <div class="breakdown-item">
+          <div class="breakdown-header">
+            <span>${cat}</span>
+            <span>${percent}%</span>
+          </div>
+          <div class="progress-bg"><div class="progress-fill" style="width: ${percent}%;"></div></div>
+        </div>
+      `;
+    }
+    
+    // --- Profit Comparison (total this year vs last year) ---
+    const currentYear = new Date().getFullYear();
+    let lastYearTotal = 0;
+    let thisYearTotal = 0;
+    for (const order of allOrders) {
+      const year = new Date(order.createdAt).getFullYear();
+      if (year === currentYear - 1) lastYearTotal += order.amount;
+      else if (year === currentYear) thisYearTotal += order.amount;
+    }
+    const maxTotal = Math.max(lastYearTotal, thisYearTotal, 1);
+    const lastYearHeight = (lastYearTotal / maxTotal) * 180; // max height 180px
+    const thisYearHeight = (thisYearTotal / maxTotal) * 180;
+    document.getElementById('lastYearBar').style.height = `${lastYearHeight}px`;
+    document.getElementById('lastYearValue').innerText = `EGP ${lastYearTotal.toLocaleString()}`;
+    document.getElementById('thisYearBar').style.height = `${thisYearHeight}px`;
+    document.getElementById('thisYearValue').innerText = `EGP ${thisYearTotal.toLocaleString()}`;
+    const growth = lastYearTotal ? ((thisYearTotal - lastYearTotal) / lastYearTotal * 100).toFixed(1) : 0;
+    const growthSign = growth >= 0 ? '↑' : '↓';
+    document.getElementById('growthBadge').innerHTML = `${growthSign} ${Math.abs(growth)}% Growth in annual profit`;
+    
+    // --- Monthly Profit Breakdown ---
+    // Prepare data for last 12 months (from current month backwards)
+    const months = [];
+    const now = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ year: d.getFullYear(), month: d.getMonth() });
+    }
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    let maxMonthly = 0;
+    const monthlyValues = months.map(m => {
+      const lastKey = `${m.year-1}-${m.month}`;
+      const thisKey = `${m.year}-${m.month}`;
+      const lastVal = monthlyData[lastKey]?.amount || 0;
+      const thisVal = monthlyData[thisKey]?.amount || 0;
+      maxMonthly = Math.max(maxMonthly, lastVal, thisVal);
+      return { last: lastVal, this: thisVal, month: m.month, year: m.year };
+    });
+    const monthlyBarsContainer = document.getElementById('monthlyBars');
+    monthlyBarsContainer.innerHTML = '';
+    for (const mv of monthlyValues) {
+      const lastHeight = maxMonthly ? (mv.last / maxMonthly) * 140 : 0;
+      const thisHeight = maxMonthly ? (mv.this / maxMonthly) * 140 : 0;
+      monthlyBarsContainer.innerHTML += `
+        <div class="month-item">
+          <div class="bar-pair">
+            <div class="single-bar last-year-bar" style="height: ${lastHeight}px;">
+              <span class="tooltip-value">EGP ${mv.last.toLocaleString()}</span>
+            </div>
+            <div class="single-bar this-year-bar" style="height: ${thisHeight}px;">
+              <span class="tooltip-value">EGP ${mv.this.toLocaleString()}</span>
+            </div>
+          </div>
+          <div class="month-label">${monthNames[mv.month]}</div>
+        </div>
+      `;
+    }
+    // Summary stats
+    const avgLast = monthlyValues.reduce((sum, m) => sum + m.last, 0) / 12;
+    const avgThis = monthlyValues.reduce((sum, m) => sum + m.this, 0) / 12;
+    const bestLast = monthlyValues.reduce((max, m) => m.last > max ? m.last : max, 0);
+    const bestThis = monthlyValues.reduce((max, m) => m.this > max ? m.this : max, 0);
+    let bestMonthName = '';
+    for (const mv of monthlyValues) {
+      if (mv.this === bestThis) bestMonthName = monthNames[mv.month];
+    }
+    document.getElementById('summaryStats').innerHTML = `
+      <span>📈 Avg Monthly Profit: <span>EGP ${avgLast.toLocaleString(undefined, {maximumFractionDigits:0})}</span> (last year) → <span>EGP ${avgThis.toLocaleString(undefined, {maximumFractionDigits:0})}</span> (this year)</span>
+      <span>🏆 Best Month: <span>${bestMonthName} (${bestThis.toLocaleString()} EGP)</span></span>
+      <span>⚡ Highest Growth: <span>${bestMonthName} (${((bestThis-bestLast)/bestLast*100).toFixed(1)}% ↑)</span></span>
+    `;
+    
+  } catch (err) {
+    console.error('Analytics error:', err);
+    document.getElementById('revenueCards').innerHTML = `<div class="card"><h3>Error</h3><p>${err.message}</p></div>`;
+  }
+}
+
+loadAnalytics();
+</script>
+</body>
+</html>
+
+
+

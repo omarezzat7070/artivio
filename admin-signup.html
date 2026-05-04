@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Registration | Artisan Crafts</title>
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <style>
+    /* === YOUR EXACT SAME CSS (unchanged) === */
+    :root { --primary: #6C2929; --dark: #3d1616; --light-bg: #fdf6ee; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+    body { background: var(--light-bg); color: #333; }
+    .navbar { background: #fff; border-bottom: 1px solid #eee; }
+    .container { width: 90%; max-width: 1200px; margin: auto; }
+    .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: var(--dark); }
+    .nav-logo img { height: 40px; width: auto; }
+    .nav-logo .artivio { font-family: 'Dancing Script', cursive; font-size: 22px; color: var(--dark); }
+    .nav-links { list-style: none; display: flex; gap: 25px; }
+    .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+    .signup-section { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 80px); padding: 40px 0; }
+    .signup-container { background: #fff; width: 100%; max-width: 430px; padding: 35px; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; }
+    .signup-container h1 { color: #8b4000; margin-bottom: 8px; }
+    .subtitle { color: #666; margin-bottom: 25px; font-size: 14px; }
+    .signup-form { text-align: left; }
+    .signup-form label { font-size: 14px; font-weight: 600; margin-bottom: 5px; display: block; }
+    .input-box { display: flex; align-items: center; background: #f4f4f4; padding: 12px; border-radius: 8px; margin-bottom: 18px; }
+    .input-box i { margin-right: 10px; color: #999; }
+    .input-box input { border: none; background: transparent; outline: none; width: 100%; }
+    .signup-btn { width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .signup-btn:hover { background: var(--primary); }
+    .login-text { text-align: center; margin-top: 18px; font-size: 14px; }
+    .login-text a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    @media (max-width: 480px) { .signup-container { margin: 0 15px; padding: 25px; } .nav-links { display: none; } }
+    .nav-links { display: flex; align-items: center; gap: 25px; flex-wrap: nowrap; }
+    .nav-links a { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .error-message { color: #d9534f; font-size: 13px; margin-top: -10px; margin-bottom: 10px; text-align: center; }
+  </style>
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo"><img src="no background 1.png" alt="Artivio Logo"><span class="artivio">Artivio</span></div>
+    <nav><ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="product.html">Products</a></li><li><a href="course.html">Courses</a></li><li><a href="about.html">About</a></li><li><a id="loginLink" href="login.html">Login</a></li></ul></nav>
+  </div>
+</header>
+<section class="signup-section">
+  <div class="signup-container">
+    <h1>Admin Registration</h1>
+    <p class="subtitle">Create an administrator account (restricted access)</p>
+    <form class="signup-form" id="adminSignupForm">
+      <label for="name">Full Name</label>
+      <div class="input-box"><i class="fa-regular fa-user"></i><input type="text" id="name" name="name" autocomplete="name" placeholder="Admin Name" required></div>
+      <label for="email">Email</label>
+      <div class="input-box"><i class="fa-regular fa-envelope"></i><input type="email" id="email" name="email" autocomplete="email" placeholder="admin@example.com" required></div>
+      <label for="password">Password</label>
+      <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="password" name="password" autocomplete="new-password" placeholder="••••••••" required></div>
+      <label for="confirmPassword">Confirm Password</label>
+      <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••" required></div>
+      <label for="phone">Phone Number</label>
+      <div class="input-box"><i class="fa-solid fa-phone"></i><input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="+20 100 123 4567 or 01001234567" required></div>
+      <label for="gender">Gender</label>
+      <div class="input-box"><i class="fa-solid fa-venus-mars"></i><select id="gender" name="gender" autocomplete="sex" required style="border:none; background:transparent; width:100%; outline:none;"><option value="">Select Gender</option><option value="male">Male</option><option value="female">Female</option></select></div>
+      <label for="adminSecret">Admin Secret Key</label>
+      <div class="input-box"><i class="fa-solid fa-key"></i><input type="password" id="adminSecret" name="adminSecret" autocomplete="off" placeholder="Secret key required" required></div>
+      <div id="formError" class="error-message" style="display: none;"></div>
+      <button type="submit" class="signup-btn" id="signupBtn">Create Admin Account</button>
+      <p class="login-text">Already have an account? <a href="admin-login.html">Admin Login</a></p>
+    </form>
+  </div>
+</section>
+<script>
+document.getElementById('adminSignupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errorDiv = document.getElementById('formError');
+  errorDiv.style.display = 'none';
+  errorDiv.textContent = '';
+
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const phone = document.getElementById('phone').value.trim();
+  const gender = document.getElementById('gender').value;
+  const adminSecret = document.getElementById('adminSecret').value;
+
+  if (!name || !email || !password || !confirmPassword || !phone || !gender || !adminSecret) {
+    errorDiv.textContent = 'All fields are required';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  if (password.length < 6) {
+    errorDiv.textContent = 'Password must be at least 6 characters';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  if (password !== confirmPassword) {
+    errorDiv.textContent = 'Passwords do not match';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  const submitBtn = document.getElementById('signupBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Creating admin...';
+
+  try {
+    const response = await fetch('/api/users/admin/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, phone, gender, adminSecret })
+    });
+    const data = await response.json();
+    console.log('Response:', response.status, data);
+    if (response.ok && data.success) {
+      localStorage.setItem('token', data.token);
+      // ✅ REDIRECT TO ADMIN LOGIN PAGE
+      window.location.href = 'admin-login.html';
+    } else {
+      errorDiv.textContent = data.error || 'Admin registration failed';
+      errorDiv.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create Admin Account';
+    }
+  } catch (err) {
+    console.error(err);
+    errorDiv.textContent = 'Network error. Make sure the backend is running on port 7070 and you are using http://localhost:7070/admin-signup.html';
+    errorDiv.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Create Admin Account';
+  }
+});
+</script>
+  <script src="navbar.js"></script>
+</body>
+</html>
+
+
+

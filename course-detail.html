@@ -1,0 +1,462 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Details - Artisan Crafts</title>
+  <script src="assets/lucide.min.js"></script>
+  <link rel="stylesheet" href="navbar.css">
+  <style>
+    /* Your existing styles (unchanged) – keep everything you already have */
+    :root {
+      --primary: #6C2929;
+      --dark: #3d1616;
+      --light-bg: #fdf6ee;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background-color: #F8F4F0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2D2A24; line-height: 1.5; }
+    /* Override any container conflict – ensure navbar container does not inherit main grid styles */
+    .navbar .nav-container {
+      width: 90%;
+      max-width: 1260px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+    }
+    /* Main container for grid layout – unchanged */
+    .container {
+      max-width: 1260px;
+      margin: 48px auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 40px;
+      padding: 0 32px;
+    }
+    /* Rest of your styles (video-box, lesson-content, sidebar, etc.) – keep as is */
+    .left-col { display: flex; flex-direction: column; gap: 24px; }
+    .video-box { background: #1F2937; border-radius: 20px; height: 380px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+    .video-box span { font-size: 80px; margin-bottom: 16px; opacity: 0.9; color: #F0E9E2; }
+    .video-box h2 { font-weight: 440; font-size: 1.7rem; margin-bottom: 8px; color: rgba(255,255,255,0.95); }
+    .video-box p { color: #d1d5db; font-size: 1rem; }
+    .video-box img { max-width: 100%; max-height: 100%; object-fit: cover; border-radius: 16px; }
+    .video-box video { width: 100%; max-height: 380px; border-radius: 20px; outline: none; }
+    .lesson-content { background: white; padding: 28px 32px; border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); border: 1px solid #F0EAE4; }
+    .lesson-content h2 { font-size: 1.6rem; font-weight: 620; color: #8B3E3E; margin-bottom: 16px; letter-spacing: -0.3px; }
+    .lesson-content p { color: #3F3F3C; margin-bottom: 24px; font-size: 1.06rem; }
+    .completed-btn { display: inline-block; background: #9CAF9B; color: white; padding: 10px 24px; border-radius: 40px; font-size: 0.95rem; font-weight: 500; border: none; letter-spacing: 0.3px; text-transform: uppercase; cursor: default; }
+    .sidebar { background: white; padding: 28px 24px; border-radius: 24px; border: 1px solid #F0EAE4; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
+    .sidebar h3 { font-size: 1.3rem; font-weight: 620; color: #8B3E3E; margin-bottom: 28px; letter-spacing: -0.2px; border-bottom: 2px solid #F0E2DA; padding-bottom: 16px; }
+    .lesson-item { padding: 18px 20px; border-radius: 18px; margin-bottom: 10px; background-color: white; transition: 0.1s ease; border: 2px solid transparent; cursor: pointer; }
+    .lesson-item:hover { background-color: #FFF8F4; }
+    .lesson-item.active { border: 2px solid #8B3E3E; background-color: #FDF6F2; }
+    .lesson-title { font-weight: 650; font-size: 1.08rem; color: #2C2C2A; margin-bottom: 6px; line-height: 1.3; display: flex; justify-content: space-between; align-items: center; }
+    .lock-badge { margin-left: 8px; font-size: 0.82rem; color: #B45309; font-weight: 600; }
+    .lesson-duration { font-size: 0.85rem; color: #7C7A76; display: flex; align-items: center; gap: 4px; }
+    .locked { opacity: 0.6; cursor: not-allowed; background-color: #F9F7F5; }
+    .locked .lesson-title { color: #787774; }
+    .hand-building-bar { margin-top: 28px; padding-top: 20px; border-top: 1px solid #EDE5DE; display: flex; align-items: center; justify-content: space-between; }
+    .hand-building-tag { display: flex; align-items: center; gap: 10px; background: #E9E2DB; padding: 10px 18px; border-radius: 40px; font-size: 0.95rem; font-weight: 530; color: #4D423C; letter-spacing: 0.2px; }
+    .hand-building-tag span { font-size: 1.2rem; }
+    .action-icons { display: flex; gap: 20px; color: #7A6A62; font-weight: 500; font-size: 0.95rem; }
+    .action-icons span { cursor: default; }
+    .buy-now-btn { display: inline-block; background-color: #8B3E3E; color: white; padding: 12px 20px; border-radius: 40px; text-decoration: none; font-weight: 600; font-size: 0.9rem; text-align: center; transition: 0.2s; border: none; cursor: pointer; width: 100%; }
+    .buy-now-btn:hover { background-color: #6C2929; }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; gap: 24px; } }
+    .dot-sep { display: inline-block; width: 3px; height: 3px; background: #9A9A96; border-radius: 50%; margin: 0 6px; }
+    .lesson-duration::before { content: "•"; margin-right: 6px; color: #8f8b86; font-weight: 700; }
+    .course-name { font-size: 1.1rem; font-weight: 600; color: #8B3E3E; margin-bottom: 20px; }
+    .lesson-description { color: #5E5A55; margin-bottom: 18px; }
+  </style>
+</head>
+<body>
+
+  <!-- FIXED NAVBAR – now uses nav-container to avoid conflict with main container -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+       <a href="home.html"><img src="no background 1.png" alt="Artivio Logo"></a>
+        <span class="artivio">Artivio</span>
+      </div>
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="home.html">Home</a></li>
+          <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+          <li><a href="course.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+        </ul>
+        <div class="menu-icon" id="menuIcon">
+          <i data-lucide="menu"></i>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT – container class remains for grid layout (no conflict now) -->
+  <div class="container">
+    <div class="left-col">
+      <div class="video-box" id="videoBox">
+        <span>⟳</span>
+        <h2>Loading Course...</h2>
+        <p>Please wait while we load the course content.</p>
+      </div>
+      <div class="lesson-content">
+        <h2 id="lessonTitle">Loading lesson...</h2>
+        <p id="lessonDescription" class="lesson-description">Select a course section to view the lesson details.</p>
+      </div>
+    </div>
+    <div class="sidebar">
+      <h3>Course curriculum</h3>
+      <div class="course-name" id="courseNameSidebar">Loading course...</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px;">
+        <div id="coursePriceDisplay" style="font-weight:600; color:#2C2C2A;">—</div>
+        <span id="purchaseBadge" class="hand-building-tag" style="background:#F1EFEA; padding:10px 14px;">Loading access</span>
+      </div>
+      <div id="lessonsList"></div>
+      <div id="paymentButtonContainer" style="margin-top:20px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // Your existing JavaScript code (unchanged) – keep everything from the original course-detail.html
+    // Always use the real backend address
+const API_BASE = 'http://localhost:7070';
+    let currentCourse = null;
+    let isPurchased = false;
+    let isOwner = false;
+    let currentUserId = null;
+    let currentLessons = [];
+    let selectedLessonIndex = 0;
+
+    function getToken() { return localStorage.getItem('token'); }
+    function getUser() {
+      try { 
+        const raw = localStorage.getItem('user');
+        return raw ? JSON.parse(raw) : {};
+      } catch(e) { return {}; }
+    }
+
+    function formatDuration(minutes = 0) {
+      if (!minutes || minutes <= 0) return '—';
+      const mins = Math.floor(minutes);
+      const secs = Math.round((minutes - mins) * 60);
+      if (mins >= 60) {
+        const hrs = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        return `${hrs}h ${remMins > 0 ? remMins + 'min' : ''}`;
+      }
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    async function fetchCourse(courseId) {
+      const token = getToken();
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`${API_BASE}/api/courses/${courseId}`, { headers });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to load course');
+      }
+      const json = await res.json();
+      if (!json.success || !json.data) throw new Error('Invalid course data');
+      return json.data;
+    }
+async function checkPurchaseStatus(courseId) {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(`${API_BASE}/api/courses/${courseId}/purchased`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const result = await res.json();
+    return result.success && result.purchased === true;
+  } catch (err) {
+    console.warn('Purchase check error:', err);
+    return false;
+  }
+}
+
+    async function enrollInCourse(courseId) {
+      const token = getToken();
+      if (!token) return false;
+      try {
+        const res = await fetch(`${API_BASE}/api/courses/${courseId}/enroll`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        return res.ok && data.success;
+      } catch (err) {
+        console.error('Enroll error:', err);
+        return false;
+      }
+    }
+
+    function buildLessons(course) {
+      if (!course) return [];
+      const overview = {
+        type: 'overview',
+        title: course.title,
+        description: course.description,
+        mediaUrl: course.image,
+        duration: course.duration ? course.duration * 60 : 0,
+        isPart: false,
+        lessonNumber: 0
+      };
+      const parts = Array.isArray(course.parts) ? [...course.parts] : [];
+      parts.sort((a, b) => (Number(a.partNumber) || 0) - (Number(b.partNumber) || 0));
+      const mappedParts = parts.map((part, index) => ({
+        type: 'part',
+        title: part.title || `Part ${index + 1}`,
+        description: part.description,
+        mediaUrl: part.video,
+        duration: part.duration || 0,
+        isPart: true,
+        partId: part._id,
+        rawPart: part,
+        lessonNumber: part.partNumber || index + 1
+      }));
+      return [overview, ...mappedParts];
+    }
+
+    function renderLessonsList() {
+      const container = document.getElementById('lessonsList');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!currentLessons.length) {
+        container.innerHTML = '<div class="lesson-item">No course content available.</div>';
+        return;
+      }
+      const visibleLessons = currentLessons.filter(l => l.type !== 'overview');
+      if (visibleLessons.length === 0) {
+        container.innerHTML = '<div class="lesson-item">No course parts available yet.</div>';
+        return;
+      }
+      visibleLessons.forEach((lesson) => {
+        const idx = currentLessons.indexOf(lesson);
+        const isLocked = (!lesson.isPart ? false : (!isPurchased && !isOwner));
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `lesson-item ${selectedLessonIndex === idx ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
+        itemDiv.innerHTML = `
+          <div class="lesson-title">
+            <span>Lesson ${lesson.lessonNumber} · ${escapeHtml(lesson.title)}</span>
+            ${isLocked ? '<span class="lock-badge">🔒 Locked</span>' : ''}
+          </div>
+          <div class="lesson-duration">${formatDuration(lesson.duration)}</div>
+        `;
+        itemDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (isLocked) {
+            showLockedPrompt();
+            return;
+          }
+          selectLesson(idx);
+        });
+        container.appendChild(itemDiv);
+      });
+    }
+
+    function showLockedPrompt() {
+      const videoBox = document.getElementById('videoBox');
+      if (!currentCourse) return;
+      videoBox.innerHTML = `
+        <span>🔒</span>
+        <h2>Premium Content Locked</h2>
+        <p>Purchase this course to unlock all videos and lessons.</p>
+        ${!isPurchased && !isOwner && currentCourse?.price > 0 ? `<a href="payment.html?id=${currentCourse._id}&type=course" class="buy-now-btn" style="display:inline-block; margin-top:16px; width:auto;">💳 Buy Now - LE${currentCourse.price.toFixed(2)}</a>` : ''}
+      `;
+    }
+
+    function selectLesson(index) {
+      if (!currentLessons[index]) return;
+      selectedLessonIndex = index;
+      const lesson = currentLessons[index];
+      renderLessonsList(); // re-render to update active class
+      
+      document.getElementById('lessonTitle').innerText = lesson.title;
+      document.getElementById('lessonDescription').innerText = lesson.description || 'No description provided.';
+      const videoBox = document.getElementById('videoBox');
+      
+      if (lesson.type === 'overview') {
+        if (lesson.mediaUrl) {
+          videoBox.innerHTML = `<img src="${API_BASE}/uploads/${lesson.mediaUrl}" alt="${lesson.title}" style="max-width:100%; max-height:100%; object-fit:contain;" />`;
+        } else {
+          videoBox.innerHTML = `<span>📘</span><h2>${escapeHtml(lesson.title)}</h2><p>Course overview. Enroll to access full lessons.</p>`;
+        }
+        return;
+      }
+      
+      const isLocked = !isPurchased && !isOwner;
+      if (isLocked) {
+        videoBox.innerHTML = `
+          <span>🔒</span>
+          <h2>${escapeHtml(lesson.title)}</h2>
+          <p>Purchase this course to unlock this video lesson.</p>
+          <a href="payment.html?id=${currentCourse._id}&type=course" class="buy-now-btn" style="display:inline-block; margin-top:16px; width:auto;">💳 Unlock Now - $${currentCourse.price.toFixed(2)}</a>
+        `;
+      } else if (lesson.mediaUrl) {
+        videoBox.innerHTML = `
+          <video controls style="width:100%; max-height:380px; border-radius:20px;">
+            <source src="${API_BASE}/uploads/${lesson.mediaUrl}" type="video/mp4">
+            Your browser does not support video playback.
+          </video>
+        `;
+      } else {
+        videoBox.innerHTML = `<span>🎥</span><h2>${escapeHtml(lesson.title)}</h2><p>No video uploaded for this lesson yet.</p>`;
+      }
+    }
+
+    async function refreshUI(courseId) {
+  try {
+    const user = getUser();
+    currentUserId = user?.id || null;
+    currentCourse = await fetchCourse(courseId);
+    if (!currentCourse) throw new Error('Course not found');
+    
+    // Check purchase status
+    isPurchased = await checkPurchaseStatus(courseId);
+    
+    // Also check if user is already in students array (fallback)
+    if (!isPurchased && currentCourse.students && Array.isArray(currentCourse.students)) {
+      isPurchased = currentCourse.students.some(s => s.toString() === currentUserId);
+    }
+    
+    const artisanId = typeof currentCourse.artisan === 'object' ? currentCourse.artisan._id : currentCourse.artisan;
+    isOwner = (currentUserId && currentUserId === artisanId) || (user?.role === 'admin');
+    
+    currentLessons = buildLessons(currentCourse);
+    
+    document.getElementById('courseNameSidebar').innerText = currentCourse.title;
+    const priceDisplay = document.getElementById('coursePriceDisplay');
+    if (currentCourse.price > 0) priceDisplay.innerText = `LE${currentCourse.price.toFixed(2)}`;
+    else priceDisplay.innerText = 'Free';
+    
+    const badge = document.getElementById('purchaseBadge');
+    if (isOwner) {
+      badge.style.display = 'none';
+    } else if (isPurchased) {
+      badge.innerHTML = '✅ Purchased · Full Access';
+      badge.style.background = '#DBE7D5';
+    } else {
+      badge.innerHTML = '🔒 Not Purchased · Preview Only';
+    }
+    
+    renderLessonsList();
+    
+    const paymentContainer = document.getElementById('paymentButtonContainer');
+    paymentContainer.innerHTML = '';
+    if (!isPurchased && !isOwner && currentCourse.price > 0) {
+      const buyBtn = document.createElement('a');
+      buyBtn.href = `checkout.html?id=${currentCourse._id}&type=course`;
+      buyBtn.className = 'buy-now-btn';
+      buyBtn.innerText = `💳 Buy Now - LE${currentCourse.price.toFixed(2)}`;
+      paymentContainer.appendChild(buyBtn);
+    } else if (!isPurchased && !isOwner && currentCourse.price === 0) {
+      // Free course - direct enrollment
+      const freeBtn = document.createElement('button');
+      freeBtn.className = 'buy-now-btn';
+      freeBtn.innerText = '✨ Enroll for Free';
+      freeBtn.onclick = async () => {
+        const token = getToken();
+        if (!token) {
+          window.location.href = 'login.html';
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/api/courses/${currentCourse._id}/enroll`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (res.ok) {
+            location.reload();
+          } else {
+            alert('Failed to enroll');
+          }
+        } catch (err) {
+          alert('Network error');
+        }
+      };
+      paymentContainer.appendChild(freeBtn);
+    }
+    
+    if (currentLessons.length > 0 && selectedLessonIndex >= currentLessons.length) selectedLessonIndex = 0;
+    if (currentLessons[0]) selectLesson(0);
+    else document.getElementById('videoBox').innerHTML = `<span>⚠️</span><h2>No content</h2>`;
+    
+  } catch (err) {
+    console.error(err);
+    document.getElementById('videoBox').innerHTML = `<span>⚠️</span><h2>Error</h2><p>${err.message}</p>`;
+    document.getElementById('lessonsList').innerHTML = '<div class="lesson-item">Unable to load course content.</div>';
+  }
+}
+
+    async function handleRecentPurchase(courseId) {
+      const justPurchased = localStorage.getItem('justPurchased');
+      if (justPurchased === 'true') {
+        localStorage.removeItem('justPurchased');
+        const enrolled = await enrollInCourse(courseId);
+        if (enrolled) {
+          console.log('Successfully enrolled after payment');
+          await refreshUI(courseId);
+        } else {
+          console.warn('Enroll failed after payment');
+          await refreshUI(courseId);
+        }
+      }
+    }
+
+    function updateLoginButton() {
+      const user = getUser();
+      const loginLink = document.getElementById('loginLink');
+      if (loginLink) {
+        if (user && user.name) {
+          loginLink.innerHTML = `👤 ${user.name}`;
+          loginLink.href = "#";
+          loginLink.style.cursor = "default";
+        } else {
+          loginLink.innerHTML = `🔐 Login`;
+          loginLink.href = "login.html";
+        }
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'token' || e.key === 'user' || e.key === 'justPurchased') {
+        const courseId = new URLSearchParams(window.location.search).get('id');
+        if (courseId) refreshUI(courseId);
+      }
+    });
+
+    async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const courseId = urlParams.get('id');
+      if (!courseId) {
+        document.getElementById('videoBox').innerHTML = `<span>❌</span><h2>Missing Course ID</h2><p>Please provide a valid course id in URL.</p>`;
+        document.getElementById('lessonsList').innerHTML = '<div class="lesson-item">Error: No course selected</div>';
+        return;
+      }
+      document.getElementById('videoBox').innerHTML = `<span>⟳</span><h2>Loading Course...</h2><p>Fetching details...</p>`;
+      await refreshUI(courseId);
+      await handleRecentPurchase(courseId);
+    }
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    window.onload = init;
+  </script>
+  <script src="navbar.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,841 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handmade Products | Artivio</title>
+
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <script src="assets/lucide.min.js"></script>
+  <link rel="stylesheet" href="navbar.css">
+
+  <style>
+    :root {
+      --primary: #6C2929;
+      --dark: #3d1616;
+      --light-bg: #fdf6ee;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--light-bg);
+      color: #333;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin: 40px 0 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 10px 25px;
+      border-radius: 30px;
+      border: 2px solid var(--primary);
+      cursor: pointer;
+      background: white;
+      transition: 0.3s;
+      font-weight: 500;
+    }
+
+    .filter-btn.active,
+    .filter-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+    
+
+    .search-box{
+      max-width: 500px;
+      margin: 0 auto 25px;
+      position: relative;
+    }
+
+    .search-box input{
+      width: 100%;
+      padding: 12px 45px 12px 18px;
+      border: 2px solid #ddd;
+      border-radius: 30px;
+      outline: none;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+
+    .search-box input:focus{
+      border-color: #6C2929;
+    }
+
+    .search-box i{
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6C2929;
+    }
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .category {
+      font-size: 0.9rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .card-body h3 {
+      color: var(--dark);
+      margin-bottom: 15px;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .price {
+      font-size: 1.4rem;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .add-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .add-btn:hover {
+      background: #5a2222;
+    }
+
+    /* Cart Bar */
+    .cart-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #ddd;
+      padding: 15px;
+      display: none;
+      z-index: 1000;
+    }
+
+    .cart-inner {
+      max-width: 1200px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .checkout-btn {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Cart Modal */
+    .cart-modal {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 2px solid var(--primary);
+      max-height: 60vh;
+      overflow-y: auto;
+      z-index: 1001;
+    }
+
+    .cart-modal.open {
+      display: block;
+    }
+
+    .cart-header {
+      padding: 15px 20px;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+    }
+
+    .cart-close-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    .cart-items {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .cart-item-details {
+      flex: 1;
+    }
+
+    .cart-item-name {
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .cart-item-qty {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cart-item-qty button {
+      background: #e5e7eb;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .cart-remove-btn {
+      background: #f87171;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .cart-footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 15px 20px;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .cart-total {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .cart-item {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+    footer {
+      background: #6C2929;
+      color: #fff;
+      padding: 60px 0 20px;
+      margin-top: 40px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+      gap: 40px;
+      text-align: left;
+    }
+
+    .footer-box h3 {
+      color: #fff;
+      margin-bottom: 18px;
+      font-size: 22px;
+    }
+
+    .footer-box p,
+    .footer-box a {
+      color: #ddd;
+      text-decoration: none;
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .footer-box a:hover {
+      color: #fff;
+    }
+
+    .social-icons {
+      margin-top: 15px;
+    }
+
+    .social-icons a {
+      display: inline-block;
+      margin-right: 12px;
+      font-size: 18px;
+      color: #fff;
+      transition: 0.3s;
+    }
+
+    .social-icons a:hover {
+      color: #f5c9c9;
+      transform: translateY(-3px);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.15);
+      margin-top: 35px;
+      padding-top: 20px;
+      text-align: center;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .footer-grid {
+        text-align: center;
+      }
+    }
+    /* RESPONSIVE DESIGN IMPROVEMENTS */
+    @media (max-width: 992px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .products {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .card img {
+        height: 220px;
+      }
+      .cart-inner,
+      .cart-footer {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .checkout-btn {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        width: 95%;
+      }
+      h1 {
+        font-size: 1.8rem;
+        margin-top: 25px;
+      }
+      .subtitle {
+        font-size: 14px;
+        margin-bottom: 25px;
+      }
+      .filters {
+        gap: 10px;
+      }
+      .filter-btn {
+        padding: 8px 18px;
+        font-size: 14px;
+      }
+      .products {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .card img {
+        height: 230px;
+      }
+      .card-body {
+        padding: 15px;
+      }
+      .price {
+        font-size: 1.2rem;
+      }
+      .add-btn {
+        padding: 8px 14px;
+        font-size: 14px;
+      }
+      .cart-item {
+        flex-direction: column;
+        text-align: center;
+      }
+      .cart-item-qty {
+        justify-content: center;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .social-icons {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      .card img {
+        height: 200px;
+      }
+      .cart-bar {
+        padding: 12px;
+      }
+      .cart-inner div {
+        font-size: 14px;
+      }
+      .checkout-btn {
+        font-size: 14px;
+        padding: 10px;
+      }
+      .footer-box h3 {
+        font-size: 18px;
+      }
+      .footer-box p,
+      .footer-box a {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo">
+      <a href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
+      <span class="artivio">Artivio</span>
+    </div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon">
+        <i data-lucide="menu"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <h1>Handmade Products</h1>
+  <p class="subtitle">Discover unique, handcrafted treasures from talented artisans</p>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search products...">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="products" id="products"></div>
+</div>
+
+<!-- Cart Bar -->
+<div class="cart-bar" id="cartBar">
+  <div class="cart-inner">
+    <div style="cursor: pointer;" onclick="toggleCartModal()">
+      🛒 Cart: <strong><span id="cartCount">0</span></strong> item(s) - Click to view
+    </div>
+    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+  </div>
+</div>
+
+<!-- Cart Modal -->
+<div class="cart-modal" id="cartModal">
+  <div class="cart-header">
+    <span>Shopping Cart</span>
+    <button class="cart-close-btn" onclick="toggleCartModal()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItemsList">
+    <p class="cart-empty" style="text-align: center; padding: 30px;">Your cart is empty</p>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display: none;">
+    <div class="cart-total">Total: LE<span id="cartTotalPrice">0.00</span></div>
+    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-box">
+        <h3>Artivio</h3>
+        <p>Discover unique handmade products and learn creative skills through our trusted artisan community.</p>
+      </div>
+      <div class="footer-box">
+        <h3>Quick Links</h3>
+        <p><a href="index.html">Home</a></p>
+        <p><a href="product.html">Products</a></p>
+        <p><a href="customercourses.html">Courses</a></p>
+        <p><a href="about.html">About Us</a></p>
+      </div>
+      <div class="footer-box">
+        <h3>Contact Us</h3>
+        <p><i class="fa-solid fa-location-dot"></i> Cairo, Egypt</p>
+        <p><i class="fa-solid fa-phone"></i> +20 100 123 4567</p>
+        <p><i class="fa-solid fa-envelope"></i> support@artivio.com</p>
+        <div class="social-icons">
+          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-twitter"></i></a>
+          <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 Artivio. All Rights Reserved.
+    </div>
+  </div>
+</footer>
+
+<script>
+  const API_BASE = 'http://localhost:7070';
+  let products = [];
+  let categories = ['All'];
+  let selectedCategory = 'All';
+  let cart = [];
+
+  // Storage helpers
+  function safeLocalStorageGet(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function safeLocalStorageSet(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (err) {
+      console.warn('Local storage unavailable');
+    }
+  }
+
+  function loadCart() {
+    const saved = safeLocalStorageGet('cart');
+    cart = saved ? JSON.parse(saved) : [];
+    updateCartDisplay();
+  }
+
+  function saveCart() {
+    safeLocalStorageSet('cart', JSON.stringify(cart));
+    updateCartDisplay();
+  }
+
+  function addToCart(id) {
+    const product = products.find(p => p._id === id);
+    if (!product) return;
+    
+    const existing = cart.find(item => item._id === id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        stock: product.stock,
+        duration: product.duration,
+        category: product.category,
+        quantity: 1
+      });
+    }
+    saveCart();
+    showNotification(`${product.name} added to cart!`);
+  }
+
+  function removeFromCart(id) {
+    cart = cart.filter(item => item._id !== id);
+    saveCart();
+    if (cart.length === 0) {
+      document.getElementById('cartBar').style.display = 'none';
+      toggleCartModal();
+    }
+  }
+
+  function updateQuantity(id, change) {
+    const item = cart.find(item => item._id === id);
+    if (item) {
+      item.quantity += change;
+      if (item.quantity <= 0) {
+        removeFromCart(id);
+      } else {
+        saveCart();
+      }
+    }
+  }
+
+  function updateCartDisplay() {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById('cartCount').textContent = totalItems;
+    document.getElementById('cartBar').style.display = cart.length > 0 ? 'block' : 'none';
+    
+    const cartItemsList = document.getElementById('cartItemsList');
+    if (cart.length === 0) {
+      cartItemsList.innerHTML = '<p class="cart-empty" style="text-align: center; padding: 30px;">Your cart is empty</p>';
+      document.getElementById('cartFooter').style.display = 'none';
+    } else {
+      cartItemsList.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+          <div class="cart-item-details">
+            <div class="cart-item-name">${escapeHtml(item.name)}</div>
+            <div>LE${item.price.toFixed(2)} each</div>
+          </div>
+          <div class="cart-item-qty">
+            <button onclick="updateQuantity('${item._id}', -1)">−</button>
+            <span style="padding: 0 10px; font-weight: 500;">${item.quantity}</span>
+            <button onclick="updateQuantity('${item._id}', 1)">+</button>
+          </div>
+          <button class="cart-remove-btn" onclick="removeFromCart('${item._id}')">Remove</button>
+        </div>
+      `).join('');
+      
+      const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      document.getElementById('cartTotalPrice').textContent = total.toFixed(2);
+      document.getElementById('cartFooter').style.display = 'flex';
+    }
+  }
+
+  function toggleCartModal() {
+    const modal = document.getElementById('cartModal');
+    modal.classList.toggle('open');
+  }
+
+  function checkout() {
+    if (cart.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+    saveCart();
+    window.location.href = 'checkout.html';
+  }
+
+  function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 2000;
+      animation: fadeOut 2s ease forwards;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 2000);
+  }
+
+  function renderFilters() {
+    const filtersEl = document.getElementById('filters');
+    filtersEl.innerHTML = '';
+    categories.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.textContent = cat;
+      btn.className = 'filter-btn';
+      if (cat === selectedCategory) btn.classList.add('active');
+      btn.onclick = () => {
+        selectedCategory = cat;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderProducts();
+        // Clear search input when changing category
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = '';
+      };
+      filtersEl.appendChild(btn);
+    });
+  }
+
+  // Search functionality
+  function filterBySearch() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const productsEl = document.getElementById('products');
+    
+    let filtered = products;
+    
+    // Apply category filter first
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchTerm) || 
+        (p.category && p.category.toLowerCase().includes(searchTerm)) ||
+        (p.brief && p.brief.toLowerCase().includes(searchTerm))
+      );
+    }
+    
+    if (!filtered.length) {
+      productsEl.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No products found matching your search.</p>';
+      return;
+    }
+    
+    productsEl.innerHTML = filtered.map(p => {
+      const imageUrl = p.image ? `${API_BASE}/uploads/${p.image}` : 'assets/no-background.png';
+      return `
+        <div class="card">
+          <img src="${imageUrl}" alt="${escapeHtml(p.name)}">
+          <div class="card-body">
+            <div class="category">${escapeHtml(p.category)}</div>
+            <h3>${escapeHtml(p.name)}</h3>
+            <div class="card-footer">
+              <span class="price">LE${p.price}</span>
+              <button class="add-btn" onclick="addToCart('${p._id}')">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderProducts() {
+    filterBySearch();
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  async function loadProducts() {
+    try {
+      const response = await fetch(`${API_BASE}/api/products`);
+      const result = await response.json();
+      if (response.ok && result.success) {
+        products = result.data || [];
+        categories = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
+        renderFilters();
+        renderProducts();
+      }
+    } catch (error) {
+      document.getElementById('products').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Failed to load products.</p>';
+    }
+  }
+
+  // Make functions global for inline onclick
+  window.addToCart = addToCart;
+  window.removeFromCart = removeFromCart;
+  window.updateQuantity = updateQuantity;
+  window.toggleCartModal = toggleCartModal;
+  window.checkout = checkout;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    loadProducts();
+    loadCart();
+    
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon && navLinks) {
+      menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+    }
+    
+    // Add search input event listener
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', filterBySearch);
+    }
+  });
+</script>
+
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

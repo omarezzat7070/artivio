@@ -1,0 +1,308 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed - Artivio</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="navbar.css">
+
+  <style>
+    :root {
+      --primary: #6C2929;
+      --dark: #3d1616;
+      --light-bg: #fdf6ee;
+      --green: #16a34a;
+      --orange: #f59e0b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--light-bg);
+      color: #333;
+    }
+
+    .success-container {
+      max-width: 800px;
+      margin: 60px auto;
+      text-align: center;
+      background: #fff;
+      border-radius: 16px;
+      padding: 50px 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: #dcfce7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+      color: var(--green);
+    }
+
+    .warning-icon {
+      width: 80px;
+      height: 80px;
+      background: #fef3c7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+      color: var(--orange);
+    }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .order-details {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .order-details p {
+      margin: 8px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-outline {
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      background: transparent;
+    }
+
+    .btn-warning {
+      background: var(--orange);
+      color: white;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo">
+      <img src="no background 1.png" alt="Artivio Logo">
+      <span class="artivio">Artivio</span>
+    </div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon">
+        <i data-lucide="menu"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="success-container" id="successContainer">
+  <div class="success-icon" id="statusIcon">✓</div>
+  <h1 id="statusTitle">Order Confirmed!</h1>
+  <p id="statusMessage">Thank you for your purchase. Your order has been received.</p>
+
+  <div class="order-details" id="orderDetails">
+    <p><strong>Order Number:</strong> <span id="orderNumber">Loading...</span></p>
+    <p><strong>Date:</strong> <span id="orderDate"></span></p>
+    <p><strong>Total Amount:</strong> <span id="orderTotal"></span></p>
+    <p><strong>Payment Method:</strong> <span id="paymentMethod"></span></p>
+  </div>
+
+  <div id="enrollmentStatus" style="margin: 20px 0;"></div>
+
+  <div>
+    <a href="my-purchases.html" class="btn btn-primary">Go to My Purchases</a>
+    <a href="product.html" class="btn btn-outline">Continue Shopping</a>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:7070';
+  let enrolledCourses = [];
+  let pendingCourses = [];
+
+  function getToken() {
+    try { return localStorage.getItem('token'); } catch(e) { return null; }
+  }
+
+  async function enrollInCourse(courseId) {
+    const token = getToken();
+    if (!token) return { success: false, error: 'Not logged in' };
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      const data = await res.json();
+      return { success: res.ok, message: data.error || data.message };
+    } catch (err) {
+      console.error('Enrollment error for course', courseId, err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  async function loadOrderAndEnroll() {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    const method = params.get('method') || 'card';
+    const statusDiv = document.getElementById('enrollmentStatus');
+    const paymentMethodSpan = document.getElementById('paymentMethod');
+
+    let paymentMethodText = 'Card';
+    if (method === 'instapay') paymentMethodText = 'InstaPay';
+    if (method === 'cash') paymentMethodText = 'Cash on Delivery';
+    paymentMethodSpan.textContent = paymentMethodText;
+
+    if (!sessionId) {
+      document.getElementById('orderNumber').textContent = 'Order placed successfully';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/payment/checkout-session?session_id=${sessionId}`);
+      const data = await res.json();
+
+      if (res.ok && data.order) {
+        document.getElementById('orderNumber').textContent = data.order._id.slice(-8).toUpperCase();
+        document.getElementById('orderDate').textContent = new Date(data.order.createdAt).toLocaleDateString();
+        document.getElementById('orderTotal').textContent = `LE ${data.order.amount?.toFixed(2) || '0.00'}`;
+        
+        // Extract course items from order
+        const courseItems = data.order.items.filter(item => item.itemType === 'Course' && item.item);
+        
+        if (courseItems.length > 0) {
+          statusDiv.innerHTML = '<div class="loading-spinner"></div> Enrolling you in your courses...';
+          
+          let successCount = 0;
+          let pendingCount = 0;
+          
+          for (const item of courseItems) {
+            const result = await enrollInCourse(item.item);
+            if (result.success) {
+              successCount++;
+              enrolledCourses.push(item.item);
+            } else {
+              pendingCount++;
+              pendingCourses.push({ id: item.item, name: item.name, error: result.message });
+            }
+          }
+          
+          if (successCount === courseItems.length) {
+            statusDiv.innerHTML = '<p class="status-badge status-success">✓ Successfully enrolled in all courses!</p>';
+            document.getElementById('statusIcon').className = 'success-icon';
+            document.getElementById('statusIcon').innerHTML = '✓';
+          } else if (successCount > 0) {
+            statusDiv.innerHTML = `
+              <p class="status-badge status-pending">⚠️ Enrolled in ${successCount} out of ${courseItems.length} courses.</p>
+              <p style="font-size: 13px; margin-top: 8px;">Pending courses: ${pendingCourses.map(c => c.name).join(', ')}</p>
+              <p style="font-size: 12px; color: #666; margin-top: 5px;">These courses are awaiting admin approval. You will get access once approved.</p>
+            `;
+            document.getElementById('statusIcon').className = 'warning-icon';
+            document.getElementById('statusIcon').innerHTML = '⚠️';
+            document.getElementById('statusTitle').textContent = 'Order Confirmed - Pending Access';
+            document.getElementById('statusMessage').textContent = 'Some courses are pending admin approval.';
+          } else {
+            statusDiv.innerHTML = `
+              <p class="status-badge status-pending">⚠️ Enrollment pending admin approval.</p>
+              <p style="font-size: 13px; margin-top: 8px;">Your courses will be available once approved by the admin.</p>
+              <p style="font-size: 12px; color: #666; margin-top: 5px;">You can check back later or contact support.</p>
+            `;
+            document.getElementById('statusIcon').className = 'warning-icon';
+            document.getElementById('statusIcon').innerHTML = '⚠️';
+            document.getElementById('statusTitle').textContent = 'Order Confirmed - Pending Approval';
+          }
+        } else {
+          statusDiv.innerHTML = '<p>Your order contains products only. No enrollment needed.</p>';
+        }
+        
+        localStorage.removeItem('cart');
+        localStorage.setItem('justPurchased', 'true');
+      } else {
+        document.getElementById('orderNumber').textContent = 'Order placed successfully';
+      }
+    } catch (err) {
+      console.error('Error loading order:', err);
+      document.getElementById('orderNumber').textContent = 'Order placed successfully';
+      document.getElementById('enrollmentStatus').innerHTML = '<p style="color: #f59e0b;">Order confirmed! You can view your purchases in "My Purchases".</p>';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    loadOrderAndEnroll();
+
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon && navLinks) {
+      menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+    }
+  });
+</script>
+
+<script src="navbar.js"></script>
+</body>
+</html>

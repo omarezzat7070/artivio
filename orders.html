@@ -1,0 +1,63 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>My Orders</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#fffbeb;padding:40px}
+    .card{max-width:900px;margin:30px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .order{border-bottom:1px solid #eee;padding:12px 0}
+    .order:last-child{border-bottom:none}
+    .meta{color:#666;font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>My Orders</h1>
+    <div id="orders">Loading orders...</div>
+  </div>
+
+  <script>
+    async function fetchOrders() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('orders').innerHTML = '<p>Please login to see your orders.</p>';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:7070/api/orders/my-orders', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('orders').innerHTML = `<p style="color:red">${data.error || 'Failed to load orders'}</p>`;
+          return;
+        }
+
+        const list = data.data || [];
+        if (list.length === 0) {
+          document.getElementById('orders').innerHTML = '<p>No orders yet.</p>';
+          return;
+        }
+
+        document.getElementById('orders').innerHTML = list.map(o => `
+          <div class="order">
+            <div><strong>Order ID:</strong> ${o._id}</div>
+            <div class="meta">Amount: LE${o.amount.toFixed(2)} • Status: ${o.paymentStatus} • Date: ${new Date(o.createdAt).toLocaleString()}</div>
+            <div style="margin-top:8px">Items:<ul>${o.items.map(it => `<li>${it.name} (${it.quantity}) - LE${it.price.toFixed(2)}</li>`).join('')}</ul></div>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('orders').innerHTML = '<p style="color:red">Network error</p>';
+      }
+    }
+
+    fetchOrders();
+  </script>
+</body>
+</html>
+
+
+

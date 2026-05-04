@@ -1,0 +1,706 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses Management | Artivio Admin</title>
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <script src="assets/lucide.min.js"></script>
+  <link rel="stylesheet" href="navbar.css">
+  
+  <style>
+    :root {
+      --primary: #6C2929;
+      --bg: #faf6f5;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 20px 0;
+    }
+
+    .header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .header-text h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .header-text p {
+      color: #ead9d4;
+      margin: 5px 0 0;
+      font-size: 14px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .btn-outline {
+      background: white;
+      color: var(--primary);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 20px;
+      background: white;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 15px 10px;
+      cursor: pointer;
+      color: #666;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .stat-card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .topbar {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .topbar input, .topbar select {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      flex: 1;
+      max-width: 200px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: #f5f5f5;
+      color: #6b7280;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-accepted { background: #d1fae5; color: #065f46; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-declined { background: #fee2e2; color: #991b1b; }
+
+    .action-btn {
+      padding: 5px 10px;
+      margin: 0 3px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-accept { background: #d1fae5; color: #065f46; }
+    .btn-decline { background: #fee2e2; color: #991b1b; }
+    .btn-edit { background: #dbeafe; color: #1e3a8a; }
+    .btn-delete { background: #fef3c7; color: #92400e; }
+
+    .preview-img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      color: var(--primary);
+      font-size: 22px;
+    }
+
+    .close-modal {
+      font-size: 28px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-modal:hover {
+      color: var(--primary);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .parts-list {
+      margin-top: 10px;
+    }
+
+    .part-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #f9f9f9;
+    }
+
+    .part-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .remove-part {
+      background: #fee2e2;
+      color: #991b1b;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo"><img src="no background 1.png" alt="Artivio Logo"><span class="artivio">Artivio</span></div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon"><i data-lucide="menu"></i></div>
+    </nav>
+  </div>
+</header>
+
+<div class="header">
+  <div class="container">
+    <div class="header-text"><h1>Courses Management</h1><p>Manage and moderate courses</p></div>
+    <a href="setting.html"><button class="btn btn-outline">Settings</button></a>
+  </div>
+</div>
+
+<div class="tabs">
+  <a href="admindashboard.html" class="tab">Overview</a>
+  <a href="admin-users.html" class="tab">Users</a>
+  <a href="admin-products.html" class="tab">Products</a>
+  <a href="admin-courses.html" class="tab active">Courses</a>
+  <a href="admin-orders.html" class="tab">Orders</a>
+  <a href="admin-analytics.html" class="tab">Analytics</a>
+  <a href="admin-settings.html" class="tab">Settings</a>
+</div>
+
+<div class="container">
+  <div class="grid">
+    <div class="stat-card"><h3>Total Courses</h3><div class="value" id="totalCourses">0</div></div>
+    <div class="stat-card"><h3>Active Courses</h3><div class="value" id="activeCourses">0</div></div>
+    <div class="stat-card"><h3>Pending Approval</h3><div class="value" id="pendingCourses">0</div></div>
+    <div class="stat-card"><h3>Total Students</h3><div class="value" id="totalStudents">0</div></div>
+  </div>
+
+  <div class="topbar">
+    <input type="text" id="searchInput" placeholder="Search courses...">
+    <select id="statusFilter">
+      <option value="">All Status</option>
+      <option value="accepted">Accepted</option>
+      <option value="pending">Pending</option>
+      <option value="declined">Declined</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Title</th>
+        <th>Artisan</th>
+        <th>Price</th>
+        <th>Students</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="coursesBody">
+      <tr><td colspan="7">Loading...<\/td><\/tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Edit Course Modal -->
+<div id="editCourseModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Course</h3>
+      <span class="close-modal" onclick="closeEditCourseModal()">&times;</span>
+    <div>
+    <form id="editCourseForm" enctype="multipart/form-data">
+      <input type="hidden" id="editCourseId">
+      <div class="form-group">
+        <label for="editCourseTitle">Course Title *</label>
+        <input type="text" id="editCourseTitle" required>
+      </div>
+      <div class="form-group">
+        <label for="editCourseCategory">Category</label>
+        <select id="editCourseCategory">
+          <option value="">Select Category</option>
+          <option value="Pottery">Pottery</option>
+          <option value="Jewelry">Jewelry</option>
+          <option value="Textiles">Textiles</option>
+          <option value="Woodwork">Woodwork</option>
+          <option value="Painting">Painting</option>
+          <option value="Crochet">Crochet</option>
+          <option value="Drawing">Drawing</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="editCourseDuration">Duration (hours) *</label>
+        <input type="number" id="editCourseDuration" step="0.5" required>
+      </div>
+      <div class="form-group">
+        <label for="editCourseDescription">Description *</label>
+        <textarea id="editCourseDescription" rows="4" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="editCoursePrice">Price (LE) *</label>
+        <input type="number" id="editCoursePrice" step="0.01" required>
+      </div>
+      <div class="form-group">
+        <label for="editCourseImage">New Image (optional)</label>
+        <input type="file" id="editCourseImage" accept="image/*">
+        <div class="preview-wrap">
+          <img id="editCoursePreview" style="max-width: 100px; margin-top: 10px; display: none;">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="section-label">Course Parts</div>
+        <div id="editPartsContainer" class="parts-list"></div>
+        <button type="button" class="btn btn-outline" style="margin-top: 10px;" onclick="addEditPart()">+ Add Part</button>
+      </div>
+      
+      <div class="modal-buttons">
+        <button type="button" class="btn btn-outline" onclick="closeEditCourseModal()">Cancel</button>
+        <button type="submit" class="btn" style="background: var(--primary); color: white;">Update Course</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:7070';
+  let allCourses = [];
+
+  function getToken() { try { return localStorage.getItem('token'); } catch(e) { return null; } }
+  
+  function authHeaders() { 
+    const token = getToken(); 
+    return token ? { 'Authorization': `Bearer ${token}` } : {}; 
+  }
+
+  function formatPrice(price) {
+    return `LE ${parseFloat(price).toFixed(2)}`;
+  }
+
+  let partsToRemove = [];
+
+  function addEditPart() {
+    const container = document.getElementById('editPartsContainer');
+    const partNum = container.children.length + 1;
+    const partHtml = `
+      <div class="part-card">
+        <div class="part-header">
+          <strong>New Part ${partNum}<\/strong>
+          <button type="button" class="remove-part" onclick="this.closest('.part-card').remove()">Remove<\/button>
+        <\/div>
+        <div class="form-group">
+          <label for="editPartTitle${partNum}">Part Title</label>
+          <input type="text" id="editPartTitle${partNum}" class="edit-part-title" placeholder="Part title" required>
+        <\/div>
+        <div class="form-group">
+          <label for="editPartDesc${partNum}">Description</label>
+          <textarea id="editPartDesc${partNum}" class="edit-part-description" rows="2" placeholder="Part description"></textarea>
+        <\/div>
+        <div class="form-group">
+          <label for="editPartDuration${partNum}">Duration (minutes)</label>
+          <input type="number" id="editPartDuration${partNum}" class="edit-part-duration" placeholder="Duration in minutes">
+        <\/div>
+        <div class="form-group">
+          <label for="editPartVideo${partNum}">Video File (optional)</label>
+          <input type="file" id="editPartVideo${partNum}" class="edit-part-video" accept="video/*">
+        <\/div>
+      <\/div>
+    `;
+    container.insertAdjacentHTML('beforeend', partHtml);
+  }
+
+  async function loadCourses() {
+    try {
+      const res = await fetch(`${API_BASE}/api/courses`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+      const data = await res.json();
+      if (data.success) {
+        allCourses = data.data || [];
+        renderCourses();
+        updateStats();
+      }
+    } catch (err) { console.error(err); }
+  }
+
+  function renderCourses() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    let filtered = allCourses.filter(c => {
+      const matchesSearch = c.title.toLowerCase().includes(searchTerm);
+      const matchesStatus = !statusFilter || c.moderationStatus === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    const tbody = document.getElementById('coursesBody');
+    if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="7">No courses found<\/td><\/tr>'; return; }
+    tbody.innerHTML = filtered.map(c => `
+      <tr>
+        <td>${c.image ? `<img src="${API_BASE}/uploads/${c.image}" class="preview-img">` : 'No image'}<\/td>
+        <td>${escapeHtml(c.title)}<\/td>
+        <td>${escapeHtml(c.artisan?.name || 'Unknown')}<\/td>
+        <td>${formatPrice(c.price)}<\/td>
+        <td>${c.students?.length || 0}<\/td>
+        <td><span class="badge badge-${c.moderationStatus || 'pending'}">${c.moderationStatus || 'Pending'}<\/span><\/td>
+        <td class="actions">
+          <button class="action-btn btn-edit" onclick="editCourse('${c._id}')">Edit<\/button>
+          ${c.moderationStatus !== 'accepted' ? `<button class="action-btn btn-accept" onclick="moderateCourse('${c._id}', 'accepted')">Accept<\/button>` : ''}
+          ${c.moderationStatus !== 'declined' ? `<button class="action-btn btn-decline" onclick="moderateCourse('${c._id}', 'declined')">Decline<\/button>` : ''}
+          <button class="action-btn btn-delete" onclick="deleteCourse('${c._id}')">Delete<\/button>
+        <\/td>
+      <\/tr>
+    `).join('');
+  }
+
+  function updateStats() {
+    const total = allCourses.length;
+    const active = allCourses.filter(c => c.moderationStatus === 'accepted').length;
+    const pending = allCourses.filter(c => c.moderationStatus === 'pending').length;
+    const totalStudents = allCourses.reduce((sum, c) => sum + (c.students?.length || 0), 0);
+    document.getElementById('totalCourses').textContent = total;
+    document.getElementById('activeCourses').textContent = active;
+    document.getElementById('pendingCourses').textContent = pending;
+    document.getElementById('totalStudents').textContent = totalStudents;
+  }
+
+  async function moderateCourse(id, status) {
+    try {
+      await fetch(`${API_BASE}/api/courses/admin/${id}/moderation`, {
+        method: 'PATCH', headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      loadCourses();
+    } catch (err) { alert('Failed to update course'); }
+  }
+
+  async function deleteCourse(id) {
+    if (!confirm('Delete this course? This will also delete all its parts.')) return;
+    try {
+      await fetch(`${API_BASE}/api/courses/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+      loadCourses();
+    } catch (err) { alert('Failed to delete'); }
+  }
+
+  async function editCourse(id) {
+    const course = allCourses.find(c => c._id === id);
+    if (!course) return;
+    
+    document.getElementById('editCourseId').value = course._id;
+    document.getElementById('editCourseTitle').value = course.title;
+    document.getElementById('editCourseCategory').value = course.category || '';
+    document.getElementById('editCourseDuration').value = course.duration;
+    document.getElementById('editCourseDescription').value = course.description;
+    document.getElementById('editCoursePrice').value = course.price;
+    
+    if (course.image) {
+      const preview = document.getElementById('editCoursePreview');
+      preview.src = `${API_BASE}/uploads/${course.image}`;
+      preview.style.display = 'block';
+    }
+    
+    // Load existing parts
+    const container = document.getElementById('editPartsContainer');
+    container.innerHTML = '';
+    const parts = course.parts || [];
+    parts.forEach((part, index) => {
+      const partHtml = `
+        <div class="part-card" data-part-id="${part._id || 'new'}">
+          <div class="part-header">
+            <strong>Part ${index + 1}: ${escapeHtml(part.title)}<\/strong>
+            <button type="button" class="remove-part" onclick="markPartForRemoval(this, '${part._id || ''}')">Remove<\/button>
+          <\/div>
+          <input type="hidden" class="part-id" value="${part._id || ''}">
+          <div class="form-group">
+            <label for="editPartTitle${index}">Part Title</label>
+            <input type="text" id="editPartTitle${index}" class="edit-part-title" value="${escapeHtml(part.title)}" required>
+          </div>
+          <div class="form-group">
+            <label for="editPartDesc${index}">Description</label>
+            <textarea id="editPartDesc${index}" class="edit-part-description" rows="2">${escapeHtml(part.description || '')}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="editPartDuration${index}">Duration (minutes)</label>
+            <input type="number" id="editPartDuration${index}" class="edit-part-duration" value="${part.duration || 0}">
+          </div>
+          <div class="form-group">
+            <label for="editPartVideo${index}">Video File (leave empty to keep existing)</label>
+            <input type="file" id="editPartVideo${index}" class="edit-part-video" accept="video/*">
+            ${part.video ? `<small>Current: ${part.video.substring(0, 30)}...<\/small>` : ''}
+          <\/div>
+        <\/div>
+      `;
+      container.insertAdjacentHTML('beforeend', partHtml);
+    });
+    
+    partsToRemove = [];
+    document.getElementById('editCourseModal').style.display = 'block';
+  }
+
+  function markPartForRemoval(button, partId) {
+    if (partId) {
+      partsToRemove.push(partId);
+    }
+    button.closest('.part-card').remove();
+  }
+
+  function closeEditCourseModal() {
+    document.getElementById('editCourseModal').style.display = 'none';
+    partsToRemove = [];
+  }
+
+  // Update Course
+  document.getElementById('editCourseForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const courseId = document.getElementById('editCourseId').value;
+    const formData = new FormData();
+    formData.append('title', document.getElementById('editCourseTitle').value);
+    formData.append('category', document.getElementById('editCourseCategory').value);
+    formData.append('duration', document.getElementById('editCourseDuration').value);
+    formData.append('description', document.getElementById('editCourseDescription').value);
+    formData.append('price', document.getElementById('editCoursePrice').value);
+    
+    const imageFile = document.getElementById('editCourseImage').files[0];
+    if (imageFile) formData.append('image', imageFile);
+    
+    // Collect parts data
+    const parts = [];
+    const partCards = document.querySelectorAll('#editPartsContainer .part-card');
+    partCards.forEach((card, index) => {
+      const partId = card.querySelector('.part-id')?.value;
+      const title = card.querySelector('.edit-part-title')?.value;
+      const description = card.querySelector('.edit-part-description')?.value;
+      const duration = card.querySelector('.edit-part-duration')?.value;
+      const videoFile = card.querySelector('.edit-part-video')?.files[0];
+      
+      if (title) {
+        parts.push({
+          id: partId || undefined,
+          partNumber: index + 1,
+          title: title,
+          description: description || '',
+          duration: duration || 0
+        });
+      }
+      
+      if (videoFile) {
+        formData.append('partVideo', videoFile);
+      }
+    });
+    
+    formData.append('parts', JSON.stringify(parts));
+    
+    if (partsToRemove.length > 0) {
+      formData.append('removeParts', JSON.stringify(partsToRemove));
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/courses/${courseId}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+        body: formData
+      });
+      if (res.ok) {
+        alert('Course updated successfully!');
+        closeEditCourseModal();
+        loadCourses();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Update failed');
+      }
+    } catch (err) {
+      alert('Network error: ' + err.message);
+    }
+  });
+
+  function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) lucide.createIcons();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role !== 'admin') { window.location.href = 'admin-login.html'; return; }
+    loadCourses();
+    document.getElementById('searchInput').addEventListener('input', renderCourses);
+    document.getElementById('statusFilter').addEventListener('change', renderCourses);
+    
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon && navLinks) menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+  });
+
+  window.moderateCourse = moderateCourse;
+  window.deleteCourse = deleteCourse;
+  window.editCourse = editCourse;
+  window.closeEditCourseModal = closeEditCourseModal;
+  window.addEditPart = addEditPart;
+  window.markPartForRemoval = markPartForRemoval;
+</script>
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

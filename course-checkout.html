@@ -1,0 +1,328 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Course Checkout</title>
+  <link rel="stylesheet" href="assets/fontawesome.css">
+  <link rel="stylesheet" href="home.css">
+  <style>
+    :root { --amber: #d97706; --amber-dark: #b45309; --bg: #fffbeb; --text: #78350f; }
+    body { background: var(--bg); margin: 0; padding: 0; }
+    .navbar { background: #fff; border-bottom: 1px solid #eee; }
+    .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+    .logo { font-size: 20px; font-weight: 600; color: #c55a11; }
+    .nav-links { list-style: none; display: flex; gap: 25px; }
+    .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+    .nav-links a:hover { color: #c55a11; }
+    .checkout-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+    @media(max-width: 768px) { .checkout-container { grid-template-columns: 1fr; } }
+    .checkout-card { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    h1 { color: var(--text); font-size: 28px; margin-top: 0; }
+    h2 { color: var(--text); font-size: 20px; }
+    .section-title { color: var(--text); font-size: 16px; font-weight: 600; margin: 0 0 15px 0; }
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+    label { color: #333; font-weight: 500; margin-bottom: 5px; font-size: 14px; }
+    input, textarea { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    input:focus, textarea:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.1); }
+    textarea { resize: vertical; min-height: 100px; font-family: inherit; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .btn { padding: 12px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: var(--amber); color: #fff; width: 100%; }
+    .btn-primary:hover { background: var(--amber-dark); }
+    .btn-secondary { background: #f0f0f0; color: #333; }
+    .btn-secondary:hover { background: #e0e0e0; }
+    .order-summary { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1); height: fit-content; }
+    .summary-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-label { color: #666; }
+    .summary-value { font-weight: 600; color: #333; }
+    .summary-total { display: flex; justify-content: space-between; padding: 15px 0; border-top: 2px solid #eee; margin-top: 10px; font-size: 18px; }
+    .summary-total .label { font-weight: 700; color: var(--text); }
+    .summary-total .value { font-weight: 700; color: var(--amber); }
+    .course-details { background: #fffbeb; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .course-title { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 8px 0; }
+    .course-desc { font-size: 14px; color: #666; margin: 0; }
+    .loading { text-align: center; padding: 20px; color: #666; }
+    .error { background: #fee; color: #c00; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .success-msg { background: #efe; color: #060; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+  </style>
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-content">
+      <a href="index.html" class="logo">🎨 Artisan Crafts</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="product.html">Products</a></li>
+          <li><a href="customercourses.html">Courses</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a id="loginLink" href="login.html"><i class="fa-regular fa-user"></i> Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="checkout-container">
+    <!-- Payment Form -->
+    <div class="checkout-card">
+      <h1>Checkout</h1>
+      <div id="errorMsg"></div>
+      
+      <div id="courseDetails" class="loading">Loading course details...</div>
+      
+      <form id="paymentForm" style="display:none;">
+        <h2 style="margin-top:30px">Billing Information</h2>
+        
+        <div class="form-group">
+          <label for="orderDescription">Course Notes / Requirements</label>
+          <textarea id="orderDescription" placeholder="Please describe any special requests or questions about this course..." maxlength="500"></textarea>
+          <span style="font-size: 12px; color: #999; margin-top: 5px;">Max 500 characters</span>
+        </div>
+        
+        <div class="form-group">
+          <label for="cardholderName">Cardholder Name</label>
+          <input type="text" id="cardholderName" placeholder="John Doe" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="expiry">Expiry Date</label>
+            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" required>
+          </div>
+          <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input type="text" id="cvv" placeholder="123" maxlength="4" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="billingAddress">Billing Address</label>
+          <input type="text" id="billingAddress" placeholder="123 Main St, City, State, ZIP" required>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="completePaymentBtn" style="margin-top:20px">Complete Payment</button>
+        <button type="button" class="btn btn-secondary" onclick="window.history.back()" style="margin-top:10px;width:100%">Cancel</button>
+      </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <h2>Order Summary</h2>
+      <div id="summaryContent" class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:7070';
+
+    function formatCurrency(n) {
+      return 'LE' + (n.toFixed(2));
+    }
+
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    async function loadCourse() {
+      const courseId = getQueryParam('id');
+      if (!courseId) {
+        showError('Missing course ID');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/courses/${courseId}`);
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          showError('Failed to load course');
+          return;
+        }
+
+        const course = result.data;
+        displayCourseDetails(course);
+        displayOrderSummary(course);
+        setupPaymentForm(course);
+      } catch (err) {
+        showError('Network error: ' + (err.message || 'Unknown error'));
+      }
+    }
+
+    function showError(msg) {
+      const errorDiv = document.getElementById('errorMsg');
+      errorDiv.className = 'error';
+      errorDiv.textContent = '❌ ' + msg;
+    }
+
+    function displayCourseDetails(course) {
+      const courseDetailsDiv = document.getElementById('courseDetails');
+      courseDetailsDiv.innerHTML = `
+        <div class="course-details">
+          <h3 class="course-title">${course.title}</h3>
+          <p class="course-desc">${course.description}</p>
+          <p style="margin: 8px 0 0 0; font-size: 14px; color: #999;">
+            <i class="fa-solid fa-clock"></i> ${course.duration} hours | 
+            <i class="fa-solid fa-book"></i> ${Array.isArray(course.parts) ? course.parts.length : 0} lessons
+          </p>
+        </div>
+      `;
+    }
+
+    function displayOrderSummary(course) {
+      const price = parseFloat(course.price) || 0;
+      const tax = price * 0.08; // 8% tax
+      const total = price + tax;
+
+      let html = `
+        <div class="summary-item">
+          <span class="summary-label">${course.title}</span>
+          <span class="summary-value">${formatCurrency(price)}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Quantity</span>
+          <span class="summary-value">1</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Tax (8%)</span>
+          <span class="summary-value">${formatCurrency(tax)}</span>
+        </div>
+        <div class="summary-total">
+          <span class="label">Total</span>
+          <span class="value">${formatCurrency(total)}</span>
+        </div>
+      `;
+      
+      document.getElementById('summaryContent').innerHTML = html;
+    }
+
+    function setupPaymentForm(course) {
+      document.getElementById('paymentForm').style.display = 'block';
+      document.getElementById('courseDetails').classList.remove('loading');
+      document.getElementById('summaryContent').classList.remove('loading');
+
+      document.getElementById('completePaymentBtn').onclick = () => completePayment(course._id, course.title, course.price);
+    }
+
+    // Format card number with spaces
+    document.addEventListener('DOMContentLoaded', () => {
+      const cardNumberInput = document.getElementById('cardNumber');
+      if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', (e) => {
+          let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/g, '');
+          let formatted = value.replace(/(\d{4})/g, '$1 ').trim();
+          e.target.value = formatted;
+        });
+      }
+
+      const expiryInput = document.getElementById('expiry');
+      if (expiryInput) {
+        expiryInput.addEventListener('input', (e) => {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+          }
+          e.target.value = value;
+        });
+      }
+
+      loadCourse();
+    });
+
+    async function completePayment(courseId, courseTitle, price) {
+      // Validate form
+      const cardNumber = document.getElementById('cardNumber').value.replace(/\s+/g, '');
+      const cardholderName = document.getElementById('cardholderName').value.trim();
+      const expiry = document.getElementById('expiry').value.trim();
+      const cvv = document.getElementById('cvv').value.trim();
+      const billingAddress = document.getElementById('billingAddress').value.trim();
+
+      if (!cardholderName || !cardNumber || !expiry || !cvv || !billingAddress) {
+        showError('Please fill in all fields');
+        return;
+      }
+
+      if (cardNumber.length < 12) {
+        showError('Please enter a valid card number');
+        return;
+      }
+
+      if (cvv.length < 3) {
+        showError('Please enter a valid CVV');
+        return;
+      }
+
+      // Show loading
+      const btn = document.getElementById('completePaymentBtn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Processing...';
+      btn.disabled = true;
+
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const token = localStorage.getItem('token');
+        const orderDescription = document.getElementById('orderDescription').value.trim();
+
+        const items = [{
+          id: courseId,
+          type: 'Course',
+          name: courseTitle,
+          price: parseFloat(price) || 0,
+          quantity: 1,
+          description: orderDescription
+        }];
+
+        const payment = {
+          cardNumber: cardNumber,
+          name: cardholderName,
+          expiry: expiry,
+          cvv: cvv,
+          billingAddress: billingAddress
+        };
+
+        const res = await fetch(`${API_BASE}/api/payment/create-checkout-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify({
+            items,
+            successUrl: window.location.origin + '/checkout-success.html',
+            cancelUrl: window.location.origin + '/checkout-cancel.html',
+            payment
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.url) {
+          // Redirect to success page
+          window.location.href = data.url;
+        } else {
+          showError('Payment failed: ' + (data.error || data.message || 'Unknown error'));
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        showError('Network error: ' + (err.message || 'Unknown error'));
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+  </script>
+  <script src="navbar.js"></script>
+</body>
+</html>
+
+
+
+

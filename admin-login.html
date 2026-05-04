@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login | Artisan Crafts</title>
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <style>
+    /* Same CSS as signup page – unchanged */
+    :root { --primary: #6C2929; --dark: #3d1616; --light-bg: #fdf6ee; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+    body { background: var(--light-bg); color: #333; }
+    .navbar { background: #fff; border-bottom: 1px solid #eee; }
+    .container { width: 90%; max-width: 1200px; margin: auto; }
+    .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; color: var(--dark); }
+    .nav-logo img { height: 40px; width: auto; }
+    .nav-logo .artivio { font-family: 'Dancing Script', cursive; font-size: 22px; color: var(--dark); }
+    .nav-links { list-style: none; display: flex; gap: 25px; }
+    .nav-links a { text-decoration: none; color: #333; font-weight: 500; }
+    .login-section { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 80px); padding: 40px 0; }
+    .login-container { background: #fff; width: 100%; max-width: 430px; padding: 35px; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; }
+    .login-container h1 { color: #8b4000; margin-bottom: 8px; }
+    .subtitle { color: #666; margin-bottom: 25px; font-size: 14px; }
+    .login-form { text-align: left; }
+    .login-form label { font-size: 14px; font-weight: 600; margin-bottom: 5px; display: block; }
+    .input-box { display: flex; align-items: center; background: #f4f4f4; padding: 12px; border-radius: 8px; margin-bottom: 18px; }
+    .input-box i { margin-right: 10px; color: #999; }
+    .input-box input { border: none; background: transparent; outline: none; width: 100%; }
+    .login-btn { width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .login-btn:hover { background: var(--primary); }
+    .signup-text { text-align: center; margin-top: 18px; font-size: 14px; }
+    .signup-text a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    @media (max-width: 480px) { .login-container { margin: 0 15px; padding: 25px; } .nav-links { display: none; } }
+    .nav-links { display: flex; align-items: center; gap: 25px; flex-wrap: nowrap; }
+    .nav-links a { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .error-message { color: #d9534f; font-size: 13px; margin-top: -10px; margin-bottom: 10px; text-align: center; }
+  </style>
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo"><img src="no background 1.png" alt="Artivio Logo"><span class="artivio">Artivio</span></div>
+    <nav><ul class="nav-links"><li><a href="index.html">Home</a></li><li><a href="product.html">Products</a></li><li><a href="course.html">Courses</a></li><li><a href="about.html">About</a></li><li><a id="loginLink" href="login.html">Login</a></li></ul></nav>
+  </div>
+</header>
+<section class="login-section">
+  <div class="login-container">
+    <h1>Admin Login</h1>
+    <p class="subtitle">Sign in to access the admin panel</p>
+    <form class="login-form" id="adminLoginForm">
+      <label for="email">Email</label>
+      <div class="input-box"><i class="fa-regular fa-envelope"></i><input type="email" id="email" name="email" autocomplete="email" placeholder="admin@example.com" required></div>
+      <label for="password">Password</label>
+      <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required></div>
+      <div id="formError" class="error-message" style="display: none;"></div>
+      <button type="submit" class="login-btn" id="loginBtn">Login as Admin</button>
+      <p class="signup-text">No admin account? <a href="admin-signup.html">Register as Admin</a></p>
+    </form>
+  </div>
+</section>
+<script>
+document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errorDiv = document.getElementById('formError');
+  errorDiv.style.display = 'none';
+  errorDiv.textContent = '';
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    errorDiv.textContent = 'Please enter both email and password';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  const loginBtn = document.getElementById('loginBtn');
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Logging in...';
+
+  try {
+    const response = await fetch('/api/users/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
+    if (response.ok && data.success) {
+      if (!data.user || data.user.role !== 'admin') {
+        errorDiv.textContent = 'This account is not an admin account';
+        errorDiv.style.display = 'block';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login as Admin';
+        return;
+      }
+      // Store token and redirect to actual admin dashboard page
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      window.location.href = 'admindashboard.html';
+    } else {
+      errorDiv.textContent = data.error || 'Invalid credentials or you are not an admin';
+      errorDiv.style.display = 'block';
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Login as Admin';
+    }
+  } catch (err) {
+    console.error(err);
+    errorDiv.textContent = 'Network error. Make sure the backend is running on port 7070 and you are using http://localhost:7070/admin-login.html';
+    errorDiv.style.display = 'block';
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Login as Admin';
+  }
+});
+</script>
+  <script src="navbar.js"></script>
+</body>
+</html>
+
+
+

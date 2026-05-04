@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Course Contents</title>
+<link rel="stylesheet" href="assets/fontawesome.css">
+<style>
+:root{--amber:#d97706;--bg:#fffbeb;--text:#78350f}
+body{font-family:Arial;background:var(--bg);margin:0;padding:20px}
+.container{max-width:1000px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.part{border:1px solid #fde68a;padding:12px;border-radius:8px;margin-bottom:12px;background:#fff7ed}
+.part h3{margin:0 0 8px}
+.media{margin-top:8px}
+.lock{color:#c0392b;font-weight:700}
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <p id="loading">Loading...</p>
+</div>
+<script>
+const API_BASE = 'http://localhost:7070';
+function getQueryParam(name){const url=new URL(window.location.href);return url.searchParams.get(name)}
+async function loadContents(){
+  const id = getQueryParam('id');
+  if(!id){document.getElementById('container').innerHTML='<p>Missing course id</p>';return}
+
+  try{
+    const res = await fetch(`${API_BASE}/api/courses/${id}`);
+    const result = await res.json();
+    if(!res.ok||!result.success){document.getElementById('container').innerHTML='<p>Failed to load course</p>';return}
+
+    const course = result.data;
+    const user = JSON.parse(localStorage.getItem('user')||'{}');
+
+    // Determine access by asking the server whether the user purchased this course.
+    // This works even if the server enrolls students via order processing instead of
+    // adding them to the `students` array immediately.
+    let hasAccess = false;
+    try {
+      const token = localStorage.getItem('token');
+      const purchasedRes = await fetch(`${API_BASE}/api/courses/${id}/purchased`, {
+        headers: {
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+        }
+      });
+      const purchasedJson = await purchasedRes.json();
+      hasAccess = purchasedRes.ok && purchasedJson.purchased;
+    } catch (err) {
+      console.error('Error checking purchase status', err);
+    }
+
+    if (!hasAccess) {
+      // show locked view with enroll CTA
+      document.getElementById('container').innerHTML = `
+        <h1>${course.title}</h1>
+        <p style="color:#666">You are not enrolled in this course.</p>
+        <button class="enroll" id="enrollBtn">Enroll to access contents</button>
+        <a href="customercourses.html" style="margin-left:12px;">Back to courses</a>
+      `;
+      document.getElementById('enrollBtn').onclick = () => enrollAndReload(course._id);
+      return;
+    }
+
+    // render full parts
+    const container = document.getElementById('container');
+    container.innerHTML = `<h1>${course.title}</h1><p style="color:#666">${course.description||''}</p><div id="parts"></div>`;
+    const partsEl = document.getElementById('parts');
+
+    if(Array.isArray(course.parts) && course.parts.length){
+      course.parts.forEach((p, idx)=>{
+        const d = document.createElement('div');
+        d.className = 'part';
+        d.innerHTML = `<h3>${idx+1}. ${p.title}</h3><p style="color:#444">${p.description||''}</p><small style="color:#666">Duration: ${p.duration||0} hrs</small>`;
+
+        const media = document.createElement('div');
+        media.className = 'media';
+        if(p.video){
+          const vid = document.createElement('video');
+          vid.src = `${API_BASE}/uploads/${p.video}`;
+          vid.controls = true;
+          vid.style.maxWidth = '640px';
+          vid.style.display = 'block';
+          vid.style.marginTop = '8px';
+          media.appendChild(vid);
+        }
+
+        d.appendChild(media);
+        partsEl.appendChild(d);
+      });
+    } else {
+      partsEl.innerHTML = '<p style="color:#666">No parts available.</p>';
+    }
+
+  }catch(err){document.getElementById('container').innerHTML='<p>Network error</p>'}
+}
+
+async function enrollAndReload(courseId){
+  const user = JSON.parse(localStorage.getItem('user')||'{}');
+  if(!user.id){alert('Please login to enroll');window.location.href = 'login.html?redirect=course-contents.html?id='+courseId;return}
+  try{
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE}/api/courses/${courseId}/enroll`,{method:'POST',headers:{'Content-Type':'application/json',...(token?{'Authorization':'Bearer '+token}:{})}});
+    const data = await res.json();
+    if(res.ok&&data.success){loadContents();}else{alert('Failed to enroll: '+(data.error||JSON.stringify(data)))}
+  }catch(err){alert('Network error')}
+}
+
+loadContents();
+</script>
+</body>
+</html>
+
+
+
+

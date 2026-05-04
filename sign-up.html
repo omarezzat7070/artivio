@@ -1,0 +1,726 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Artivio · Create Account</title>
+
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <script src="assets/lucide.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #fdf6ee;
+      color: #333;
+    }
+
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .nav-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #3d1616;
+    }
+
+    .nav-logo img {
+      height: 40px;
+      width: auto;
+    }
+
+    .nav-logo .artivio {
+      font-family: 'Dancing Script', cursive;
+      font-size: 22px;
+      color: #3d1616;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      flex-wrap: nowrap;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .signup-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 80px);
+      padding: 40px 0;
+    }
+
+    .signup-container {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      padding: 35px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .signup-container h1 {
+      color: #6C2929;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .role-toggle {
+      display: flex;
+      background: #f1f1f1;
+      border-radius: 30px;
+      margin-bottom: 25px;
+      padding: 4px;
+    }
+
+    .role-toggle button {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      background: transparent;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .role-toggle .active {
+      background: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    .signup-form {
+      text-align: left;
+    }
+
+    .signup-form label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .input-box {
+      display: flex;
+      align-items: center;
+      background: #f4f4f4;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+
+    .input-box i {
+      margin-right: 10px;
+      color: #999;
+    }
+
+    .input-box input,
+    .input-box select {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+    }
+
+    /* Password requirements styling */
+    .password-requirements {
+      background: #faf6f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-top: -10px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      border-left: 3px solid #6C2929;
+    }
+
+    .requirement-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      color: #555;
+      transition: color 0.2s;
+    }
+
+    .requirement-item i {
+      width: 16px;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .requirement-item.valid {
+      color: #2b7a4b;
+    }
+
+    .requirement-item.valid i {
+      color: #2b7a4b;
+    }
+
+    .signup-btn {
+      width: 100%;
+      background: #6C2929;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.15s;
+    }
+
+    .signup-btn:hover {
+      background: #3d1616;
+    }
+
+    .signup-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .login-text {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+
+    .login-text a {
+      color: #6C2929;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    #signupMessage {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .signup-container {
+        margin: 0 15px;
+        padding: 25px;
+      }
+    }
+    .terms-box {
+      margin: 10px 0 20px;
+      text-align: left;
+    }
+
+    .terms-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    .terms-label input {
+      margin-top: 3px;
+      accent-color: #6C2929;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .terms-label a {
+      color: #6C2929;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .terms-label a:hover {
+      text-decoration: underline;
+    }
+
+    /* Error state for terms checkbox */
+    .terms-box.error .terms-label {
+      color: #d32f2f;
+    }
+    
+    .terms-box.error input {
+      outline: 2px solid #d32f2f;
+      border-radius: 3px;
+    }
+
+    .icon-sm {
+      width: 18px;
+      height: 18px;
+    }
+  </style>
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo">
+      <a href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
+      <span class="artivio">Artivio</span>
+    </div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon">
+        <i data-lucide="menu"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section class="signup-section">
+  <div class="signup-container">
+    <h1>Create Account</h1>
+    <p class="subtitle">Join our community of artisans and craft lovers</p>
+
+    <div class="role-toggle">
+      <button type="button" class="active" id="customerBtn">Customer</button>
+      <button type="button" id="artisanBtn">Artisan</button>
+    </div>
+
+    <form class="signup-form" id="signupForm">
+      <label for="name">Full Name</label>
+      <div class="input-box">
+        <i class="fa-regular fa-user"></i>
+        <input type="text" id="name" name="name" autocomplete="name" placeholder="John Doe" required>
+      </div>
+
+      <label for="email">Email</label>
+      <div class="input-box">
+        <i class="fa-regular fa-envelope"></i>
+        <input type="email" id="email" name="email" autocomplete="email" placeholder="your@email.com" required>
+      </div>
+
+      <label for="password">Password</label>
+      <div class="input-box">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="••••••••" required>
+      </div>
+
+      <!-- Password requirements visual feedback -->
+      <div class="password-requirements" id="passwordRequirements">
+        <div class="requirement-item" id="req-length">
+          <i class="fa-regular fa-circle"></i> 8–64 characters
+        </div>
+        <div class="requirement-item" id="req-uppercase">
+          <i class="fa-regular fa-circle"></i> At least one uppercase letter (A–Z)
+        </div>
+        <div class="requirement-item" id="req-lowercase">
+          <i class="fa-regular fa-circle"></i> At least one lowercase letter (a–z)
+        </div>
+        <div class="requirement-item" id="req-number">
+          <i class="fa-regular fa-circle"></i> At least one number (0–9)
+        </div>
+        <div class="requirement-item" id="req-special">
+          <i class="fa-regular fa-circle"></i> One special character (! @ # $ % ^ & * _ -)
+        </div>
+      </div>
+
+      <label for="confirmPassword">Confirm Password</label>
+      <div class="input-box">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••" required>
+      </div>
+      
+      <label for="phone">Phone Number</label>
+      <div class="input-box">
+        <i class="fa-solid fa-phone"></i>
+        <input 
+          type="tel" 
+          id="phone" 
+          name="phone" 
+          autocomplete="tel"
+          placeholder="+20 100 123 4567 or 01001234567" 
+          required>
+      </div>
+
+      <label for="gender">Gender</label>
+<div class="input-box">
+  <i class="fa-solid fa-venus-mars"></i>
+  <select id="gender" name="gender" autocomplete="sex" required style="border:none; background:transparent; width:100%; outline:none;">
+    <option value="">Select Gender</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+</div>
+      
+      <!-- TERMS & CONDITIONS CHECKBOX - REQUIRED -->
+      <div class="terms-box" id="termsBox">
+        <label class="terms-label">
+          <input type="checkbox" id="termsCheck">
+          <span>
+            I have read and agree to the 
+            <a href="terms.html" target="_blank">Terms & Conditions</a>
+          </span>
+        </label>
+      </div>
+      
+      <input type="hidden" name="role" id="roleField" value="customer">
+      
+      <button type="submit" class="signup-btn" id="signupBtn">
+        Create Customer Account
+      </button>
+
+      <p class="login-text" id="signupMessage" role="status" aria-live="polite"></p>
+
+      <p class="login-text">
+        Already have an account?
+        <a href="login.html">Sign in</a>
+      </p>
+    </form>
+  </div>
+</section>
+
+<script>
+  // ----------------------------------------------
+  // 1) PASSWORD VALIDATION + REAL-TIME FEEDBACK
+  // ----------------------------------------------
+  const passwordInput = document.getElementById("password");
+  const reqLength = document.getElementById("req-length");
+  const reqUppercase = document.getElementById("req-uppercase");
+  const reqLowercase = document.getElementById("req-lowercase");
+  const reqNumber = document.getElementById("req-number");
+  const reqSpecial = document.getElementById("req-special");
+
+  function validatePassword(password) {
+    // length check: 8-64 characters
+    const hasLength = password.length >= 8 && password.length <= 64;
+    // character class checks
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*_-]/.test(password);
+
+    // apply valid class to each requirement item
+    const applyToggle = (element, condition) => {
+      if (condition) {
+        element.classList.add("valid");
+        const icon = element.querySelector("i");
+        if (icon) icon.className = "fa-regular fa-check-circle";
+      } else {
+        element.classList.remove("valid");
+        const icon = element.querySelector("i");
+        if (icon) icon.className = "fa-regular fa-circle";
+      }
+    };
+    
+    applyToggle(reqLength, hasLength);
+    applyToggle(reqUppercase, hasUppercase);
+    applyToggle(reqLowercase, hasLowercase);
+    applyToggle(reqNumber, hasNumber);
+    applyToggle(reqSpecial, hasSpecial);
+
+    // return overall validity
+    return hasLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
+  }
+
+  // realtime feedback when user types in password field
+  if (passwordInput) {
+    passwordInput.addEventListener("input", (e) => {
+      validatePassword(e.target.value);
+    });
+    // initial call to set default icons (empty password → invalid)
+    validatePassword("");
+  }
+
+  // ----------------------------------------------
+  // 2) PHONE NUMBER FORMATTING
+  // ----------------------------------------------
+  function formatPhoneNumber(phone) {
+    let cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('0')) {
+      cleaned = '20' + cleaned.substring(1);
+    }
+    if (cleaned.startsWith('20') && !cleaned.startsWith('+')) {
+      cleaned = '+' + cleaned;
+    }
+    if (!cleaned.startsWith('+20')) {
+      cleaned = cleaned.replace(/^\+/, '');
+      cleaned = '+20' + cleaned;
+    }
+    cleaned = cleaned.replace(/\+{2,}/g, '+');
+    let digits = cleaned.replace(/\D/g, '');
+    if (digits.length > 12) {
+      digits = digits.substring(0, 12);
+    }
+    return '+' + digits;
+  }
+
+  // ----------------------------------------------
+  // 3) ROLE TOGGLE & DYNAMIC BUTTON TEXT
+  // ----------------------------------------------
+  const customerBtn = document.getElementById("customerBtn");
+  const artisanBtn = document.getElementById("artisanBtn");
+  const signupBtn = document.getElementById("signupBtn");
+  const roleField = document.getElementById("roleField");
+  const signupForm = document.getElementById("signupForm");
+  const signupMessage = document.getElementById("signupMessage");
+  let selectedRole = "customer";
+
+  if (customerBtn && artisanBtn) {
+    customerBtn.addEventListener("click", () => {
+      customerBtn.classList.add("active");
+      artisanBtn.classList.remove("active");
+      signupBtn.textContent = "Create Customer Account";
+      roleField.value = "customer";
+      selectedRole = "customer";
+      if (signupMessage) signupMessage.textContent = "";
+      const termsBox = document.getElementById("termsBox");
+      if (termsBox) termsBox.classList.remove("error");
+    });
+
+    artisanBtn.addEventListener("click", () => {
+      artisanBtn.classList.add("active");
+      customerBtn.classList.remove("active");
+      signupBtn.textContent = "Create Artisan Account";
+      roleField.value = "artisan";
+      selectedRole = "artisan";
+      if (signupMessage) signupMessage.textContent = "";
+      const termsBox = document.getElementById("termsBox");
+      if (termsBox) termsBox.classList.remove("error");
+    });
+  }
+
+  // ----------------------------------------------
+  // 4) TERMS & CONDITIONS VALIDATION HELPER
+  // ----------------------------------------------
+  const termsCheckbox = document.getElementById("termsCheck");
+  const termsBox = document.getElementById("termsBox");
+  
+  function isTermsAccepted() {
+    return termsCheckbox && termsCheckbox.checked;
+  }
+  
+  // Remove error styling when user checks the box
+  if (termsCheckbox) {
+    termsCheckbox.addEventListener("change", function() {
+      if (this.checked && termsBox) {
+        termsBox.classList.remove("error");
+        if (signupMessage && signupMessage.textContent.includes("agree to the Terms")) {
+          signupMessage.textContent = "";
+        }
+      }
+    });
+  }
+
+  // ----------------------------------------------
+  // 5) FORM SUBMIT: PASSWORD, CONFIRM, PHONE, TERMS, AND API
+  // ----------------------------------------------
+  if (signupForm) {
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // ----- TERMS & CONDITIONS VALIDATION (REQUIRED) -----
+      if (!isTermsAccepted()) {
+        if (termsBox) termsBox.classList.add("error");
+        signupMessage.textContent = "You must agree to the Terms & Conditions to create an account.";
+        signupMessage.style.color = "#d32f2f";
+        termsBox.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      } else {
+        if (termsBox) termsBox.classList.remove("error");
+      }
+
+      // ----- PASSWORD VALIDATION -----
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      const isPasswordValid = validatePassword(password);
+      
+      if (!isPasswordValid) {
+        signupMessage.textContent = "Password does not meet all requirements (8-64 chars, uppercase, lowercase, number, special character).";
+        signupMessage.style.color = "red";
+        document.getElementById("passwordRequirements").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        signupMessage.textContent = "Passwords do not match.";
+        signupMessage.style.color = "red";
+        return;
+      }
+
+      if (password.length > 64) {
+        signupMessage.textContent = "Password must not exceed 64 characters.";
+        signupMessage.style.color = "red";
+        return;
+      }
+
+      // Phone validation & formatting
+      let phoneInput = document.getElementById('phone').value;
+      if (!phoneInput.trim()) {
+        signupMessage.textContent = "Phone number is required.";
+        signupMessage.style.color = "red";
+        return;
+      }
+      const formattedPhone = formatPhoneNumber(phoneInput);
+      document.getElementById('phone').value = formattedPhone;
+      
+      const phoneDigits = formattedPhone.replace(/\D/g, '');
+      if (phoneDigits.length < 11 || phoneDigits.length > 13) {
+        signupMessage.textContent = "Please provide a valid Egyptian phone number (e.g., 01001234567 or +201001234567).";
+        signupMessage.style.color = "red";
+        return;
+      }
+
+      // Gather form data - INCLUDING termsAccepted
+      const formData = new FormData(signupForm);
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        password: password,
+        phone: formattedPhone,
+        gender: formData.get('gender'),
+        role: selectedRole,
+        termsAccepted: true  // <-- THIS SAVES THE TERMS ACCEPTANCE TO DATABASE
+      };
+
+      // Email validation
+      const email = data.email;
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        signupMessage.textContent = "Please enter a valid email address.";
+        signupMessage.style.color = "red";
+        return;
+      }
+      
+      // Name validation
+      if (!data.name || data.name.trim().length < 2) {
+        signupMessage.textContent = "Full name is required (at least 2 characters).";
+        signupMessage.style.color = "red";
+        return;
+      }
+
+      // Gender validation
+      if (!data.gender) {
+        signupMessage.textContent = "Please select your gender.";
+        signupMessage.style.color = "red";
+        return;
+      }
+
+      // Disable button during request
+      signupBtn.disabled = true;
+      const originalBtnText = signupBtn.textContent;
+      signupBtn.textContent = "Creating Account...";
+      signupMessage.textContent = "";
+      signupMessage.style.color = "";
+
+      try {
+        const response = await fetch('http://localhost:7070/api/users/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          signupMessage.textContent = "Account created successfully! Redirecting...";
+          signupMessage.style.color = "green";
+
+          if (result.token) localStorage.setItem('token', result.token);
+          if (result.user) localStorage.setItem('user', JSON.stringify(result.user));
+
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 2000);
+        } else {
+          const errorMsg = result.error || result.message || "Registration failed. Please try again.";
+          signupMessage.textContent = errorMsg;
+          signupMessage.style.color = "red";
+        }
+      } catch (error) {
+        console.error("Registration network error:", error);
+        signupMessage.textContent = "Network error. Could not connect to server. Please verify backend is running on http://localhost:7070";
+        signupMessage.style.color = "red";
+      } finally {
+        signupBtn.disabled = false;
+        signupBtn.textContent = originalBtnText;
+      }
+    });
+  }
+
+  // Confirm password real-time visual hint
+  const confirmInput = document.getElementById("confirmPassword");
+  if (confirmInput && passwordInput) {
+    const checkMatch = () => {
+      const pwd = passwordInput.value;
+      const confirm = confirmInput.value;
+      if (confirm.length > 0 && pwd !== confirm) {
+        confirmInput.style.border = "1px solid #e07c7c";
+        confirmInput.style.backgroundColor = "#fff5f5";
+      } else if (confirm.length > 0 && pwd === confirm) {
+        confirmInput.style.border = "1px solid #c8e6d9";
+        confirmInput.style.backgroundColor = "#f4f9f6";
+      } else {
+        confirmInput.style.border = "none";
+        confirmInput.style.backgroundColor = "#f4f4f4";
+      }
+    };
+    passwordInput.addEventListener("input", checkMatch);
+    confirmInput.addEventListener("input", checkMatch);
+    checkMatch();
+  }
+
+  // Initialize password validation state & lucide icons
+  window.addEventListener("DOMContentLoaded", () => {
+    if (passwordInput) validatePassword(passwordInput.value);
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  });
+</script>
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

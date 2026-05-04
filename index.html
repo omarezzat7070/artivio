@@ -1,0 +1,920 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Artivio – Handmade Treasures</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <script src="assets/lucide.min.js"></script>
+  <link rel="stylesheet" href="navbar.css">
+
+  <style>
+    :root {
+      --primary: #6C2929;
+      --dark: #3d1616;
+      --light-bg: #fdf6ee;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--light-bg);
+      color: #333;
+    }
+
+    .hero {
+  height: 85vh;
+  background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('pottery.jpeg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+    .hero-content {
+      text-align: center;
+      color: #fff;
+      max-width: 800px;
+    }
+
+    .hero-content h1 {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .hero-content p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 14px 26px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: #5a2222;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline:hover {
+      background: #f5f5f5;
+      transform: translateY(-2px);
+    }
+
+    .why {
+      padding: 70px 0;
+    }
+
+    .why h2 {
+      text-align: center;
+      font-size: 32px;
+      color: var(--dark);
+      margin-bottom: 50px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 30px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 30px;
+      text-align: center;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .icon {
+      width: 60px;
+      height: 60px;
+      background: #ead9d4;
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 20px;
+    }
+
+    .products {
+      padding: 80px 5%;
+      text-align: center;
+    }
+
+    .section-title {
+      font-size: 32px;
+      color: var(--dark);
+      margin-bottom: 20px;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .loading-message {
+      grid-column: 1 / -1;
+      padding: 40px;
+      text-align: center;
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    .product-card {
+      border-radius: 12px;
+      overflow: hidden;
+      transition: 0.3s;
+      background: white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .product-img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+    }
+
+    .product-info {
+      padding: 15px;
+    }
+
+    .product-info h3 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+    }
+
+    .price {
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .sales-badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-top: 8px;
+    }
+
+    .cta-section {
+      background: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 70px 20px;
+    }
+
+    .btn-view-all {
+      background: var(--primary);
+      color: white;
+      padding: 14px 35px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-light {
+      background: white;
+      color: var(--dark);
+      padding: 14px 35px;
+      border-radius: 8px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .hero-content h1 {
+        font-size: 32px;
+      }
+      .product-img {
+        height: 200px;
+      }
+    }
+    /* =========================
+   RESPONSIVE CSS
+   Add at end of your style
+========================= */
+
+/* Large tablets */
+@media (max-width: 992px) {
+
+  .hero {
+    height: 75vh;
+    padding: 20px;
+  }
+
+  .hero-content {
+    max-width: 90%;
+  }
+
+  .hero-content h1 {
+    font-size: 40px;
+  }
+
+  .hero-content p {
+    font-size: 17px;
+  }
+
+  .section-title,
+  .why h2 {
+    font-size: 28px;
+  }
+
+  .products {
+    padding: 60px 20px;
+  }
+}
+
+/* Tablets + Mobiles */
+@media (max-width: 768px) {
+
+  .hero {
+    height: auto;
+    min-height: 100vh;
+    padding: 100px 20px 60px;
+  }
+
+  .hero-content h1 {
+    font-size: 32px;
+    line-height: 1.3;
+  }
+
+  .hero-content p {
+    font-size: 16px;
+    margin-bottom: 25px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-outline,
+  .btn-view-all,
+  .btn-light {
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
+  }
+
+  .why {
+    padding: 50px 20px;
+  }
+
+  .why h2,
+  .section-title {
+    font-size: 26px;
+    margin-bottom: 30px;
+  }
+
+  .cards,
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .card {
+    padding: 25px 20px;
+  }
+
+  .product-img {
+    height: 220px;
+  }
+
+  .product-info h3 {
+    font-size: 18px;
+  }
+
+  .cta-section {
+    padding: 50px 20px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+
+  .hero-content h1 {
+    font-size: 26px;
+  }
+
+  .hero-content p {
+    font-size: 15px;
+  }
+
+  .why h2,
+  .section-title {
+    font-size: 22px;
+  }
+
+  .product-img {
+    height: 190px;
+  }
+
+  .product-info {
+    padding: 12px;
+  }
+
+  .price {
+    font-size: 1rem;
+  }
+
+  .sales-badge {
+    font-size: 11px;
+  }
+
+  .icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+}
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo">
+    <a href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
+      <span class="artivio">Artivio</span>
+    </div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon">
+        <i data-lucide="menu"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>Discover Handmade Treasures</h1>
+    <p>Authentic handcrafted products and courses from skilled artisans</p>
+    <div class="hero-buttons">
+      <a href="product.html" class="btn btn-primary">Shop Now →</a>
+      <a href="customercourses.html" class="btn btn-outline">Explore Courses →</a>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="container">
+    <h2>Why Choose Us</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="icon"><i class="fa-regular fa-heart"></i></div>
+        <h3>Handcrafted with Love</h3>
+        <p>Every item is crafted with passion and care.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><i class="fa-solid fa-award"></i></div>
+        <h3>Quality Guaranteed</h3>
+        <p>Premium materials and expert craftsmanship.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><i class="fa-solid fa-users"></i></div>
+        <h3>Learn from Masters</h3>
+        <p>Courses from skilled artisans.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="products" id="products">
+  <h2 class="section-title">🔥 Best Selling Products</h2>
+  <div class="products-grid" id="featuredProducts">
+    <div class="loading-placeholder">Loading best selling products...</div>
+  </div>
+  <a href="product.html"><button class="btn btn-view-all">View All Products</button></a>
+</section>
+
+<!-- Smart Chatbot Widget -->
+<div id="artivio-chat-widget">
+  <div id="chat-toggle">
+    <i class="fa-regular fa-message chat-toggle-icon"></i>
+  </div>
+  
+  <div id="chat-window">
+    <div class="chat-header">
+      <span><i class="fa-regular fa-message chat-header-icon"></i> Artivio Assistant</span>
+      <div>
+        <button id="chat-clear" title="Clear chat">
+          <i class="fa-regular fa-trash-alt"></i>
+        </button>
+        <button id="chat-close">&times;</button>
+      </div>
+    </div>
+    
+    <div id="chat-messages">
+      <div class="chat-message">
+        <div class="chat-avatar">
+          <i class="fa-regular fa-message"></i>
+        </div>
+        <div class="chat-bubble">
+          Hello! 👋 Welcome to Artivio!<br><br>
+          I'm your AI assistant. You can ask me about:<br>
+          • Products and shopping 🛍️<br>
+          • Courses and learning 📚<br>
+          • Your account and orders 👤<br>
+          • Payments and shipping 💳<br>
+          • Becoming an artisan 🎨<br><br>
+          How can I help you today?
+        </div>
+      </div>
+    </div>
+    
+    <div id="chat-typing">
+      Artivio Assistant is typing...
+    </div>
+    
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Type your question...">
+      <button id="chat-send">
+        <i class="fa-regular fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  #artivio-chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  #chat-toggle {
+    background-color: #6C2929;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+  }
+  .chat-toggle-icon {
+    font-size: 28px;
+  }
+  #chat-window {
+    display: none;
+    width: 380px;
+    height: 550px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    flex-direction: column;
+    overflow: hidden;
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+  }
+  .chat-header {
+    background: #6C2929;
+    color: white;
+    padding: 16px 20px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .chat-header-icon {
+    margin-right: 8px;
+  }
+  #chat-clear,
+  #chat-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  #chat-clear {
+    margin-right: 12px;
+    font-size: 14px;
+  }
+  #chat-close {
+    font-size: 20px;
+  }
+  #chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #faf6f5;
+  }
+  .chat-message {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .chat-avatar {
+    background: #6C2929;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .chat-avatar i {
+    font-size: 14px;
+  }
+  .chat-bubble {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 18px;
+    border-top-left-radius: 4px;
+    max-width: 80%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  #chat-typing {
+    display: none;
+    padding: 8px 20px;
+    color: #999;
+    font-size: 12px;
+  }
+  .chat-input-row {
+    display: flex;
+    padding: 16px;
+    border-top: 1px solid #eee;
+    background: white;
+    gap: 10px;
+  }
+  #chat-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 24px;
+    outline: none;
+    font-size: 14px;
+  }
+  #chat-send {
+    background: #6C2929;
+    color: white;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #chat-toggle:hover {
+    transform: scale(1.05);
+  }
+  #chat-send:hover {
+    background: #5a2222;
+  }
+  #chat-input:focus {
+    border-color: #6C2929;
+  }
+  .chat-message-user {
+    background: #6C2929 !important;
+    color: white !important;
+    border-radius: 18px !important;
+    border-top-right-radius: 4px !important;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #999;
+  }
+</style>
+
+<footer class="cta-section">
+  <h2>Start Your Crafting Journey Today</h2>
+  <p>Join our community of artisans and discover handmade treasures</p>
+  <br>
+  <a href="sign-up.html"><button class="btn btn-light">Sign Up Now</button></a>
+</footer>
+
+<script>
+  // Format price in EGP - FIXED VERSION
+  function formatPrice(price) {
+    // Convert to number safely
+    let numPrice = 0;
+    
+    if (price === null || price === undefined) {
+      numPrice = 0;
+    } else if (typeof price === 'string') {
+      // Remove any non-numeric characters except decimal point
+      const cleaned = price.replace(/[^0-9.-]/g, '');
+      numPrice = parseFloat(cleaned);
+    } else {
+      numPrice = parseFloat(price);
+    }
+    
+    // Check if valid number
+    if (isNaN(numPrice)) {
+      numPrice = 0;
+    }
+    
+    return `LE ${numPrice.toFixed(2)}`;
+  }
+
+  // Featured Products - Load Best Selling (Top 3)
+  async function loadBestSellingProducts() {
+    const container = document.getElementById('featuredProducts');
+    
+    try {
+      // Fetch all products from your API
+      const response = await fetch('http://localhost:7070/api/products');
+      const result = await response.json();
+      
+      console.log('API Response:', result); // Debug: See what the API returns
+      
+      if (!result.success || !result.data) {
+        container.innerHTML = '<div style="grid-column: 1/-1;"><p>Unable to load products. Please try again later.</p></div>';
+        return;
+      }
+      
+      // Filter only accepted products and get top 3
+      let products = result.data.filter(p => p.moderationStatus === 'accepted');
+      
+      // Sort by stock (or you can sort by any field)
+      products.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+      
+      // Take top 3
+      const bestSelling = products.slice(0, 3);
+      
+      if (bestSelling.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1;"><p>No products available yet. Check back soon!</p></div>';
+        return;
+      }
+      
+      // Display products
+      container.innerHTML = bestSelling.map((product) => {
+        const imageUrl = product.image 
+          ? `http://localhost:7070/uploads/${product.image}` 
+          : 'assets/no-background.png';
+        
+        // Get the price correctly
+        const productPrice = product.price;
+        console.log(`Product: ${product.name}, Price from API: ${productPrice}, Type: ${typeof productPrice}`);
+        
+        return `
+          <div class="product-card">
+            <img src="${imageUrl}" class="product-img" alt="${escapeHtml(product.name)}" onerror="this.src='assets/no-background.png'">
+            <div class="product-info">
+              <h3>${escapeHtml(product.name)}</h3>
+              <p class="price">${formatPrice(productPrice)}</p>
+              <span class="sales-badge">🔥 Best Seller</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+    } catch (error) {
+      console.error('Error loading products:', error);
+      container.innerHTML = '<div style="grid-column: 1/-1;"><p>Unable to load products. Please make sure the server is running.</p></div>';
+    }
+  }
+  
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+  
+  // Chatbot JavaScript
+  (function() {
+    const API_BASE = window.location.origin;
+    let sessionId = localStorage.getItem('chatSessionId');
+    
+    if (!sessionId) {
+      sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('chatSessionId', sessionId);
+    }
+    
+    const toggle = document.getElementById('chat-toggle');
+    const windowDiv = document.getElementById('chat-window');
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('chat-send');
+    const messagesDiv = document.getElementById('chat-messages');
+    const typingDiv = document.getElementById('chat-typing');
+    const clearBtn = document.getElementById('chat-clear');
+    const closeBtn = document.getElementById('chat-close');
+    
+    let isTyping = false;
+    
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const isVisible = windowDiv.style.display === 'flex';
+        windowDiv.style.display = isVisible ? 'none' : 'flex';
+        if (!isVisible && input) {
+          input.focus();
+        }
+      });
+    }
+    
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        windowDiv.style.display = 'none';
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', async () => {
+        if (confirm('Clear chat history?')) {
+          try {
+            await fetch(`${API_BASE}/api/chatbot/history/${sessionId}`, { method: 'DELETE' });
+            if (messagesDiv) {
+              messagesDiv.innerHTML = `
+                <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;">
+                  <div style="background: #6C2929; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fa-regular fa-message" style="font-size: 14px;"></i>
+                  </div>
+                  <div style="background: white; padding: 12px 16px; border-radius: 18px; border-top-left-radius: 4px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    Chat cleared! How can I help you today? 💬
+                  </div>
+                </div>
+              `;
+            }
+          } catch (err) {
+            console.error('Error clearing history:', err);
+          }
+        }
+      });
+    }
+    
+    function escapeHtmlChat(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function addMessage(text, isUser) {
+      if (!messagesDiv) return;
+      const messageDiv = document.createElement('div');
+      messageDiv.style.marginBottom = '12px';
+      messageDiv.style.display = 'flex';
+      messageDiv.style.alignItems = 'flex-start';
+      messageDiv.style.gap = '8px';
+      messageDiv.style.justifyContent = isUser ? 'flex-end' : 'flex-start';
+      
+      if (isUser) {
+        messageDiv.innerHTML = `
+          <div style="background: #6C2929; color: white; padding: 10px 14px; border-radius: 18px; border-top-right-radius: 4px; max-width: 80%; word-wrap: break-word;">
+            ${escapeHtmlChat(text)}
+          </div>
+        `;
+      } else {
+        const formattedText = escapeHtmlChat(text).replace(/\n/g, '<br>');
+        messageDiv.innerHTML = `
+          <div style="background: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <i class="fa-regular fa-message" style="font-size: 14px; color: #6C2929;"></i>
+          </div>
+          <div style="background: white; padding: 10px 14px; border-radius: 18px; border-top-left-radius: 4px; max-width: 80%; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: pre-wrap;">
+            ${formattedText}
+          </div>
+        `;
+      }
+      
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function showTyping() {
+      if (!isTyping && typingDiv) {
+        isTyping = true;
+        typingDiv.style.display = 'block';
+        if (messagesDiv) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+    }
+    
+    function hideTyping() {
+      isTyping = false;
+      if (typingDiv) typingDiv.style.display = 'none';
+    }
+    
+    async function sendMessage() {
+      if (!input) return;
+      const message = input.value.trim();
+      if (!message) return;
+      
+      addMessage(message, true);
+      input.value = '';
+      showTyping();
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/chatbot/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, sessionId })
+        });
+        
+        const data = await response.json();
+        hideTyping();
+        
+        if (data.success) {
+          addMessage(data.reply, false);
+        } else {
+          addMessage("❌ Sorry, I'm having trouble right now. Please try again in a moment.", false);
+        }
+      } catch (error) {
+        hideTyping();
+        console.error('Fetch error:', error);
+        addMessage("❌ Network error. Please check your connection and try again.", false);
+      }
+    }
+    
+    if (sendBtn) {
+      sendBtn.addEventListener('click', sendMessage);
+    }
+    if (input) {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+    }
+  })();
+  
+  // Initialize Lucide icons and mobile menu
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) lucide.createIcons();
+    
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon && navLinks) {
+      menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+    }
+    
+    // Load best selling products
+    loadBestSellingProducts();
+  });
+</script>
+
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

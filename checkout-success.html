@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed - Artivio</title>
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <script src="assets/lucide.min.js"></script>
+  <link rel="stylesheet" href="navbar.css">
+
+  <style>
+    :root {
+      --primary: #6C2929;
+      --dark: #3d1616;
+      --light-bg: #fdf6ee;
+      --green: #16a34a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--light-bg);
+      color: #333;
+    }
+
+    .success-container {
+      max-width: 800px;
+      margin: 60px auto;
+      text-align: center;
+      background: #fff;
+      border-radius: 16px;
+      padding: 50px 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: #dcfce7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+      color: var(--green);
+    }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .order-details {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .order-details p {
+      margin: 8px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-outline {
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      background: transparent;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-content">
+    <div class="nav-logo">
+      <a href="index.html"></a><img src="no background 1.png" alt="Artivio Logo">
+      <span class="artivio">Artivio</span>
+    </div>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
+        <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
+      </ul>
+      <div class="menu-icon" id="menuIcon">
+        <i data-lucide="menu"></i>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<div class="success-container">
+  <div class="success-icon">✓</div>
+  <h1>Order Confirmed!</h1>
+  <p>Thank you for your purchase. Your order has been received.</p>
+
+  <div class="order-details" id="orderDetails">
+    <p><strong>Order Number:</strong> <span id="orderNumber">Loading...</span></p>
+    <p><strong>Date:</strong> <span id="orderDate"></span></p>
+    <p><strong>Total Amount:</strong> <span id="orderTotal"></span></p>
+  </div>
+
+  <div id="enrollmentStatus" style="margin: 20px 0;"></div>
+
+  <div>
+    <a href="my-purchases.html" class="btn btn-primary">Go to My Purchases</a>
+    <a href="product.html" class="btn btn-outline">Continue Shopping</a>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:7070';
+  let enrolledCourses = [];
+  let enrollmentComplete = false;
+
+  function getToken() {
+    try { return localStorage.getItem('token'); } catch(e) { return null; }
+  }
+
+  async function enrollInCourse(courseId) {
+    const token = getToken();
+    if (!token) return false;
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      const data = await res.json();
+      return res.ok && data.success;
+    } catch (err) {
+      console.error('Enrollment error for course', courseId, err);
+      return false;
+    }
+  }
+
+  async function loadOrderAndEnroll() {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    const statusDiv = document.getElementById('enrollmentStatus');
+
+    if (!sessionId) {
+      document.getElementById('orderNumber').textContent = 'Order placed successfully';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/payment/checkout-session?session_id=${sessionId}`);
+      const data = await res.json();
+
+      if (res.ok && data.order) {
+        document.getElementById('orderNumber').textContent = data.order._id.slice(-8).toUpperCase();
+        document.getElementById('orderDate').textContent = new Date(data.order.createdAt).toLocaleDateString();
+        document.getElementById('orderTotal').textContent = `LE ${data.order.amount?.toFixed(2) || '0.00'}`;
+        
+        // Extract course items from order
+        const courseItems = data.order.items.filter(item => item.itemType === 'Course' && item.item);
+        
+        if (courseItems.length > 0) {
+          statusDiv.innerHTML = '<div class="loading-spinner"></div> Enrolling you in your courses...';
+          
+          let successCount = 0;
+          for (const item of courseItems) {
+            const enrolled = await enrollInCourse(item.item);
+            if (enrolled) {
+              successCount++;
+              enrolledCourses.push(item.item);
+            }
+          }
+          
+          if (successCount === courseItems.length) {
+            statusDiv.innerHTML = '<p style="color: #16a34a;">✓ Successfully enrolled in all courses!</p>';
+            enrollmentComplete = true;
+          } else if (successCount > 0) {
+            statusDiv.innerHTML = `<p style="color: #f59e0b;">✓ Enrolled in ${successCount} out of ${courseItems.length} courses.</p>`;
+          } else {
+            statusDiv.innerHTML = '<p style="color: #dc2626;">⚠️ Please go to "My Purchases" to access your courses.</p>';
+          }
+        } else {
+          statusDiv.innerHTML = '<p>Your order contains products only. No enrollment needed.</p>';
+          enrollmentComplete = true;
+        }
+        
+        localStorage.removeItem('cart');
+        localStorage.setItem('justPurchased', 'true');
+      } else {
+        document.getElementById('orderNumber').textContent = 'Order placed successfully';
+      }
+    } catch (err) {
+      console.error('Error loading order:', err);
+      document.getElementById('orderNumber').textContent = 'Order placed successfully';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    loadOrderAndEnroll();
+
+    const menuIcon = document.getElementById('menuIcon');
+    const navLinks = document.getElementById('navLinks');
+    if (menuIcon && navLinks) {
+      menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+    }
+  });
+</script>
+
+<script src="navbar.js"></script>
+</body>
+</html>
+
+
+

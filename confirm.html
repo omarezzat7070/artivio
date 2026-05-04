@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Confirmed - Artivio</title>
+
+<style>
+:root{
+  --primary:#6C2929;
+  --dark:#3d1616;
+  --bg:#faf6f5;
+  --light:#ead9d4;
+  --green:#16a34a;
+  --blue:#2563eb;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body{
+  background:var(--bg);
+  padding:40px 20px;
+  color:#333;
+}
+
+.container{
+  max-width:1000px;
+  margin:auto;
+}
+
+.success-header{
+  text-align:center;
+  margin-bottom:50px;
+}
+
+.success-icon{
+  width:90px;
+  height:90px;
+  background:#dcfce7;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 20px;
+  font-size:45px;
+  color:var(--green);
+}
+
+.card{
+  background:#fff;
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  margin-bottom:30px;
+}
+
+.order-item{
+  display:flex;
+  gap:15px;
+  padding-bottom:20px;
+  margin-bottom:20px;
+  border-bottom:1px solid #eee;
+}
+
+.order-item img{
+  width:80px;
+  height:80px;
+  object-fit:cover;
+  border-radius:8px;
+}
+
+.summary{
+  border-top:1px solid #eee;
+  padding-top:20px;
+}
+
+.summary-row{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+
+.total{
+  font-size:20px;
+  font-weight:bold;
+  color:var(--primary);
+}
+
+@media(max-width:600px){
+  .order-item{
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- SUCCESS HEADER -->
+  <div class="success-header">
+    <div class="success-icon">✔</div>
+    <h1>Order Confirmed!</h1>
+    <p id="orderNumber"></p>
+  </div>
+
+  <!-- ORDER DETAILS -->
+  <div class="card">
+    <h2>Order Details</h2>
+    <br>
+    <div id="orderItems"></div>
+
+    <div class="summary">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="subtotal"></span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span id="shipping"></span>
+      </div>
+      <div class="summary-row">
+        <span>Tax</span>
+        <span id="tax"></span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <span id="total"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHIPPING -->
+  <div class="card">
+    <h2>Shipping Address</h2>
+    <br>
+    <div id="shippingInfo"></div>
+  </div>
+
+</div>
+
+<script>
+// ================== ORDER DATA ==================
+
+const orderData = {
+  orderNumber: "ART-10234",
+  orderDate: "2026-02-12",
+  estimatedDelivery: "2026-02-18",
+  shippingInfo: {
+    fullName: "Abdelrahman Mohamed",
+    email: "abdelrahman@email.com",
+    phone: "01000000000",
+    address: "123 Craft Street",
+    city: "Cairo",
+    state: "EG",
+    zipCode: "11511"
+  },
+  items: [
+    {
+      id: 1,
+      name: "Ceramic Pottery",
+      price: 45,
+      quantity: 2,
+      image: "assets/no-background.png",
+      seller: "Artisan Studio"
+    },
+    {
+      id: 2,
+      name: "Handmade Jewelry",
+      price: 65,
+      quantity: 1,
+      image: "assets/no-background.png",
+      seller: "Jewelry Crafts"
+    }
+  ],
+  shipping: 0,
+  tax: 10
+};
+
+// ================== RENDER FUNCTION ==================
+
+function renderOrder() {
+
+  document.getElementById("orderNumber").textContent =
+    "Order #" + orderData.orderNumber;
+
+  const itemsContainer = document.getElementById("orderItems");
+
+  let subtotal = 0;
+
+  orderData.items.forEach(item => {
+    const itemTotal = item.price * item.quantity;
+    subtotal += itemTotal;
+
+    const itemHTML = `
+      <div class="order-item">
+        <img src="${item.image}" alt="${item.name}">
+        <div style="flex:1;">
+          <h3>${item.name}</h3>
+          <small>by ${item.seller}</small><br>
+          <small>Quantity: ${item.quantity}</small>
+        </div>
+        <div><strong>$${itemTotal.toFixed(2)}</strong></div>
+      </div>
+    `;
+
+    itemsContainer.innerHTML += itemHTML;
+  });
+
+  const total = subtotal + orderData.shipping + orderData.tax;
+
+  document.getElementById("subtotal").textContent = "$" + subtotal.toFixed(2);
+  document.getElementById("shipping").textContent =
+    orderData.shipping === 0 ? "FREE" : "$" + orderData.shipping.toFixed(2);
+  document.getElementById("tax").textContent = "$" + orderData.tax.toFixed(2);
+  document.getElementById("total").textContent = "$" + total.toFixed(2);
+
+  document.getElementById("shippingInfo").innerHTML = `
+    <p><strong>${orderData.shippingInfo.fullName}</strong></p>
+    <p>${orderData.shippingInfo.address}</p>
+    <p>${orderData.shippingInfo.city}, ${orderData.shippingInfo.state} ${orderData.shippingInfo.zipCode}</p>
+    <p>Phone: ${orderData.shippingInfo.phone}</p>
+    <p>Email: ${orderData.shippingInfo.email}</p>
+  `;
+}
+
+renderOrder();
+</script>
+
+</body>
+</html>
+
+
+
+
