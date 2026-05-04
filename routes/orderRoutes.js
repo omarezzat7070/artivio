@@ -5,9 +5,15 @@ const { protect, authorize } = require('../middleware/auth');
 const mongoose = require('mongoose');
 const Product = mongoose.model('Product');
 
-// ------------------- Routes -------------------
+const {
+  getAllOrders,
+  getOrderStats,
+  getOrderById,
+  updateOrder,
+  trackOrder,
+  getOrderStatusUpdate
+} = require('../controllers/orderController');
 
-// 1. Get orders for current user
 router.get('/my-orders', protect, async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
@@ -18,25 +24,8 @@ router.get('/my-orders', protect, async (req, res) => {
   }
 });
 
-// 2. Admin dashboard stats (total revenue)
-router.get('/admin/stats', protect, authorize('admin'), async (req, res) => {
-  try {
-    const revenueResult = await Order.aggregate([
-      { $match: { paymentStatus: 'paid' } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
-    res.json({ 
-      success: true, 
-      data: { totalRevenue: Math.round(totalRevenue * 100) / 100 }
-    });
-  } catch (err) {
-    console.error('Error fetching admin stats:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+router.get('/admin/stats', protect, authorize('admin'), getOrderStats);
 
-// 3. Get orders containing the current seller's products
 router.get('/seller-product-orders', protect, async (req, res) => {
   try {
     const sellerProducts = await Product.find({ artisan: req.user._id });
@@ -66,17 +55,12 @@ router.get('/seller-product-orders', protect, async (req, res) => {
   }
 });
 
-// 4. Admin: get all orders
-router.get('/', protect, authorize('admin'), async (req, res) => {
-  try {
-    const orders = await Order.find()
-      .populate('user', 'name email')
-      .sort({ createdAt: -1 });
-    res.json({ success: true, count: orders.length, data: orders });
-  } catch (err) {
-    console.error('Error fetching all orders:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+router.get('/', protect, authorize('admin'), getAllOrders);
+router.get('/:id', protect, authorize('admin'), getOrderById);
+router.put('/:id', protect, authorize('admin'), updateOrder);
+
+// Order Tracking Routes
+router.get('/track/:orderNumber', trackOrder);
+router.get('/:id/status', protect, getOrderStatusUpdate);
 
 module.exports = router;

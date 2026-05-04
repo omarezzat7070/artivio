@@ -74,6 +74,7 @@
   gap: 8px;
   white-space: nowrap;
   font-family: 'Segoe UI', sans-serif;
+  transition: color 0.2s;
 }
 
 .nav-links a:hover {

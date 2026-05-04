@@ -127,8 +127,19 @@
       font-weight: 600;
     }
 
-    .view-btn:hover {
-      background: #5a2222;
+    .track-btn {
+      background: #6b7280;
+      color: white;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .view-btn:hover, .track-btn:hover {
+      opacity: 0.9;
     }
 
     .empty-state {
@@ -187,19 +198,19 @@
     }
 
     .video-container {
-  margin: 0 auto 20px;
-  max-width: 700px;   /* normal desktop size */
-  width: 100%;
-}
+      margin: 0 auto 20px;
+      max-width: 700px;
+      width: 100%;
+    }
 
-video {
-  width: 100%;
-  max-height: 400px;  /* prevents huge height */
-  border-radius: 10px;
-  background: #000;
-  display: block;
-  object-fit: contain;
-}
+    video {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 10px;
+      background: #000;
+      display: block;
+      object-fit: contain;
+    }
 
     .part-list {
       margin-top: 20px;
@@ -227,6 +238,11 @@ video {
       font-weight: 600;
       color: var(--primary);
     }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
@@ -243,6 +259,7 @@ video {
         <li><a href="product.html"><i data-lucide="shopping-bag" class="icon-sm"></i> Products</a></li>
         <li><a href="customercourses.html"><i data-lucide="book-open" class="icon-sm"></i> Courses</a></li>
         <li><a href="about.html">About</a></li>
+        <li><a href="track-order.html"><i data-lucide="truck" class="icon-sm"></i> Track Order</a></li>
         <li><a id="loginLink" href="login.html"><i data-lucide="user" class="icon-sm"></i> Login</a></li>
       </ul>
       <div class="menu-icon" id="menuIcon">
@@ -257,8 +274,8 @@ video {
   <p class="subtitle">View all your purchased products and courses</p>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('courses')">Courses</button>
-    <button class="tab-btn" onclick="switchTab('products')">Products</button>
+    <button class="tab-btn active" data-tab="courses">Courses</button>
+    <button class="tab-btn" data-tab="products">Products</button>
   </div>
 
   <div id="courses-tab" class="tab-content active">
@@ -270,26 +287,21 @@ video {
   </div>
 </div>
 
-<!-- Course Viewer Modal -->
 <div id="courseModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
       <h3 id="modalCourseTitle">Course Title</h3>
-      <span class="close-modal" onclick="closeCourseModal()">&times;</span>
+      <span class="close-modal" id="closeModalBtn">&times;</span>
     </div>
     <div id="modalContent"></div>
   </div>
 </div>
 
 <script>
-  const API_BASE = 'http://localhost:7070';
+  const API_BASE = window.location.origin || 'http://localhost:7070';
   let purchasedCourses = [];
   let purchasedProducts = [];
-
-  // Completely override console.error to suppress all fetch errors
-  const noop = () => {};
-  console.error = noop;
-  console.warn = noop;
+  let courseDataStore = {};
 
   function getToken() {
     try { return localStorage.getItem('token'); } catch(e) { return null; }
@@ -299,6 +311,16 @@ video {
     return `LE ${parseFloat(price).toFixed(2)}`;
   }
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
   async function loadPurchases() {
     const token = getToken();
     if (!token) {
@@ -306,19 +328,16 @@ video {
       return;
     }
 
-    // Show loading state
     document.getElementById('coursesList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-pulse"></i><h3>Loading your purchases...</h3></div>';
     document.getElementById('productsList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-pulse"></i><h3>Loading your purchases...</h3></div>';
 
     try {
-      // Get orders
       const ordersRes = await fetch(`${API_BASE}/api/orders/my-orders`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const ordersData = await ordersRes.json();
       const paidOrders = (ordersData.data || []).filter(order => order.paymentStatus === 'paid');
 
-      // Extract purchased items directly from orders (no extra API calls)
       const coursesMap = new Map();
       const productsMap = new Map();
       
@@ -331,7 +350,8 @@ video {
                 title: item.name,
                 price: item.price,
                 quantity: item.quantity,
-                image: null
+                image: null,
+                orderId: order._id
               });
             }
           } else if (item.itemType === 'Product') {
@@ -342,18 +362,17 @@ video {
                 price: item.price,
                 quantity: item.quantity,
                 category: item.category || 'Handmade',
-                image: null
+                image: null,
+                orderId: order._id
               });
             }
           }
         });
       });
 
-      // Convert maps to arrays
       purchasedCourses = Array.from(coursesMap.values());
       purchasedProducts = Array.from(productsMap.values());
 
-      // Try to fetch images for courses (optional, fail silently)
       for (const course of purchasedCourses) {
         try {
           const res = await fetch(`${API_BASE}/api/courses/${course.id}`, {
@@ -367,12 +386,9 @@ video {
               course.parts = data.data.parts;
             }
           }
-        } catch (e) {
-          // Silently ignore - keep default values
-        }
+        } catch (e) {}
       }
 
-      // Try to fetch images for products (optional, fail silently)
       for (const product of purchasedProducts) {
         try {
           const res = await fetch(`${API_BASE}/api/products/${product.id}`, {
@@ -385,15 +401,12 @@ video {
               product.category = data.data.category || product.category;
             }
           }
-        } catch (e) {
-          // Silently ignore - keep default values
-        }
+        } catch (e) {}
       }
 
       renderCourses();
       renderProducts();
     } catch (err) {
-      // Silent fail
       renderCourses();
       renderProducts();
     }
@@ -421,9 +434,26 @@ video {
           <div class="purchase-meta">${course.duration || 0} hours • Qty: ${course.quantity || 1}</div>
           <div class="purchase-price">Paid: ${formatPrice(course.price)}</div>
         </div>
-        <button class="view-btn" onclick="viewCourse('${course.id}')">View Course</button>
+        <div class="button-group">
+          <button class="view-btn" data-course-id="${course.id}">View Course</button>
+          <button class="track-btn" data-order-id="${course.orderId}">Track Order</button>
+        </div>
       </div>
     `).join('');
+
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const courseId = this.getAttribute('data-course-id');
+        viewCourse(courseId);
+      });
+    });
+
+    document.querySelectorAll('.track-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const orderId = this.getAttribute('data-order-id');
+        window.location.href = `track-order.html?order=${orderId}`;
+      });
+    });
   }
 
   function renderProducts() {
@@ -448,16 +478,23 @@ video {
           <div class="purchase-meta">${product.category || 'Handmade'} • Qty: ${product.quantity || 1}</div>
           <div class="purchase-price">Paid: ${formatPrice(product.price)}</div>
         </div>
-      </div>`).join('');
-  }
+        <div class="button-group">
+          <button class="track-btn" data-order-id="${product.orderId}">Track Order</button>
+        </div>
+      </div>
+    `).join('');
 
-  // Store course data for modal
-  let courseDataStore = {};
+    document.querySelectorAll('.track-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const orderId = this.getAttribute('data-order-id');
+        window.location.href = `track-order.html?order=${orderId}`;
+      });
+    });
+  }
 
   async function viewCourse(courseId) {
     const token = getToken();
     try {
-      // Check if we already have the course data
       if (!courseDataStore[courseId]) {
         const res = await fetch(`${API_BASE}/api/courses/${courseId}`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -495,49 +532,52 @@ video {
               Your browser does not support video playback.
             </video>
           </div>
-          <div class="part-list" id="partList">
-            ${parts.map((part, index) => `
-              <div class="part-item" onclick="playPart('${part.video}', ${index})" data-index="${index}">
-                <div class="part-title">Lesson ${part.partNumber || index + 1}: ${escapeHtml(part.title)}</div>
-                <div style="font-size: 13px; color: #666;">${part.duration || 0} minutes</div>
-              </div>
-            `).join('')}
-          </div>
+          <div class="part-list" id="partList"></div>
         `;
+        
+        const partList = document.getElementById('partList');
+        parts.forEach((part, index) => {
+          const partDiv = document.createElement('div');
+          partDiv.className = 'part-item';
+          partDiv.setAttribute('data-part-index', index);
+          partDiv.setAttribute('data-part-video', part.video || '');
+          partDiv.innerHTML = `
+            <div class="part-title">Lesson ${part.partNumber || index + 1}: ${escapeHtml(part.title)}</div>
+            <div style="font-size: 13px; color: #666;">${part.duration || 0} minutes</div>
+          `;
+          partDiv.addEventListener('click', function() {
+            const videoUrl = this.getAttribute('data-part-video');
+            const videoPlayer = document.getElementById('courseVideo');
+            const videoSource = document.getElementById('videoSource');
+            if (videoUrl) {
+              videoSource.src = `${API_BASE}/uploads/${videoUrl}`;
+              videoPlayer.load();
+              videoPlayer.play();
+            } else {
+              alert('No video available for this lesson');
+            }
+            
+            document.querySelectorAll('.part-item').forEach(item => {
+              item.classList.remove('active');
+            });
+            this.classList.add('active');
+          });
+          partList.appendChild(partDiv);
+        });
+        
+        if (parts[0] && parts[0].video) {
+          const videoPlayer = document.getElementById('courseVideo');
+          const videoSource = document.getElementById('videoSource');
+          videoSource.src = `${API_BASE}/uploads/${parts[0].video}`;
+          videoPlayer.load();
+          document.querySelector('.part-item')?.classList.add('active');
+        }
       }
       
       modal.style.display = 'block';
-      
-      if (parts.length > 0 && parts[0].video) {
-        const videoPlayer = document.getElementById('courseVideo');
-        const videoSource = document.getElementById('videoSource');
-        videoSource.src = `${API_BASE}/uploads/${parts[0].video}`;
-        videoPlayer.load();
-      }
     } catch (err) {
       alert('Failed to load course details');
     }
-  }
-
-  function playPart(videoUrl, index) {
-    if (!videoUrl) {
-      alert('No video available for this lesson');
-      return;
-    }
-    
-    const videoPlayer = document.getElementById('courseVideo');
-    const videoSource = document.getElementById('videoSource');
-    videoSource.src = `${API_BASE}/uploads/${videoUrl}`;
-    videoPlayer.load();
-    videoPlayer.play();
-    
-    document.querySelectorAll('.part-item').forEach((item, i) => {
-      if (i === index) {
-        item.classList.add('active');
-      } else {
-        item.classList.remove('active');
-      }
-    });
   }
 
   function closeCourseModal() {
@@ -550,28 +590,27 @@ video {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
-    if (tab === 'courses') {
-      document.querySelectorAll('.tab-btn')[0].classList.add('active');
-      document.getElementById('courses-tab').classList.add('active');
-    } else {
-      document.querySelectorAll('.tab-btn')[1].classList.add('active');
-      document.getElementById('products-tab').classList.add('active');
-    }
-  }
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+    document.getElementById(`${tab}-tab`).classList.add('active');
   }
 
   document.addEventListener('DOMContentLoaded', function() {
     if (window.lucide) lucide.createIcons();
     loadPurchases();
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const tab = this.getAttribute('data-tab');
+        switchTab(tab);
+      });
+    });
+    
+    document.getElementById('closeModalBtn')?.addEventListener('click', closeCourseModal);
+    window.addEventListener('click', function(e) {
+      const modal = document.getElementById('courseModal');
+      if (e.target === modal) closeCourseModal();
+    });
     
     const menuIcon = document.getElementById('menuIcon');
     const navLinks = document.getElementById('navLinks');
@@ -579,16 +618,7 @@ video {
       menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
     }
   });
-
-  window.switchTab = switchTab;
-  window.viewCourse = viewCourse;
-  window.playPart = playPart;
-  window.closeCourseModal = closeCourseModal;
 </script>
-
 <script src="navbar.js"></script>
 </body>
 </html>
-
-
-
