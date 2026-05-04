@@ -143,9 +143,7 @@
 </div>
 
 <script>
-const API_BASE = window.location.hostname.includes('github.io')
-  ? 'http://localhost:7070'
-  : window.location.origin;
+const API_BASE = window.location.origin;
 const token = localStorage.getItem("token");
 
 async function apiFetch(url, options = {}) {

@@ -683,7 +683,7 @@
     
     try {
       // Fetch all products from your API
-      const response = await fetch('http://localhost:7070/api/products');
+      const response = await fetch(`${window.location.origin}/api/products`);
       const result = await response.json();
       
       console.log('API Response:', result); // Debug: See what the API returns
@@ -710,7 +710,7 @@
       // Display products
       container.innerHTML = bestSelling.map((product) => {
         const imageUrl = product.image 
-          ? `http://localhost:7070/uploads/${product.image}` 
+          ? `/uploads/${product.image}` 
           : 'assets/no-background.png';
         
         // Get the price correctly
@@ -747,9 +747,7 @@
   
   // Chatbot JavaScript
   (function() {
-    const API_BASE = window.location.hostname.includes('github.io')
-      ? 'http://localhost:7070'
-      : window.location.origin;
+    const API_BASE = window.location.origin;
     let sessionId = localStorage.getItem('chatSessionId');
     
     if (!sessionId) {

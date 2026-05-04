@@ -125,7 +125,7 @@ document.getElementById('adminSignupForm').addEventListener('submit', async (e) 
     }
   } catch (err) {
     console.error(err);
-    errorDiv.textContent = 'Network error. Make sure the backend is running on port 7070 and you are using http://localhost:7070/admin-signup.html';
+    errorDiv.textContent = 'Network error. Make sure the backend is running and reachable at the current origin.';
     errorDiv.style.display = 'block';
     submitBtn.disabled = false;
     submitBtn.textContent = 'Create Admin Account';

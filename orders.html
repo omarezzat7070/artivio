@@ -27,7 +27,7 @@
       }
 
       try {
-        const res = await fetch('http://localhost:7070/api/orders/my-orders', {
+        const res = await fetch(`${window.location.origin}/api/orders/my-orders`, {
           headers: { 'Authorization': 'Bearer ' + token }
         });
         const data = await res.json();

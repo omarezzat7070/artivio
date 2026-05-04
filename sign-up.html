@@ -652,7 +652,7 @@
       signupMessage.style.color = "";
 
       try {
-        const response = await fetch('http://localhost:7070/api/users/register', {
+        const response = await fetch(`${window.location.origin}/api/users/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -679,7 +679,7 @@
         }
       } catch (error) {
         console.error("Registration network error:", error);
-        signupMessage.textContent = "Network error. Could not connect to server. Please verify backend is running on http://localhost:7070";
+        signupMessage.textContent = "Network error. Could not connect to server. Please verify the backend server is running and reachable.";
         signupMessage.style.color = "red";
       } finally {
         signupBtn.disabled = false;

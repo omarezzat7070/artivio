@@ -50,7 +50,7 @@ if (helmet && typeof helmet === 'function') {
         scriptSrcElem: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'", "http://localhost:7070", "http://localhost:11434", "https:"],
+        connectSrc: ["'self'", "https:"],
         frameSrc: ["'self'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -66,10 +66,6 @@ app.use(mongoSanitize ? mongoSanitize() : (req, res, next) => next());
 
 // CORS
 const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:5500',
-  'http://localhost:5500',
-  'http://localhost:7070',
   'https://omarezzat7070.github.io'
 ];
 app.use(cors({
