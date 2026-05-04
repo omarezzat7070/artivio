@@ -747,7 +747,9 @@
   
   // Chatbot JavaScript
   (function() {
-    const API_BASE = window.location.origin;
+    const API_BASE = window.location.hostname.includes('github.io')
+      ? 'http://localhost:7070'
+      : window.location.origin;
     let sessionId = localStorage.getItem('chatSessionId');
     
     if (!sessionId) {

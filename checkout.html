@@ -814,8 +814,8 @@ async function processPayment() {
   try {
     const requestBody = {
       items,
-      successUrl: window.location.origin + '/checkout-success.html',
-      cancelUrl: window.location.origin + '/checkout-cancel.html',
+      successUrl: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/') + 'checkout-success.html',
+      cancelUrl: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/') + 'checkout-cancel.html',
       payment: paymentData,
       paymentMethod: selectedMethod
     };

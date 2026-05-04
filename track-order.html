@@ -314,7 +314,9 @@
 </div>
 
 <script>
-  const API_BASE = window.location.origin || 'http://localhost:7070';
+  const API_BASE = window.location.hostname.includes('github.io')
+    ? 'http://localhost:7070'
+    : window.location.origin || 'http://localhost:7070';
   
   async function trackOrder() {
     const orderNumber = document.getElementById('orderNumber').value.trim();
