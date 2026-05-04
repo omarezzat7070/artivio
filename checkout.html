@@ -1,144 +1,314 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Confirmed - Artivio</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="navbar.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artivio Checkout</title>
 
-  <style>
-    :root {
-      --primary: #6C2929;
-      --dark: #3d1616;
-      --light-bg: #fdf6ee;
-      --green: #16a34a;
-      --orange: #f59e0b;
-    }
+<link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="navbar.css">
+<script src="assets/lucide.min.js"></script>
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Segoe UI", sans-serif;
-    }
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial, sans-serif;
+}
 
-    body {
-      background: var(--light-bg);
-      color: #333;
-    }
+body{
+  background:#fdf6ee;
+  padding:40px 20px;
+}
 
-    .success-container {
-      max-width: 800px;
-      margin: 60px auto;
-      text-align: center;
-      background: #fff;
-      border-radius: 16px;
-      padding: 50px 40px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
+.container{
+  max-width:1200px;
+  margin:auto;
+}
 
-    .success-icon {
-      width: 80px;
-      height: 80px;
-      background: #dcfce7;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 40px;
-      color: var(--green);
-    }
+h1{
+  text-align:center;
+  color:#3d1616;
+  margin-bottom:35px;
+}
 
-    .warning-icon {
-      width: 80px;
-      height: 80px;
-      background: #fef3c7;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 40px;
-      color: var(--orange);
-    }
+.checkout-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:30px;
+}
 
-    h1 {
-      color: var(--primary);
-      margin-bottom: 10px;
-    }
+.box{
+  background:#fff;
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
 
-    p {
-      color: #666;
-      margin-bottom: 10px;
-    }
+.secure{
+  color:green;
+  margin-bottom:20px;
+  font-size:15px;
+}
 
-    .order-details {
-      margin: 30px 0;
-      padding: 20px;
-      background: #f9f9f9;
-      border-radius: 12px;
-      text-align: left;
-    }
+.methods{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  margin-bottom:25px;
+}
 
-    .order-details p {
-      margin: 8px 0;
-    }
+.method{
+  border:2px solid #ddd;
+  border-radius:10px;
+  padding:18px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.3s;
+}
 
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      margin: 10px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-    }
+.method.active{
+  border-color:#6C2929;
+  background:#faf6f5;
+}
 
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
+.method i{
+  font-size:28px;
+  color:#6C2929;
+  margin-bottom:10px;
+}
 
-    .btn-outline {
-      border: 1px solid var(--primary);
-      color: var(--primary);
-      background: transparent;
-    }
+label{
+  display:block;
+  margin-bottom:6px;
+  font-weight:bold;
+  color:#333;
+}
 
-    .btn-warning {
-      background: var(--orange);
-      color: white;
-    }
+input{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  margin-bottom:18px;
+}
 
-    .status-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-top: 10px;
-    }
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
 
-    .status-pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
+button{
+  width:100%;
+  background:#6C2929;
+  color:#fff;
+  border:none;
+  padding:14px;
+  border-radius:8px;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:10px;
+}
 
-    .status-success {
-      background: #dcfce7;
-      color: #166534;
-    }
-  </style>
+button:hover{
+  background:#4e1d1d;
+}
+
+button:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+}
+
+.note{
+  text-align:center;
+  font-size:14px;
+  color:#777;
+  margin-top:15px;
+}
+
+.summary h2{
+  color:#3d1616;
+  margin-bottom:20px;
+}
+
+.item,
+.line{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:15px;
+}
+
+.total{
+  border-top:1px solid #ddd;
+  padding-top:15px;
+  font-size:22px;
+  font-weight:bold;
+  color:#6C2929;
+}
+
+.hidden{
+  display:none;
+}
+
+.info-box{
+  background:#faf6f5;
+  border-left:4px solid #6C2929;
+  padding:15px;
+  border-radius:8px;
+  margin-bottom:20px;
+  font-size:14px;
+  color:#444;
+}
+
+.cart-summary-items {
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.cart-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item-name-payment {
+  font-weight: 500;
+  color: #6C2929;
+}
+
+.cart-item-subtotal {
+  font-weight: 500;
+}
+
+.remove-item-btn {
+  background: #f87171;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.error-message {
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  display: none;
+}
+
+.navbar {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  margin-bottom: 20px;
+}
+
+.nav-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  max-width: 1200px;
+  margin: auto;
+  width: 90%;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #3d1616;
+}
+
+.nav-logo img {
+  height: 40px;
+  width: auto;
+}
+
+.nav-logo .artivio {
+  font-family: 'Dancing Script', cursive;
+  font-size: 22px;
+  color: #3d1616;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  flex-wrap: nowrap;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.menu-icon {
+  display: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px){
+  .checkout-grid{
+    grid-template-columns:1fr;
+  }
+  .methods{
+    grid-template-columns:1fr;
+  }
+  .row{
+    grid-template-columns:1fr;
+  }
+  .menu-icon {
+    display: block;
+  }
+  .nav-links {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background: #fff;
+    flex-direction: column;
+    width: 200px;
+    padding: 20px;
+    display: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .nav-links.active {
+    display: flex;
+  }
+}
+
+.icon-sm {
+  width: 18px;
+  height: 18px;
+}
+</style>
 </head>
 <body>
 
 <header class="navbar">
   <div class="container nav-content">
     <div class="nav-logo">
-      <img src="no background 1.png" alt="Artivio Logo">
+      <a href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
       <span class="artivio">Artivio</span>
     </div>
     <nav>
@@ -156,153 +326,678 @@
   </div>
 </header>
 
-<div class="success-container" id="successContainer">
-  <div class="success-icon" id="statusIcon">✓</div>
-  <h1 id="statusTitle">Order Confirmed!</h1>
-  <p id="statusMessage">Thank you for your purchase. Your order has been received.</p>
+<div class="container">
+<h1>Checkout</h1>
 
-  <div class="order-details" id="orderDetails">
-    <p><strong>Order Number:</strong> <span id="orderNumber">Loading...</span></p>
-    <p><strong>Date:</strong> <span id="orderDate"></span></p>
-    <p><strong>Total Amount:</strong> <span id="orderTotal"></span></p>
-    <p><strong>Payment Method:</strong> <span id="paymentMethod"></span></p>
-  </div>
+<div class="checkout-grid">
 
-  <div id="enrollmentStatus" style="margin: 20px 0;"></div>
+<!-- LEFT -->
+<div class="box">
+<div class="secure">
+<i class="fa-solid fa-lock"></i> Secure Payment
+</div>
 
-  <div>
-    <a href="my-purchases.html" class="btn btn-primary">Go to My Purchases</a>
-    <a href="product.html" class="btn btn-outline">Continue Shopping</a>
-  </div>
+<h2 style="margin-bottom:20px;color:#3d1616;">Select Payment Method</h2>
+
+<div class="methods">
+<div class="method active" onclick="selectMethod('card',this)">
+<i class="fa-regular fa-credit-card"></i>
+<div>Credit Card</div>
+</div>
+
+<div class="method" onclick="selectMethod('instapay',this)">
+<i class="fa-solid fa-mobile-screen-button"></i>
+<div>InstaPay</div>
+</div>
+
+<div class="method" onclick="selectMethod('cash',this)">
+<i class="fa-solid fa-money-bill"></i>
+<div>Cash on Delivery</div>
+</div>
+</div>
+
+<div id="errorMessage" class="error-message"></div>
+
+<!-- CARD -->
+<div id="cardForm">
+<label for="cardName">Cardholder Name</label>
+<input type="text" id="cardName" placeholder="John Doe">
+
+<label for="cardNumber">Card Number</label>
+<input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
+
+<div class="row">
+<div>
+<label for="expiry">Expiry Date</label>
+<input type="text" id="expiry" placeholder="MM/YY">
+</div>
+<div>
+<label for="cvv">CVV</label>
+<input type="text" id="cvv" placeholder="123">
+</div>
+</div>
+
+<label for="billingAddress">Billing Address</label>
+<input type="text" id="billingAddress" placeholder="123 Main St">
+</div>
+
+<!-- INSTAPAY -->
+<div id="instapayForm" class="hidden">
+<div class="info-box">
+Pay instantly using your InstaPay mobile wallet.
+</div>
+<label for="instapayPhone">InstaPay Phone Number</label>
+<input type="text" id="instapayPhone" placeholder="+20 100 123 4567">
+</div>
+
+<!-- CASH -->
+<div id="cashForm" class="hidden">
+<div class="info-box">
+Pay with cash when your order arrives.
+</div>
+<label for="cashName">Full Name</label>
+<input type="text" id="cashName" placeholder="John Doe">
+<label for="deliveryAddress">Delivery Address</label>
+<input type="text" id="deliveryAddress" placeholder="123 Main St">
+<label for="cashPhone">Phone Number</label>
+<input type="text" id="cashPhone" placeholder="+20 100 123 4567">
+</div>
+
+<button type="button" id="payBtn">Complete Payment</button>
+<p class="note" id="noteText">Your payment information is encrypted and secure</p>
+</div>
+
+<!-- RIGHT -->
+<div class="box summary">
+<h2>Order Summary</h2>
+<div id="summaryItems" class="cart-summary-items">
+<p>Loading...</p>
+</div>
+<hr style="margin:15px 0;">
+<div class="line">
+<span>Subtotal</span>
+<span>LE<span id="subtotal">0.00</span></span>
+</div>
+<div class="line">
+  <span>Shipping</span>
+  <span>LE<span id="shipping">97.00</span></span>
+</div>
+<div class="line total">
+<span>Total</span>
+<span>LE<span id="total">0.00</span></span>
+</div>
+</div>
+</div>
 </div>
 
 <script>
-  const API_BASE = 'http://localhost:7070';
-  let enrolledCourses = [];
-  let pendingCourses = [];
+const API_BASE = 'http://localhost:7070';
+const SHIPPING_COST = 97;
+let cart = [];
+let singleItem = null;
+let checkoutMode = 'cart';
+let currentPaymentMethod = 'card';
+let hasCourses = false;
 
-  function getToken() {
-    try { return localStorage.getItem('token'); } catch(e) { return null; }
-  }
+function safeLocalStorageGet(key) {
+  try { return localStorage.getItem(key); } catch(e) { return null; }
+}
 
-  async function enrollInCourse(courseId) {
-    const token = getToken();
-    if (!token) return { success: false, error: 'Not logged in' };
-    
-    try {
-      const res = await fetch(`${API_BASE}/api/courses/${courseId}/enroll`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        }
-      });
-      const data = await res.json();
-      return { success: res.ok, message: data.error || data.message };
-    } catch (err) {
-      console.error('Enrollment error for course', courseId, err);
-      return { success: false, error: err.message };
+function safeLocalStorageSet(key, value) {
+  try { localStorage.setItem(key, value); } catch(e) {}
+}
+
+function getToken() { 
+  const token = safeLocalStorageGet('token');
+  console.log('🔑 Token exists:', !!token);
+  if (token) {
+    console.log('📝 Token preview:', token.substring(0, 30) + '...');
+    // Verify token format (should have 3 parts separated by dots)
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      console.error('❌ Invalid token format - does not have 3 parts');
+      return null;
     }
   }
+  return token;
+}
 
-  async function loadOrderAndEnroll() {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('session_id');
-    const method = params.get('method') || 'card';
-    const statusDiv = document.getElementById('enrollmentStatus');
-    const paymentMethodSpan = document.getElementById('paymentMethod');
+function getQueryParam(name) {
+  return new URL(window.location.href).searchParams.get(name);
+}
 
-    let paymentMethodText = 'Card';
-    if (method === 'instapay') paymentMethodText = 'InstaPay';
-    if (method === 'cash') paymentMethodText = 'Cash on Delivery';
-    paymentMethodSpan.textContent = paymentMethodText;
+function loadCartFromStorage() {
+  const saved = safeLocalStorageGet('cart');
+  cart = saved ? JSON.parse(saved) : [];
+  console.log('🛒 Cart loaded:', cart.length, 'items');
+  return cart;
+}
 
-    if (!sessionId) {
-      document.getElementById('orderNumber').textContent = 'Order placed successfully';
+function saveCart() {
+  safeLocalStorageSet('cart', JSON.stringify(cart));
+}
+
+function calculateTotals() {
+  let subtotal = 0;
+  if (checkoutMode === 'single-item' && singleItem) {
+    subtotal = Number(singleItem.price || 0);
+  } else if (checkoutMode === 'cart' && cart.length > 0) {
+    subtotal = Number(cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2));
+  }
+  const shipping = SHIPPING_COST;
+  const total = Number((subtotal + shipping).toFixed(2));
+  return { subtotal, shipping, total };
+}
+
+function selectMethod(type, el) {
+  document.querySelectorAll('.method').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  el.classList.add('active');
+  currentPaymentMethod = type;
+
+  document.getElementById('cardForm').classList.add('hidden');
+  document.getElementById('instapayForm').classList.add('hidden');
+  document.getElementById('cashForm').classList.add('hidden');
+
+  const { total } = calculateTotals();
+  const totalAmount = total.toFixed(2);
+
+  if (type === "card") {
+    document.getElementById('cardForm').classList.remove('hidden');
+    document.getElementById('payBtn').innerHTML = `Complete Payment - LE${totalAmount}`;
+    document.getElementById('noteText').innerText = 'Your payment information is encrypted and secure';
+  }
+  if (type === "instapay") {
+    document.getElementById('instapayForm').classList.remove('hidden');
+    document.getElementById('payBtn').innerHTML = `Continue to InstaPay - LE${totalAmount}`;
+    document.getElementById('noteText').innerText = 'Secure InstaPay checkout';
+  }
+  if (type === "cash") {
+    if (checkoutMode === 'single-item' && singleItem?.type === 'Course') {
+      showErrorMessage('Cash on Delivery is not available for courses. Please select Card or InstaPay.');
       return;
     }
-
-    try {
-      const res = await fetch(`${API_BASE}/api/payment/checkout-session?session_id=${sessionId}`);
-      const data = await res.json();
-
-      if (res.ok && data.order) {
-        document.getElementById('orderNumber').textContent = data.order._id.slice(-8).toUpperCase();
-        document.getElementById('orderDate').textContent = new Date(data.order.createdAt).toLocaleDateString();
-        document.getElementById('orderTotal').textContent = `LE ${data.order.amount?.toFixed(2) || '0.00'}`;
-        
-        // Extract course items from order
-        const courseItems = data.order.items.filter(item => item.itemType === 'Course' && item.item);
-        
-        if (courseItems.length > 0) {
-          statusDiv.innerHTML = '<div class="loading-spinner"></div> Enrolling you in your courses...';
-          
-          let successCount = 0;
-          let pendingCount = 0;
-          
-          for (const item of courseItems) {
-            const result = await enrollInCourse(item.item);
-            if (result.success) {
-              successCount++;
-              enrolledCourses.push(item.item);
-            } else {
-              pendingCount++;
-              pendingCourses.push({ id: item.item, name: item.name, error: result.message });
-            }
-          }
-          
-          if (successCount === courseItems.length) {
-            statusDiv.innerHTML = '<p class="status-badge status-success">✓ Successfully enrolled in all courses!</p>';
-            document.getElementById('statusIcon').className = 'success-icon';
-            document.getElementById('statusIcon').innerHTML = '✓';
-          } else if (successCount > 0) {
-            statusDiv.innerHTML = `
-              <p class="status-badge status-pending">⚠️ Enrolled in ${successCount} out of ${courseItems.length} courses.</p>
-              <p style="font-size: 13px; margin-top: 8px;">Pending courses: ${pendingCourses.map(c => c.name).join(', ')}</p>
-              <p style="font-size: 12px; color: #666; margin-top: 5px;">These courses are awaiting admin approval. You will get access once approved.</p>
-            `;
-            document.getElementById('statusIcon').className = 'warning-icon';
-            document.getElementById('statusIcon').innerHTML = '⚠️';
-            document.getElementById('statusTitle').textContent = 'Order Confirmed - Pending Access';
-            document.getElementById('statusMessage').textContent = 'Some courses are pending admin approval.';
-          } else {
-            statusDiv.innerHTML = `
-              <p class="status-badge status-pending">⚠️ Enrollment pending admin approval.</p>
-              <p style="font-size: 13px; margin-top: 8px;">Your courses will be available once approved by the admin.</p>
-              <p style="font-size: 12px; color: #666; margin-top: 5px;">You can check back later or contact support.</p>
-            `;
-            document.getElementById('statusIcon').className = 'warning-icon';
-            document.getElementById('statusIcon').innerHTML = '⚠️';
-            document.getElementById('statusTitle').textContent = 'Order Confirmed - Pending Approval';
-          }
-        } else {
-          statusDiv.innerHTML = '<p>Your order contains products only. No enrollment needed.</p>';
-        }
-        
-        localStorage.removeItem('cart');
-        localStorage.setItem('justPurchased', 'true');
-      } else {
-        document.getElementById('orderNumber').textContent = 'Order placed successfully';
-      }
-    } catch (err) {
-      console.error('Error loading order:', err);
-      document.getElementById('orderNumber').textContent = 'Order placed successfully';
-      document.getElementById('enrollmentStatus').innerHTML = '<p style="color: #f59e0b;">Order confirmed! You can view your purchases in "My Purchases".</p>';
+    if (checkoutMode === 'cart' && (hasCourses || cart.some(item => item.type === 'Course'))) {
+      showErrorMessage('Cash on Delivery is not available for courses. Please select Card or InstaPay.');
+      return;
     }
+    document.getElementById('cashForm').classList.remove('hidden');
+    document.getElementById('payBtn').innerHTML = `Confirm Order - LE${totalAmount}`;
+    document.getElementById('noteText').innerText = 'Your order will be prepared for delivery';
+  }
+  hideErrorMessage();
+}
+
+function showErrorMessage(message) {
+  const errorDiv = document.getElementById('errorMessage');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+}
+
+function hideErrorMessage() {
+  const errorDiv = document.getElementById('errorMessage');
+  errorDiv.style.display = 'none';
+}
+
+async function loadSingleItem() {
+  const token = getToken();
+  if (!token) {
+    showErrorMessage('Please log in before completing payment.');
+    document.getElementById('payBtn').disabled = true;
+    return;
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    if (window.lucide) lucide.createIcons();
-    loadOrderAndEnroll();
+  const itemId = getQueryParam('id');
+  const itemType = (getQueryParam('type') || 'product').toLowerCase();
 
-    const menuIcon = document.getElementById('menuIcon');
-    const navLinks = document.getElementById('navLinks');
-    if (menuIcon && navLinks) {
-      menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
-    }
+  if (!itemId) {
+    showErrorMessage('No checkout item selected.');
+    return;
+  }
+
+  const route = itemType === 'course' ? 'courses' : 'products';
+  try {
+    const res = await fetch(`${API_BASE}/api/${route}/${itemId}`, {
+      headers: { 
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Unable to load item');
+    const item = data.data;
+    singleItem = {
+      _id: item._id,
+      name: itemType === 'course' ? (item.title || 'Course') : (item.name || 'Product'),
+      price: Number(item.price || 0),
+      type: itemType === 'course' ? 'Course' : 'Product',
+      quantity: 1
+    };
+    hasCourses = singleItem.type === 'Course';
+    checkoutMode = 'single-item';
+    renderOrder();
+    document.getElementById('payBtn').disabled = false;
+  } catch (err) {
+    showErrorMessage(err.message);
+  }
+}
+
+function renderOrder() {
+  let itemsHtml = '';
+  if (checkoutMode === 'single-item' && singleItem) {
+    itemsHtml = `
+      <div class="cart-item-row">
+        <div class="cart-item-name-payment">${escapeHtml(singleItem.name)}</div>
+        <div class="cart-item-subtotal">LE${singleItem.price.toFixed(2)}</div>
+      </div>
+    `;
+  } else if (checkoutMode === 'cart' && cart.length > 0) {
+    itemsHtml = cart.map((item, index) => `
+      <div class="cart-item-row">
+        <div class="cart-item-name-payment">${escapeHtml(item.name)}</div>
+        <div class="cart-item-subtotal">LE${(item.price * item.quantity).toFixed(2)}</div>
+        <button class="remove-item-btn" data-index="${index}">Remove</button>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('summaryItems').innerHTML = itemsHtml || '<p>No items in cart.</p>';
+
+  document.querySelectorAll('.remove-item-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const index = parseInt(this.dataset.index);
+      if (!isNaN(index) && index >= 0 && index < cart.length) {
+        cart.splice(index, 1);
+        saveCart();
+        if (cart.length === 0) {
+          showErrorMessage('Your cart is empty.');
+          document.getElementById('payBtn').disabled = true;
+        }
+        renderOrder();
+        updateTotals();
+        hasCourses = cart.some(item => item.type === 'Course');
+      }
+    });
   });
-</script>
+  updateTotals();
+}
 
+function updateTotals() {
+  const { subtotal, shipping, total } = calculateTotals();
+  document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+  document.getElementById('shipping').textContent = shipping.toFixed(2);
+  document.getElementById('total').textContent = total.toFixed(2);
+  
+  const totalAmount = total.toFixed(2);
+  if (currentPaymentMethod === 'card') {
+    document.getElementById('payBtn').innerHTML = `Complete Payment - LE${totalAmount}`;
+  } else if (currentPaymentMethod === 'instapay') {
+    document.getElementById('payBtn').innerHTML = `Continue to InstaPay - LE${totalAmount}`;
+  } else if (currentPaymentMethod === 'cash') {
+    document.getElementById('payBtn').innerHTML = `Confirm Order - LE${totalAmount}`;
+  }
+}
+
+function renderCart() {
+  const token = getToken();
+  if (!token) {
+    showErrorMessage('Please log in before completing payment.');
+    document.getElementById('payBtn').disabled = true;
+    return;
+  }
+  loadCartFromStorage();
+  if (cart.length === 0) {
+    showErrorMessage('Your cart is empty.');
+    document.getElementById('payBtn').disabled = true;
+    return;
+  }
+  hasCourses = cart.some(item => item.type === 'Course');
+  checkoutMode = 'cart';
+  renderOrder();
+  document.getElementById('payBtn').disabled = false;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+// Check if token is expired
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const expDate = new Date(payload.exp * 1000);
+    const now = new Date();
+    console.log('⏰ Token expires:', expDate.toLocaleString());
+    console.log('📅 Current time:', now.toLocaleString());
+    const expired = Date.now() >= payload.exp * 1000;
+    if (expired) console.log('⚠️ Token has EXPIRED!');
+    return expired;
+  } catch(e) {
+    console.error('Error checking token expiration:', e);
+    return true;
+  }
+}
+
+// Validate token with server
+async function validateToken() {
+  const token = getToken();
+  if (!token) {
+    console.log('❌ No token found');
+    return false;
+  }
+  
+  if (isTokenExpired(token)) {
+    console.log('❌ Token expired');
+    return false;
+  }
+  
+  try {
+    console.log('🔍 Validating token with server...');
+    const res = await fetch(`${API_BASE}/api/users/me`, {
+      headers: { 
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('📡 Validation response status:', res.status);
+    
+    if (res.ok) {
+      const data = await res.json();
+      console.log('✅ Token is valid! User:', data.data?.email);
+      return true;
+    } else {
+      console.log('❌ Token validation failed with status:', res.status);
+      return false;
+    }
+  } catch(err) {
+    console.error('Token validation error:', err);
+    return false;
+  }
+}
+
+async function processPayment() {
+  console.log('=== 💳 Starting payment process ===');
+  
+  if (checkoutMode === 'cart' && cart.length === 0) {
+    alert('Your cart is empty.');
+    return;
+  }
+
+  let paymentData = {};
+  let selectedMethod = currentPaymentMethod;
+
+  if (selectedMethod === 'card') {
+    const name = document.getElementById('cardName').value.trim();
+    const card = document.getElementById('cardNumber').value.replace(/\s/g, '');
+    const expiry = document.getElementById('expiry').value.trim();
+    const cvv = document.getElementById('cvv').value.trim();
+    const address = document.getElementById('billingAddress').value.trim();
+
+    if (!name || !card || !expiry || !cvv || !address) {
+      alert('Please fill in all card details.');
+      return;
+    }
+    if (card.length < 12) {
+      alert('Please enter a valid card number.');
+      return;
+    }
+    paymentData = { cardNumber: card, name, expiry, cvv, billingAddress: address };
+  } 
+  else if (selectedMethod === 'instapay') {
+    const phone = document.getElementById('instapayPhone').value.trim();
+    if (!phone) {
+      alert('Please enter your InstaPay phone number.');
+      return;
+    }
+    paymentData = { phoneNumber: phone };
+  }
+  else if (selectedMethod === 'cash') {
+    const fullName = document.getElementById('cashName').value.trim();
+    const address = document.getElementById('deliveryAddress').value.trim();
+    const phone = document.getElementById('cashPhone').value.trim();
+    if (!fullName || !address || !phone) {
+      alert('Please fill in all delivery details.');
+      return;
+    }
+    paymentData = { fullName, deliveryAddress: address, phoneNumber: phone };
+  }
+
+  let items = [];
+  if (checkoutMode === 'single-item' && singleItem) {
+    items = [{
+      id: singleItem._id,
+      type: singleItem.type,
+      name: singleItem.name,
+      price: singleItem.price,
+      quantity: singleItem.quantity
+    }];
+  } else if (checkoutMode === 'cart') {
+    items = cart.map(item => ({
+      id: item._id,
+      type: item.type || 'Product',
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity
+    }));
+  }
+
+  const token = getToken();
+  console.log('🔑 Token present:', !!token);
+  
+  if (!token) {
+    alert('Please log in.');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Check if token is expired
+  if (isTokenExpired(token)) {
+    alert('Your session has expired. Please log in again.');
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const button = document.getElementById('payBtn');
+  const originalText = button.innerHTML;
+  button.innerHTML = 'Processing...';
+  button.disabled = true;
+
+  try {
+    const requestBody = {
+      items,
+      successUrl: window.location.origin + '/checkout-success.html',
+      cancelUrl: window.location.origin + '/checkout-cancel.html',
+      payment: paymentData,
+      paymentMethod: selectedMethod
+    };
+    
+    console.log('📤 Sending request to:', `${API_BASE}/api/payment/create-checkout-session`);
+    console.log('📋 Request headers:', {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token.substring(0, 20) + '...'
+    });
+    
+    const response = await fetch(`${API_BASE}/api/payment/create-checkout-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      credentials: 'include',
+      body: JSON.stringify(requestBody)
+    });
+    
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response status text:', response.statusText);
+    
+    // Try to get response body
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+      console.log('📦 Response data:', data);
+    } else {
+      const text = await response.text();
+      console.log('📦 Response text:', text);
+      data = { error: 'Invalid response from server' };
+    }
+    
+    if (response.status === 401) {
+      console.error('❌ Authentication failed - 401 Unauthorized');
+      console.error('Error details:', data);
+      localStorage.removeItem('token');
+      alert('Your session has expired. Please log in again.');
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    if (response.ok && data.url) {
+      console.log('✅ Payment session created, redirecting to:', data.url);
+      if (checkoutMode === 'cart') {
+        safeLocalStorageSet('cart', '[]');
+      }
+      window.location.href = data.url;
+    } else {
+      console.error('❌ Payment failed:', data);
+      alert(data.error || data.message || 'Payment failed. Please try again.');
+      button.innerHTML = originalText;
+      button.disabled = false;
+    }
+  } catch (err) {
+    console.error('❌ Network error:', err);
+    alert('Network error: ' + err.message);
+    button.innerHTML = originalText;
+    button.disabled = false;
+  }
+}
+
+function formatCardNumber(input) {
+  input.value = input.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+}
+
+function formatExpiry(input) {
+  let value = input.value.replace(/\D/g, '');
+  if (value.length >= 2) {
+    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+  }
+  input.value = value;
+}
+
+// Check auth on page load
+async function checkAuthOnLoad() {
+  console.log('🔐 Checking authentication on page load...');
+  const token = getToken();
+  
+  if (!token) {
+    console.warn('❌ No token found on checkout page');
+    showErrorMessage('Please log in to continue with checkout.');
+    document.getElementById('payBtn').disabled = true;
+    
+    // Add a login button redirect
+    const errorDiv = document.getElementById('errorMessage');
+    if (errorDiv) {
+      const loginLink = document.createElement('a');
+      loginLink.href = 'login.html';
+      loginLink.textContent = ' Go to Login';
+      loginLink.style.color = '#007bff';
+      loginLink.style.textDecoration = 'underline';
+      errorDiv.appendChild(document.createElement('br'));
+      errorDiv.appendChild(loginLink);
+    }
+    return false;
+  }
+  
+  console.log('✅ Token found, validating...');
+  const isValid = await validateToken();
+  
+  if (!isValid) {
+    console.warn('❌ Invalid or expired token');
+    showErrorMessage('Your session has expired. Please log in again.');
+    document.getElementById('payBtn').disabled = true;
+    localStorage.removeItem('token');
+    
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 3000);
+    return false;
+  }
+  
+  console.log('✅ Authentication verified successfully');
+  return true;
+}
+
+// Debug: Check what's in localStorage on load
+function debugLocalStorage() {
+  console.log('=== 🔍 LocalStorage Debug ===');
+  console.log('All items in localStorage:', { ...localStorage });
+  const token = localStorage.getItem('token');
+  if (token) {
+    console.log('Token found in localStorage');
+    try {
+      const parts = token.split('.');
+      console.log('Token parts count:', parts.length);
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        console.log('Token payload:', { ...payload, exp: new Date(payload.exp * 1000).toLocaleString() });
+      }
+    } catch(e) {
+      console.error('Error parsing token:', e);
+    }
+  } else {
+    console.log('No token in localStorage');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  console.log('📄 Checkout page loaded');
+  debugLocalStorage();
+  
+  if (window.lucide) lucide.createIcons();
+  
+  const menuIcon = document.getElementById('menuIcon');
+  const navLinks = document.getElementById('navLinks');
+  if (menuIcon && navLinks) {
+    menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+  }
+
+  const cardNumberInput = document.getElementById('cardNumber');
+  if (cardNumberInput) {
+    cardNumberInput.addEventListener('input', function(e) { formatCardNumber(this); });
+  }
+
+  const expiryInput = document.getElementById('expiry');
+  if (expiryInput) {
+    expiryInput.addEventListener('input', function(e) { formatExpiry(this); });
+  }
+
+  document.getElementById('payBtn').addEventListener('click', processPayment);
+
+  // Check authentication first
+  const isAuthenticated = await checkAuthOnLoad();
+  
+  if (isAuthenticated) {
+    const itemId = getQueryParam('id');
+    if (itemId) {
+      console.log('🛍️ Loading single item:', itemId);
+      await loadSingleItem();
+    } else {
+      console.log('🛒 Loading cart');
+      renderCart();
+    }
+  }
+});
+
+window.selectMethod = selectMethod;
+</script>
 <script src="navbar.js"></script>
 </body>
 </html>
