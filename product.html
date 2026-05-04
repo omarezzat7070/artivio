@@ -664,7 +664,9 @@
         <div class="cart-item">
           <div class="cart-item-details">
             <div class="cart-item-name">${escapeHtml(item.name)}</div>
-            <div>LE${item.price.toFixed(2)} each</div>
+            <div>LE${Number(item.price).toFixed(2)} each</div>
+            ${item.duration ? `<div>Duration: ${escapeHtml(item.duration.toString())}</div>` : ''}
+            ${item.stock !== undefined ? `<div>Stock: ${escapeHtml(item.stock.toString())}</div>` : ''}
           </div>
           <div class="cart-item-qty">
             <button onclick="updateQuantity('${item._id}', -1)">−</button>
