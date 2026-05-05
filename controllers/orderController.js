@@ -152,13 +152,8 @@ function getOrderStatus(order) {
   const orderDate = new Date(order.createdAt);
   const daysSince = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
   
-  if (order.paymentStatus !== 'paid') {
-    return {
-      status: 'pending_payment',
-      message: 'Waiting for payment confirmation',
-      estimatedDelivery: null
-    };
-  }
+  // All orders are treated as paid
+  // No pending_payment status anymore
   
   if (daysSince < 1) {
     return {
@@ -207,18 +202,15 @@ function getOrderTimeline(order) {
       description: 'Your order has been received',
       completed: true,
       timestamp: order.createdAt
-    }
-  ];
-  
-  if (order.paymentStatus === 'paid') {
-    timeline.push({
+    },
+    {
       status: 'payment_confirmed',
       title: 'Payment Confirmed',
       description: 'Payment has been verified',
       completed: true,
       timestamp: order.updatedAt
-    });
-  }
+    }
+  ];
   
   const now = new Date();
   const orderDate = new Date(order.createdAt);

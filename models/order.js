@@ -25,7 +25,7 @@ const orderSchema = new mongoose.Schema(
       default: 'fake' 
     },
     paymentDetails: { type: mongoose.Schema.Types.Mixed },
-    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'paid' }, // ← DEFAULT CHANGED TO 'paid'
     hasCourse: { type: Boolean, default: false }
   },
   { timestamps: true }
