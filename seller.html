@@ -848,6 +848,11 @@
 
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
+  function getMediaUrl(media) {
+    if (!media) return '';
+    if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+    return `${API_BASE}/uploads/${media}`;
+  }
   let allMyProducts = [];
   let allMyCourses = [];
   let editingProductId = null;
@@ -993,7 +998,7 @@
       
       tbody.innerHTML = allMyProducts.map(p => `
         <tr>
-          <td>${p.image ? `<img src="${API_BASE}/uploads/${p.image}" class="preview-img" onerror="this.src='assets/no-background.png'">` : 'No image'}</td>
+          <td>${p.image ? `<img src="${getMediaUrl(p.image)}" class="preview-img" onerror="this.src='assets/no-background.png'">` : 'No image'}</td>
           <td>${escapeHtml(p.name)}</td>
           <td>${formatPrice(p.price)}</td>
           <td>${p.stock || 0}</td>
@@ -1039,7 +1044,7 @@
       
       tbody.innerHTML = allMyCourses.map(c => `
         <tr>
-          <td>${c.image ? `<img src="${API_BASE}/uploads/${c.image}" class="preview-img" onerror="this.src='assets/no-background.png'">` : 'No image'}</td>
+          <td>${c.image ? `<img src="${getMediaUrl(c.image)}" class="preview-img" onerror="this.src='assets/no-background.png'">` : 'No image'}</td>
           <td>${escapeHtml(c.title)}</td>
           <td>${formatPrice(c.price)}</td>
           <td>${c.students?.length || 0}</td>
@@ -1071,7 +1076,7 @@
     
     if (product.image) {
       const preview = document.getElementById('editProductPreview');
-      preview.src = `${API_BASE}/uploads/${product.image}`;
+      preview.src = getMediaUrl(product.image);
       preview.style.display = 'block';
     } else {
       document.getElementById('editProductPreview').style.display = 'none';
@@ -1096,7 +1101,7 @@
     
     if (course.image) {
       const preview = document.getElementById('editCoursePreview');
-      preview.src = `${API_BASE}/uploads/${course.image}`;
+      preview.src = getMediaUrl(course.image);
       preview.style.display = 'block';
     } else {
       document.getElementById('editCoursePreview').style.display = 'none';

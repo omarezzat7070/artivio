@@ -432,6 +432,11 @@
 
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
+  function getMediaUrl(media) {
+    if (!media) return '';
+    if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+    return `${API_BASE}/uploads/${media}`;
+  }
   let allCourses = [];
 
   function getToken() { try { return localStorage.getItem('token'); } catch(e) { return null; } }
@@ -501,7 +506,7 @@
     if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="7">No courses found<\/td><\/tr>'; return; }
     tbody.innerHTML = filtered.map(c => `
       <tr>
-        <td>${c.image ? `<img src="${API_BASE}/uploads/${c.image}" class="preview-img">` : 'No image'}<\/td>
+        <td>${c.image ? `<img src="${getMediaUrl(c.image)}" class="preview-img">` : 'No image'}<\/td>
         <td>${escapeHtml(c.title)}<\/td>
         <td>${escapeHtml(c.artisan?.name || 'Unknown')}<\/td>
         <td>${formatPrice(c.price)}<\/td>
@@ -559,7 +564,7 @@
     
     if (course.image) {
       const preview = document.getElementById('editCoursePreview');
-      preview.src = `${API_BASE}/uploads/${course.image}`;
+      preview.src = getMediaUrl(course.image);
       preview.style.display = 'block';
     }
     

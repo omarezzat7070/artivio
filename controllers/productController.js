@@ -1,6 +1,7 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
 const asyncHandler = require("../middleware/asyncHandler");
+const { isCloudinaryConfigured, uploadToCloudinary } = require("../config/cloudinary");
 
 const canAccessUnapprovedProduct = (req, product) => {
   if (!req.user) return false;
@@ -8,6 +9,18 @@ const canAccessUnapprovedProduct = (req, product) => {
     req.user.role === "admin" ||
     product.artisan.toString() === req.user.id
   );
+};
+
+const uploadProductImage = async (file) => {
+  if (!file) return "";
+  if (!isCloudinaryConfigured()) {
+    throw new Error("Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+  }
+  const result = await uploadToCloudinary(file, {
+    folder: "artivio/products",
+    resource_type: "image"
+  });
+  return result.secure_url;
 };
 
 // GET all products
@@ -69,7 +82,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
   req.body.stock = Math.max(0, Number(req.body.stock) || 0);
   
   if (req.file) {
-    req.body.image = req.file.filename;
+    req.body.image = await uploadProductImage(req.file);
   }
   
   const product = await Product.create(req.body);
@@ -104,7 +117,7 @@ exports.updateProduct = asyncHandler(async (req, res) => {
   }
 
   if (req.file) {
-    req.body.image = req.file.filename;
+    req.body.image = await uploadProductImage(req.file);
   }
 
   // Any seller/artisan content update needs re-approval

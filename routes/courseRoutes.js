@@ -17,13 +17,8 @@ const {
   updateCoursePartModeration
 } = require("../controllers/courseController");
 
-// Multer setup for video upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
-});
 // Limit per-file size to 50MB to avoid very large uploads resetting connections
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 // Routes
 router.route("/")

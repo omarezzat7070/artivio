@@ -678,6 +678,12 @@
     return `LE ${numPrice.toFixed(2)}`;
   }
 
+  function getMediaUrl(media) {
+    if (!media) return '';
+    if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+    return `${window.API_BASE}/uploads/${media}`;
+  }
+
   // Featured Products - Load Best Selling (Top 3)
   async function loadBestSellingProducts() {
     const container = document.getElementById('featuredProducts');
@@ -711,7 +717,7 @@
       // Display products
       container.innerHTML = bestSelling.map((product) => {
         const imageUrl = product.image 
-  ? `${window.API_BASE}/uploads/${product.image}` 
+  ? getMediaUrl(product.image) 
   : 'https://omarezzat7070.github.io/artivio/assets/no-background.png';
         
         // Get the price correctly

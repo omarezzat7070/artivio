@@ -392,6 +392,11 @@
 
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
+  function getMediaUrl(media) {
+    if (!media) return '';
+    if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+    return `${API_BASE}/uploads/${media}`;
+  }
   let allProducts = [];
 
   function getToken() { try { return localStorage.getItem('token'); } catch(e) { return null; } }
@@ -432,7 +437,7 @@
 
     tbody.innerHTML = filtered.map(p => `
       <tr>
-        <td>${p.image ? `<img src="${API_BASE}/uploads/${p.image}" class="preview-img">` : 'No image'}</td>
+        <td>${p.image ? `<img src="${getMediaUrl(p.image)}" class="preview-img">` : 'No image'}</td>
         <td>${escapeHtml(p.name)}</td>
         <td>${escapeHtml(p.artisan?.name || 'Unknown')}</td>
         <td>${formatPrice(p.price)}</td>
@@ -490,7 +495,7 @@
     
     if (product.image) {
       const preview = document.getElementById('editProductPreview');
-      preview.src = `${API_BASE}/uploads/${product.image}`;
+      preview.src = getMediaUrl(product.image);
       preview.style.display = 'block';
     }
     

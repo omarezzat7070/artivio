@@ -3,6 +3,7 @@ const Order = require("../models/order");
 const asyncHandler = require("../middleware/asyncHandler");
 const path = require('path');
 const fs = require('fs');
+const { isCloudinaryConfigured, uploadToCloudinary } = require("../config/cloudinary");
 let ffmpeg;
 try {
   ffmpeg = require('fluent-ffmpeg');
@@ -11,6 +12,7 @@ try {
 }
 
 async function transcodeIfNeeded(file) {
+  if (file && file.buffer) return file;
   if (!file || !file.path || !file.filename) return file;
   const ext = path.extname(file.filename).toLowerCase();
   if (ext === '.mp4' || !ffmpeg) return file;
@@ -40,6 +42,30 @@ async function transcodeIfNeeded(file) {
     }
   });
 }
+
+const uploadCourseImage = async (file) => {
+  if (!file) return "";
+  if (!isCloudinaryConfigured()) {
+    throw new Error("Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+  }
+  const result = await uploadToCloudinary(file, {
+    folder: "artivio/courses/images",
+    resource_type: "image"
+  });
+  return result.secure_url;
+};
+
+const uploadCourseVideo = async (file) => {
+  if (!file) return "";
+  if (!isCloudinaryConfigured()) {
+    throw new Error("Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+  }
+  const result = await uploadToCloudinary(file, {
+    folder: "artivio/courses/videos",
+    resource_type: "video"
+  });
+  return result.secure_url;
+};
 
 const canAccessUnapprovedCourse = (req, course) => {
   if (!req.user) return false;
@@ -108,7 +134,7 @@ const mapUploadedPartVideos = async (req) => {
     }
   }
 
-  req.body.parts = req.body.parts.map((p, idx) => ({
+  req.body.parts = await Promise.all(req.body.parts.map(async (p, idx) => ({
     ...normalizePartInput(p),
     partNumber: Number(p.partNumber) || idx + 1,
     moderationStatus: "pending",
@@ -116,8 +142,8 @@ const mapUploadedPartVideos = async (req) => {
     moderatedBy: null,
     moderatedAt: null,
     submittedAt: new Date(),
-    video: (partVideos[idx] && partVideos[idx].filename) || p.video || ''
-  }));
+    video: (partVideos[idx] && await uploadCourseVideo(partVideos[idx])) || p.video || ''
+  })));
 };
 
 // GET all courses
@@ -180,7 +206,7 @@ exports.createCourse = asyncHandler(async (req, res) => {
 
   if (req.files) {
     if (req.files.image) {
-      req.body.image = req.files.image[0].filename;
+      req.body.image = await uploadCourseImage(req.files.image[0]);
     }
   }
 
@@ -222,7 +248,7 @@ exports.updateCourse = asyncHandler(async (req, res) => {
 
   if (req.files) {
     if (req.files.image) {
-      req.body.image = req.files.image[0].filename;
+      req.body.image = await uploadCourseImage(req.files.image[0]);
     }
   }
 
@@ -356,7 +382,7 @@ exports.addCoursePart = asyncHandler(async (req, res) => {
   let partVideoFilename = incoming.video;
   if (req.files && req.files.partVideo && req.files.partVideo[0]) {
     const transcoded = await transcodeIfNeeded(req.files.partVideo[0]);
-    partVideoFilename = transcoded.filename;
+    partVideoFilename = await uploadCourseVideo(transcoded);
   }
 
   const newPart = {

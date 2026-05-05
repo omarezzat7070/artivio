@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
 const Order = require('../models/order');
+const Course = require('../models/course');
 const crypto = require('crypto');
 
 // POST /api/payment/create-checkout-session
@@ -15,7 +16,10 @@ router.post('/create-checkout-session', protect, async (req, res) => {
   }
 
   try {
-    const amount = items.reduce((sum, it) => sum + ((it.price || 0) * (it.quantity || 1)), 0);
+    const amount = items.reduce((sum, it) => {
+      return sum + ((it.price || 0) * (it.quantity || 1));
+    }, 0);
+
     const TAX_RATE = 0.02;
     const tax = Number((amount * TAX_RATE).toFixed(2));
     const totalWithTax = Number((amount + tax).toFixed(2));
@@ -32,37 +36,30 @@ router.post('/create-checkout-session', protect, async (req, res) => {
     }
 
     let paymentDetails = {};
-    let paymentStatus = 'pending';
-
     if (selectedMethod === 'card') {
-      if (payment && payment.cardNumber) {
+      if (payment?.cardNumber) {
         const num = String(payment.cardNumber).replace(/\s+/g, '');
         paymentDetails = {
           cardLast4: num.slice(-4),
-          cardholderName: payment.name || '',
-          expiry: payment.expiry || '',
+          cardholderName: payment?.name || '',
+          expiry: payment?.expiry || '',
           type: 'card',
-          billingAddress: payment.billingAddress || ''
+          billingAddress: payment?.billingAddress || ''
         };
       }
-      paymentStatus = 'paid';
-    } 
-    else if (selectedMethod === 'instapay') {
+    } else if (selectedMethod === 'instapay') {
       paymentDetails = {
         type: 'instapay',
         phoneNumber: payment?.phoneNumber || '',
-        status: 'pending'
+        status: 'completed'
       };
-      paymentStatus = 'pending'; // Will be confirmed manually
-    } 
-    else if (selectedMethod === 'cash') {
+    } else if (selectedMethod === 'cash') {
       paymentDetails = {
         type: 'cash_on_delivery',
         fullName: payment?.fullName || '',
         deliveryAddress: payment?.deliveryAddress || '',
         phoneNumber: payment?.phoneNumber || ''
       };
-      paymentStatus = 'pending'; // Cash on delivery
     }
 
     const order = await Order.create({
@@ -77,15 +74,32 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       })),
       amount: totalWithTax,
       subtotal: amount,
-      tax: tax,
+      tax,
       taxRate: TAX_RATE,
       currency,
       stripeSessionId: fakeSessionId,
       paymentMethod: selectedMethod,
       paymentDetails,
-      paymentStatus: 'paid', // ALWAYS PAID
-      hasCourse: hasCourse
+      paymentStatus: 'paid',
+      hasCourse
     });
+
+    // Auto-enroll user in courses immediately after payment
+    if (hasCourse) {
+      for (const item of items) {
+        if (item.type === 'Course' && item.id) {
+          try {
+            const course = await Course.findById(item.id);
+            if (course && course.students && !course.students.includes(req.user._id)) {
+              course.students.push(req.user._id);
+              await course.save();
+            }
+          } catch (err) {
+            console.error('Auto-enrollment error:', err);
+          }
+        }
+      }
+    }
 
     const fakeSession = { 
       url: (successUrl || '/') + '?session_id=' + fakeSessionId + '&method=' + selectedMethod, 
@@ -102,7 +116,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
 
 // GET /api/payment/checkout-session
 router.get('/checkout-session', async (req, res) => {
-  const { session_id } = req.query;
+  const session_id = req.query.session_id;
   if (!session_id) return res.status(400).json({ error: 'session_id is required' });
 
   try {
@@ -133,12 +147,27 @@ router.post('/instapay-webhook', async (req, res) => {
     const order = await Order.findById(orderId);
     if (order && order.paymentMethod === 'instapay') {
       order.paymentStatus = 'paid';
+      order.paymentDetails = order.paymentDetails || {};
       order.paymentDetails.transactionId = transactionId;
       order.paymentDetails.status = 'completed';
       await order.save();
+      
+      // Auto-enroll for courses
+      if (order.hasCourse) {
+        for (const item of order.items) {
+          if (item.itemType === 'Course' && item.item) {
+            const course = await Course.findById(item.item);
+            if (course && course.students && !course.students.includes(order.user)) {
+              course.students.push(order.user);
+              await course.save();
+            }
+          }
+        }
+      }
     }
     res.json({ success: true });
   } catch (err) {
+    console.error('Webhook error:', err);
     res.status(500).json({ error: err.message });
   }
 });

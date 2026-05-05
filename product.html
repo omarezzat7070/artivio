@@ -567,13 +567,18 @@
       </div>
     </div>
     <div class="footer-bottom">
-      © 2026 Artivio. All Rights Reserved.
+      ï¿½ 2026 Artivio. All Rights Reserved.
     </div>
   </div>
 </footer>
 
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
+  function getMediaUrl(media) {
+    if (!media) return '';
+    if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+    return `${API_BASE}/uploads/${media}`;
+  }
   let products = [];
   let categories = ['All'];
   let selectedCategory = 'All';
@@ -764,7 +769,7 @@
     }
     
     productsEl.innerHTML = filtered.map(p => {
-      const imageUrl = p.image ? `${API_BASE}/uploads/${p.image}` : 'assets/no-background.png';
+      const imageUrl = p.image ? getMediaUrl(p.image) : 'assets/no-background.png';
       return `
         <div class="card">
           <img src="${imageUrl}" alt="${escapeHtml(p.name)}">

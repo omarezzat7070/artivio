@@ -22,6 +22,11 @@ body{font-family:Arial;background:var(--bg);margin:0;padding:20px}
 </div>
 <script>
 const API_BASE = window.API_BASE || window.location.origin;
+function getMediaUrl(media) {
+  if (!media) return '';
+  if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+  return `${API_BASE}/uploads/${media}`;
+}
 function getQueryParam(name){const url=new URL(window.location.href);return url.searchParams.get(name)}
 async function loadContents(){
   const id = getQueryParam('id');
@@ -79,7 +84,7 @@ async function loadContents(){
         media.className = 'media';
         if(p.video){
           const vid = document.createElement('video');
-          vid.src = `${API_BASE}/uploads/${p.video}`;
+          vid.src = getMediaUrl(p.video);
           vid.controls = true;
           vid.style.maxWidth = '640px';
           vid.style.display = 'block';

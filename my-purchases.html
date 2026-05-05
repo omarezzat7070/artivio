@@ -300,6 +300,11 @@
 
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
+  function getMediaUrl(media) {
+    if (!media) return '';
+    if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+    return `${API_BASE}/uploads/${media}`;
+  }
   let purchasedCourses = [];
   let purchasedProducts = [];
   let courseDataStore = {};
@@ -429,7 +434,7 @@
 
     container.innerHTML = purchasedCourses.map(course => `
       <div class="purchase-card">
-        <img src="${course.image ? `${API_BASE}/uploads/${course.image}` : 'assets/no-background.png'}" class="purchase-image" onerror="this.src='assets/no-background.png'">
+        <img src="${course.image ? `${getMediaUrl(course.image)}` : 'assets/no-background.png'}" class="purchase-image" onerror="this.src='assets/no-background.png'">
         <div class="purchase-info">
           <div class="purchase-title">${escapeHtml(course.title)}</div>
           <div class="purchase-meta">${course.duration || 0} hours • Qty: ${course.quantity || 1}</div>
@@ -473,7 +478,7 @@
 
     container.innerHTML = purchasedProducts.map(product => `
       <div class="purchase-card">
-        <img src="${product.image ? `${API_BASE}/uploads/${product.image}` : 'assets/no-background.png'}" class="purchase-image" onerror="this.src='assets/no-background.png'">
+        <img src="${product.image ? `${getMediaUrl(product.image)}` : 'assets/no-background.png'}" class="purchase-image" onerror="this.src='assets/no-background.png'">
         <div class="purchase-info">
           <div class="purchase-title">${escapeHtml(product.name)}</div>
           <div class="purchase-meta">${product.category || 'Handmade'} • Qty: ${product.quantity || 1}</div>
@@ -551,7 +556,7 @@
             const videoPlayer = document.getElementById('courseVideo');
             const videoSource = document.getElementById('videoSource');
             if (videoUrl) {
-              videoSource.src = `${API_BASE}/uploads/${videoUrl}`;
+              videoSource.src = getMediaUrl(videoUrl);
               videoPlayer.load();
               videoPlayer.play();
             } else {
@@ -569,7 +574,7 @@
         if (parts[0] && parts[0].video) {
           const videoPlayer = document.getElementById('courseVideo');
           const videoSource = document.getElementById('videoSource');
-          videoSource.src = `${API_BASE}/uploads/${parts[0].video}`;
+          videoSource.src = getMediaUrl(parts[0].video);
           videoPlayer.load();
           document.querySelector('.part-item')?.classList.add('active');
         }

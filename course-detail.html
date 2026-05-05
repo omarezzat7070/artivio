@@ -124,6 +124,11 @@
     // Your existing JavaScript code (unchanged) – keep everything from the original course-detail.html
     // Always use the real backend address
 const API_BASE = window.API_BASE || window.location.origin;
+    function getMediaUrl(media) {
+      if (!media) return '';
+      if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+      return `${API_BASE}/uploads/${media}`;
+    }
     let currentCourse = null;
     let isPurchased = false;
     let isOwner = false;
@@ -284,7 +289,7 @@ async function checkPurchaseStatus(courseId) {
       
       if (lesson.type === 'overview') {
         if (lesson.mediaUrl) {
-          videoBox.innerHTML = `<img src="${API_BASE}/uploads/${lesson.mediaUrl}" alt="${lesson.title}" style="max-width:100%; max-height:100%; object-fit:contain;" />`;
+          videoBox.innerHTML = `<img src="${getMediaUrl(lesson.mediaUrl)}" alt="${lesson.title}" style="max-width:100%; max-height:100%; object-fit:contain;" />`;
         } else {
           videoBox.innerHTML = `<span>📘</span><h2>${escapeHtml(lesson.title)}</h2><p>Course overview. Enroll to access full lessons.</p>`;
         }
@@ -302,7 +307,7 @@ async function checkPurchaseStatus(courseId) {
       } else if (lesson.mediaUrl) {
         videoBox.innerHTML = `
           <video controls style="width:100%; max-height:380px; border-radius:20px;">
-            <source src="${API_BASE}/uploads/${lesson.mediaUrl}" type="video/mp4">
+            <source src="${getMediaUrl(lesson.mediaUrl)}" type="video/mp4">
             Your browser does not support video playback.
           </video>
         `;

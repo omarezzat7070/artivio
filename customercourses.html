@@ -490,6 +490,11 @@
 <script>
   (function() {
     const API_BASE = window.API_BASE || window.location.origin;
+    function getMediaUrl(media) {
+      if (!media) return '';
+      if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
+      return `${API_BASE}/uploads/${media}`;
+    }
     let selectedCategory = 'All';
     let allCourses = [];
     let searchQuery = '';
@@ -507,6 +512,14 @@
         'Painting': 'assets/no-background.png'
       };
       return defaults[category] || 'assets/no-background.png';
+    }
+
+    function getCourseCardVideo(course) {
+      if (course.video) return course.video;
+      const firstVideoPart = Array.isArray(course.parts)
+        ? course.parts.find(part => part && part.video)
+        : null;
+      return firstVideoPart ? firstVideoPart.video : '';
     }
 
     // Get ALL unique categories from the courses data
@@ -587,14 +600,18 @@
 
       coursesEl.innerHTML = filtered.map(course => {
         const imageUrl = course.image 
-          ? `${API_BASE}/uploads/${course.image}`
+          ? getMediaUrl(course.image)
           : getDefaultImage(course.category);
+        const videoFile = getCourseCardVideo(course);
+        const cardMedia = course.image || !videoFile
+          ? `<img src="${imageUrl}" class="card-img" alt="${escapeHtml(course.title)}" onerror="this.src='${getDefaultImage(course.category)}'">`
+          : `<video class="card-img" muted preload="metadata" controls><source src="${getMediaUrl(videoFile)}" type="video/mp4"></video>`;
         const instructor = course.artisan?.name || "Expert Artisan";
         const studentsCount = course.students?.length || 0;
         
         return `
           <div class="card">
-            <img src="${imageUrl}" class="card-img" alt="${escapeHtml(course.title)}" onerror="this.src='${getDefaultImage(course.category)}'">
+            ${cardMedia}
             <div class="card-content">
               <div style="display: inline-block; background: var(--primary-burgundy); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; margin-bottom: 10px; width: fit-content;">
                 ${escapeHtml(course.category || 'Uncategorized')}
