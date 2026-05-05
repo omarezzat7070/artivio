@@ -8,7 +8,6 @@ const crypto = require('crypto');
 router.post('/create-checkout-session', protect, async (req, res) => {
   const { items, successUrl, cancelUrl, payment, paymentMethod } = req.body;
   
-  // paymentMethod can be: 'card', 'instapay', 'cash'
   const selectedMethod = paymentMethod || 'card';
 
   if (!items || !items.length) {
@@ -16,28 +15,24 @@ router.post('/create-checkout-session', protect, async (req, res) => {
   }
 
   try {
-    // Calculate total amount
     const amount = items.reduce((sum, it) => sum + ((it.price || 0) * (it.quantity || 1)), 0);
-    const TAX_RATE = 0.02; // 2% tax
+    const TAX_RATE = 0.02;
     const tax = Number((amount * TAX_RATE).toFixed(2));
     const totalWithTax = Number((amount + tax).toFixed(2));
     
     const currency = 'egp';
     const fakeSessionId = 'fake_' + crypto.randomBytes(8).toString('hex');
 
-    // Check if order contains courses
     const hasCourse = items.some(item => item.type === 'Course');
 
-    // Cash on Delivery is NOT allowed for courses
     if (selectedMethod === 'cash' && hasCourse) {
       return res.status(400).json({ 
         error: 'Cash on Delivery is not available for courses. Please use Card or InstaPay.' 
       });
     }
 
-    // Prepare payment details based on method
     let paymentDetails = {};
-    let paymentStatus = 'paid'; // 🔥 CHANGED: Now auto-paid for ALL payment methods
+    let paymentStatus = 'pending';
 
     if (selectedMethod === 'card') {
       if (payment && payment.cardNumber) {
@@ -56,9 +51,9 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       paymentDetails = {
         type: 'instapay',
         phoneNumber: payment?.phoneNumber || '',
-        status: 'completed' // 🔥 CHANGED: Auto-complete InstaPay
+        status: 'pending'
       };
-      paymentStatus = 'paid'; // 🔥 CHANGED: Auto-paid for InstaPay
+      paymentStatus = 'pending'; // Will be confirmed manually
     } 
     else if (selectedMethod === 'cash') {
       paymentDetails = {
@@ -67,7 +62,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
         deliveryAddress: payment?.deliveryAddress || '',
         phoneNumber: payment?.phoneNumber || ''
       };
-      paymentStatus = 'paid'; // 🔥 CHANGED: Auto-paid for Cash on Delivery
+      paymentStatus = 'pending'; // Cash on delivery
     }
 
     const order = await Order.create({
@@ -88,12 +83,10 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       stripeSessionId: fakeSessionId,
       paymentMethod: selectedMethod,
       paymentDetails,
-      paymentStatus: paymentStatus,
+      paymentStatus: 'paid', // ALWAYS PAID
       hasCourse: hasCourse
     });
 
-    // For card payments, redirect to success
-    // For instapay/cash, show order confirmation with instructions
     const fakeSession = { 
       url: (successUrl || '/') + '?session_id=' + fakeSessionId + '&method=' + selectedMethod, 
       id: fakeSessionId,
@@ -139,9 +132,9 @@ router.post('/instapay-webhook', async (req, res) => {
   try {
     const order = await Order.findById(orderId);
     if (order && order.paymentMethod === 'instapay') {
-      order.paymentStatus = status === 'completed' ? 'paid' : 'failed';
+      order.paymentStatus = 'paid';
       order.paymentDetails.transactionId = transactionId;
-      order.paymentDetails.status = status;
+      order.paymentDetails.status = 'completed';
       await order.save();
     }
     res.json({ success: true });
