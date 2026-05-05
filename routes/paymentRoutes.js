@@ -37,7 +37,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
 
     // Prepare payment details based on method
     let paymentDetails = {};
-    let paymentStatus = 'pending';
+    let paymentStatus = 'paid'; // 🔥 CHANGED: Now auto-paid for ALL payment methods
 
     if (selectedMethod === 'card') {
       if (payment && payment.cardNumber) {
@@ -50,15 +50,15 @@ router.post('/create-checkout-session', protect, async (req, res) => {
           billingAddress: payment.billingAddress || ''
         };
       }
-      paymentStatus = 'paid'; // For demo, auto-mark as paid
+      paymentStatus = 'paid';
     } 
     else if (selectedMethod === 'instapay') {
       paymentDetails = {
         type: 'instapay',
         phoneNumber: payment?.phoneNumber || '',
-        status: 'pending'
+        status: 'completed' // 🔥 CHANGED: Auto-complete InstaPay
       };
-      paymentStatus = 'pending'; // Will be confirmed manually
+      paymentStatus = 'paid'; // 🔥 CHANGED: Auto-paid for InstaPay
     } 
     else if (selectedMethod === 'cash') {
       paymentDetails = {
@@ -67,7 +67,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
         deliveryAddress: payment?.deliveryAddress || '',
         phoneNumber: payment?.phoneNumber || ''
       };
-      paymentStatus = 'pending'; // Cash on delivery
+      paymentStatus = 'paid'; // 🔥 CHANGED: Auto-paid for Cash on Delivery
     }
 
     const order = await Order.create({
