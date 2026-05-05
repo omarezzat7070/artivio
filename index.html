@@ -376,6 +376,7 @@
   </style>
 </head>
 <body>
+<script src="config.js"></script>
 
 <header class="navbar">
   <div class="container nav-content">
@@ -683,7 +684,7 @@
     
     try {
       // Fetch all products from your API
-      const response = await fetch(`${window.location.origin}/api/products`);
+      const response = await fetch(`${window.API_BASE}/api/products`);
       const result = await response.json();
       
       console.log('API Response:', result); // Debug: See what the API returns
@@ -747,7 +748,7 @@
   
   // Chatbot JavaScript
   (function() {
-    const API_BASE = window.location.origin;
+    const API_BASE = window.API_BASE || window.location.origin;
     let sessionId = localStorage.getItem('chatSessionId');
     
     if (!sessionId) {

@@ -13,6 +13,7 @@
   </style>
 </head>
 <body>
+<script src="config.js"></script>
   <div class="card">
     <h1>My Orders</h1>
     <div id="orders">Loading orders...</div>
@@ -27,7 +28,7 @@
       }
 
       try {
-        const res = await fetch(`${window.location.origin}/api/orders/my-orders`, {
+        const res = await fetch(`${window.API_BASE}/api/orders/my-orders`, {
           headers: { 'Authorization': 'Bearer ' + token }
         });
         const data = await res.json();

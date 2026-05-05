@@ -16,11 +16,12 @@ body{font-family:Arial;background:var(--bg);margin:0;padding:20px}
 </style>
 </head>
 <body>
+<script src="config.js"></script>
 <div class="container" id="container">
   <p id="loading">Loading...</p>
 </div>
 <script>
-const API_BASE = window.location.origin;
+const API_BASE = window.API_BASE || window.location.origin;
 function getQueryParam(name){const url=new URL(window.location.href);return url.searchParams.get(name)}
 async function loadContents(){
   const id = getQueryParam('id');

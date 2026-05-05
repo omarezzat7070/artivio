@@ -416,6 +416,7 @@
   <link rel="stylesheet" href="navbar.css">
 </head>
 <body>
+<script src="config.js"></script>
 
 <header class="navbar">
   <div class="container nav-content">
@@ -488,7 +489,7 @@
 
 <script>
   (function() {
-    const API_BASE = window.location.origin;
+    const API_BASE = window.API_BASE || window.location.origin;
     let selectedCategory = 'All';
     let allCourses = [];
     let searchQuery = '';

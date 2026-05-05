@@ -149,6 +149,8 @@ body {
   <link rel="stylesheet" href="navbar.css">
 </head>
 <body>
+<script src="config.js"></script>
+<script>const API_BASE = window.API_BASE || window.location.origin;</script>
 
 <!-- ===== Navbar ===== -->
 <header class="navbar">
@@ -258,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function(){
       loginBtn.textContent = "Signing in...";
 
       try {
-        const response = await fetch(`${window.location.origin}/api/users/login`, {
+        const response = await fetch(`${window.API_BASE}/api/users/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

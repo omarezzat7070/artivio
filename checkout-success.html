@@ -111,6 +111,7 @@
   </style>
 </head>
 <body>
+<script src="config.js"></script>
 
 <header class="navbar">
   <div class="container nav-content">
@@ -153,7 +154,7 @@
 </div>
 
 <script>
-  const API_BASE = window.location.origin;
+  const API_BASE = window.API_BASE || window.location.origin;
   let enrolledCourses = [];
   let enrollmentComplete = false;
 

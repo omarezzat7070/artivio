@@ -64,6 +64,7 @@
 </style>
 </head>
 <body>
+<script src="config.js"></script>
 
 <div class="header">
   <div class="container">
@@ -143,7 +144,7 @@
 </div>
 
 <script>
-const API_BASE = window.location.origin;
+const API_BASE = window.API_BASE || window.location.origin;
 const token = localStorage.getItem("token");
 
 async function apiFetch(url, options = {}) {

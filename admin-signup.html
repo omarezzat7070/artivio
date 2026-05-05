@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="navbar.css">
 </head>
 <body>
+<script src="config.js"></script>
 <header class="navbar">
   <div class="container nav-content">
     <div class="nav-logo"><img src="no background 1.png" alt="Artivio Logo"><span class="artivio">Artivio</span></div>
@@ -106,7 +107,7 @@ document.getElementById('adminSignupForm').addEventListener('submit', async (e) 
   submitBtn.textContent = 'Creating admin...';
 
   try {
-    const response = await fetch('/api/users/admin/register', {
+    const response = await fetch(`${window.API_BASE}/api/users/admin/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, phone, gender, adminSecret })
