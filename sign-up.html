@@ -1,11 +1,11 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Artivio Â· Create Account</title>
+  <title>Artivio · Create Account</title>
 
-  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
   <script src="assets/lucide.min.js"></script>
 
   <style>
@@ -342,22 +342,22 @@
       <label for="password">Password</label>
       <div class="input-box">
         <i class="fa-solid fa-lock"></i>
-        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
+        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="••••••••" required>
       </div>
 
       <!-- Password requirements visual feedback -->
       <div class="password-requirements" id="passwordRequirements">
         <div class="requirement-item" id="req-length">
-          <i class="fa-regular fa-circle"></i> 8â€“64 characters
+          <i class="fa-regular fa-circle"></i> 8–64 characters
         </div>
         <div class="requirement-item" id="req-uppercase">
-          <i class="fa-regular fa-circle"></i> At least one uppercase letter (Aâ€“Z)
+          <i class="fa-regular fa-circle"></i> At least one uppercase letter (A–Z)
         </div>
         <div class="requirement-item" id="req-lowercase">
-          <i class="fa-regular fa-circle"></i> At least one lowercase letter (aâ€“z)
+          <i class="fa-regular fa-circle"></i> At least one lowercase letter (a–z)
         </div>
         <div class="requirement-item" id="req-number">
-          <i class="fa-regular fa-circle"></i> At least one number (0â€“9)
+          <i class="fa-regular fa-circle"></i> At least one number (0–9)
         </div>
         <div class="requirement-item" id="req-special">
           <i class="fa-regular fa-circle"></i> One special character (! @ # $ % ^ & * _ -)
@@ -367,7 +367,7 @@
       <label for="confirmPassword">Confirm Password</label>
       <div class="input-box">
         <i class="fa-solid fa-lock"></i>
-        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
+        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••" required>
       </div>
       
       <label for="phone">Phone Number</label>
@@ -467,7 +467,7 @@
     passwordInput.addEventListener("input", (e) => {
       validatePassword(e.target.value);
     });
-    // initial call to set default icons (empty password â†’ invalid)
+    // initial call to set default icons (empty password ? invalid)
     validatePassword("");
   }
 
@@ -722,6 +722,7 @@
 <script src="navbar.js"></script>
 </body>
 </html>
+
 
 
 

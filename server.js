@@ -38,24 +38,10 @@ dotenv.config();
 
 const app = express();
 
-// Security middleware with proper CSP for inline handlers
+// Security middleware with CSP disabled for Font Awesome compatibility
 if (helmet && typeof helmet === 'function') {
   app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-        scriptSrcAttr: ["'unsafe-inline'"],
-        scriptSrcElem: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'", "https:"],
-        frameSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        baseUri: ["'self'"],
-      },
-    },
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
   }));
@@ -64,21 +50,46 @@ if (helmet && typeof helmet === 'function') {
 // Prevent MongoDB injection
 app.use(mongoSanitize ? mongoSanitize() : (req, res, next) => next());
 
-// CORS
+// CORS Configuration
 const allowedOrigins = [
-  'https://omarezzat7070.github.io'
+  'https://omarezzat7070.github.io',
+  'https://*.github.io',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5501',
+  'http://127.0.0.1:5501',
+  'http://localhost:7070',
+  'http://127.0.0.1:7070',
+  'null'
 ];
+
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed.includes('*')) {
+        const pattern = allowed.replace('*', '.*');
+        return new RegExp(pattern).test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error('CORS policy does not allow access from the specified Origin.'));
+      console.log(`Blocked CORS request from: ${origin}`);
+      callback(new Error(`CORS policy does not allow access from: ${origin}`));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));

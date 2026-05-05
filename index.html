@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Artivio – Handmade Treasures</title>
+  <title>Artivio � Handmade Treasures</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
   <script src="assets/lucide.min.js"></script>
   <link rel="stylesheet" href="navbar.css">
 
@@ -30,7 +30,7 @@
 
     .hero {
   height: 85vh;
-  background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('pottery.jpeg');
+  background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1200');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -381,7 +381,7 @@
 <header class="navbar">
   <div class="container nav-content">
     <div class="nav-logo">
-    <a href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
+    <a href="index.html"><img src="https://omarezzat7070.github.io/artivio/no%20background%201.png" alt="Artivio Logo" style="height: 40px;"></a>
       <span class="artivio">Artivio</span>
     </div>
     <nav>
@@ -404,8 +404,8 @@
     <h1>Discover Handmade Treasures</h1>
     <p>Authentic handcrafted products and courses from skilled artisans</p>
     <div class="hero-buttons">
-      <a href="product.html" class="btn btn-primary">Shop Now →</a>
-      <a href="customercourses.html" class="btn btn-outline">Explore Courses →</a>
+      <a href="product.html" class="btn btn-primary">Shop Now ?</a>
+      <a href="customercourses.html" class="btn btn-outline">Explore Courses ?</a>
     </div>
   </div>
 </section>
@@ -434,7 +434,7 @@
 </section>
 
 <section class="products" id="products">
-  <h2 class="section-title">🔥 Best Selling Products</h2>
+  <h2 class="section-title">?? Best Selling Products</h2>
   <div class="products-grid" id="featuredProducts">
     <div class="loading-placeholder">Loading best selling products...</div>
   </div>
@@ -464,13 +464,13 @@
           <i class="fa-regular fa-message"></i>
         </div>
         <div class="chat-bubble">
-          Hello! 👋 Welcome to Artivio!<br><br>
+          Hello! ?? Welcome to Artivio!<br><br>
           I'm your AI assistant. You can ask me about:<br>
-          • Products and shopping 🛍️<br>
-          • Courses and learning 📚<br>
-          • Your account and orders 👤<br>
-          • Payments and shipping 💳<br>
-          • Becoming an artisan 🎨<br><br>
+          � Products and shopping ???<br>
+          � Courses and learning ??<br>
+          � Your account and orders ??<br>
+          � Payments and shipping ??<br>
+          � Becoming an artisan ??<br><br>
           How can I help you today?
         </div>
       </div>
@@ -711,8 +711,8 @@
       // Display products
       container.innerHTML = bestSelling.map((product) => {
         const imageUrl = product.image 
-          ? `/uploads/${product.image}` 
-          : 'assets/no-background.png';
+  ? `${window.API_BASE}/uploads/${product.image}` 
+  : 'https://omarezzat7070.github.io/artivio/assets/no-background.png';
         
         // Get the price correctly
         const productPrice = product.price;
@@ -720,11 +720,11 @@
         
         return `
           <div class="product-card">
-            <img src="${imageUrl}" class="product-img" alt="${escapeHtml(product.name)}" onerror="this.src='assets/no-background.png'">
+           <img src="${imageUrl}" class="product-img" alt="${escapeHtml(product.name)}" onerror="this.src='https://omarezzat7070.github.io/artivio/assets/no-background.png'">
             <div class="product-info">
               <h3>${escapeHtml(product.name)}</h3>
               <p class="price">${formatPrice(productPrice)}</p>
-              <span class="sales-badge">🔥 Best Seller</span>
+              <span class="sales-badge">?? Best Seller</span>
             </div>
           </div>
         `;
@@ -795,7 +795,7 @@
                     <i class="fa-regular fa-message" style="font-size: 14px;"></i>
                   </div>
                   <div style="background: white; padding: 12px 16px; border-radius: 18px; border-top-left-radius: 4px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                    Chat cleared! How can I help you today? 💬
+                    Chat cleared! How can I help you today? ??
                   </div>
                 </div>
               `;
@@ -879,12 +879,12 @@
         if (data.success) {
           addMessage(data.reply, false);
         } else {
-          addMessage("❌ Sorry, I'm having trouble right now. Please try again in a moment.", false);
+          addMessage("? Sorry, I'm having trouble right now. Please try again in a moment.", false);
         }
       } catch (error) {
         hideTyping();
         console.error('Fetch error:', error);
-        addMessage("❌ Network error. Please check your connection and try again.", false);
+        addMessage("? Network error. Please check your connection and try again.", false);
       }
     }
     
@@ -916,6 +916,7 @@
 <script src="navbar.js"></script>
 </body>
 </html>
+
 
 
 

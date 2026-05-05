@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Handmade Products | Artivio</title>
 
-  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
   <script src="assets/lucide.min.js"></script>
   <link rel="stylesheet" href="navbar.css">
 
@@ -518,7 +518,7 @@
 <div class="cart-bar" id="cartBar">
   <div class="cart-inner">
     <div style="cursor: pointer;" onclick="toggleCartModal()">
-      🛒 Cart: <strong><span id="cartCount">0</span></strong> item(s) - Click to view
+      ?? Cart: <strong><span id="cartCount">0</span></strong> item(s) - Click to view
     </div>
     <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
   </div>
@@ -528,7 +528,7 @@
 <div class="cart-modal" id="cartModal">
   <div class="cart-header">
     <span>Shopping Cart</span>
-    <button class="cart-close-btn" onclick="toggleCartModal()">✕</button>
+    <button class="cart-close-btn" onclick="toggleCartModal()">?</button>
   </div>
   <div class="cart-items" id="cartItemsList">
     <p class="cart-empty" style="text-align: center; padding: 30px;">Your cart is empty</p>
@@ -567,7 +567,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      © 2026 Artivio. All Rights Reserved.
+      � 2026 Artivio. All Rights Reserved.
     </div>
   </div>
 </footer>
@@ -670,7 +670,7 @@
             ${item.stock !== undefined ? `<div>Stock: ${escapeHtml(item.stock.toString())}</div>` : ''}
           </div>
           <div class="cart-item-qty">
-            <button onclick="updateQuantity('${item._id}', -1)">−</button>
+            <button onclick="updateQuantity('${item._id}', -1)">-</button>
             <span style="padding: 0 10px; font-weight: 500;">${item.quantity}</span>
             <button onclick="updateQuantity('${item._id}', 1)">+</button>
           </div>
@@ -839,6 +839,7 @@
 <script src="navbar.js"></script>
 </body>
 </html>
+
 
 
 

@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Artivio Checkout</title>
 
-<link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="navbar.css">
 <script src="assets/lucide.min.js"></script>
 
@@ -450,13 +450,13 @@ function safeLocalStorageSet(key, value) {
 
 function getToken() { 
   const token = safeLocalStorageGet('token');
-  console.log('🔑 Token exists:', !!token);
+  console.log('?? Token exists:', !!token);
   if (token) {
-    console.log('📝 Token preview:', token.substring(0, 30) + '...');
+    console.log('?? Token preview:', token.substring(0, 30) + '...');
     // Verify token format (should have 3 parts separated by dots)
     const parts = token.split('.');
     if (parts.length !== 3) {
-      console.error('❌ Invalid token format - does not have 3 parts');
+      console.error('? Invalid token format - does not have 3 parts');
       return null;
     }
   }
@@ -470,7 +470,7 @@ function getQueryParam(name) {
 function loadCartFromStorage() {
   const saved = safeLocalStorageGet('cart');
   cart = saved ? JSON.parse(saved) : [];
-  console.log('🛒 Cart loaded:', cart.length, 'items');
+  console.log('?? Cart loaded:', cart.length, 'items');
   return cart;
 }
 
@@ -675,10 +675,10 @@ function isTokenExpired(token) {
     const payload = JSON.parse(atob(token.split('.')[1]));
     const expDate = new Date(payload.exp * 1000);
     const now = new Date();
-    console.log('⏰ Token expires:', expDate.toLocaleString());
-    console.log('📅 Current time:', now.toLocaleString());
+    console.log('? Token expires:', expDate.toLocaleString());
+    console.log('?? Current time:', now.toLocaleString());
     const expired = Date.now() >= payload.exp * 1000;
-    if (expired) console.log('⚠️ Token has EXPIRED!');
+    if (expired) console.log('?? Token has EXPIRED!');
     return expired;
   } catch(e) {
     console.error('Error checking token expiration:', e);
@@ -690,17 +690,17 @@ function isTokenExpired(token) {
 async function validateToken() {
   const token = getToken();
   if (!token) {
-    console.log('❌ No token found');
+    console.log('? No token found');
     return false;
   }
   
   if (isTokenExpired(token)) {
-    console.log('❌ Token expired');
+    console.log('? Token expired');
     return false;
   }
   
   try {
-    console.log('🔍 Validating token with server...');
+    console.log('?? Validating token with server...');
     const res = await fetch(`${API_BASE}/api/users/me`, {
       headers: { 
         'Authorization': 'Bearer ' + token,
@@ -708,14 +708,14 @@ async function validateToken() {
       }
     });
     
-    console.log('📡 Validation response status:', res.status);
+    console.log('?? Validation response status:', res.status);
     
     if (res.ok) {
       const data = await res.json();
-      console.log('✅ Token is valid! User:', data.data?.email);
+      console.log('? Token is valid! User:', data.data?.email);
       return true;
     } else {
-      console.log('❌ Token validation failed with status:', res.status);
+      console.log('? Token validation failed with status:', res.status);
       return false;
     }
   } catch(err) {
@@ -725,7 +725,7 @@ async function validateToken() {
 }
 
 async function processPayment() {
-  console.log('=== 💳 Starting payment process ===');
+  console.log('=== ?? Starting payment process ===');
   
   if (checkoutMode === 'cart' && cart.length === 0) {
     alert('Your cart is empty.');
@@ -791,7 +791,7 @@ async function processPayment() {
   }
 
   const token = getToken();
-  console.log('🔑 Token present:', !!token);
+  console.log('?? Token present:', !!token);
   
   if (!token) {
     alert('Please log in.');
@@ -821,8 +821,8 @@ async function processPayment() {
       paymentMethod: selectedMethod
     };
     
-    console.log('📤 Sending request to:', `${API_BASE}/api/payment/create-checkout-session`);
-    console.log('📋 Request headers:', {
+    console.log('?? Sending request to:', `${API_BASE}/api/payment/create-checkout-session`);
+    console.log('?? Request headers:', {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token.substring(0, 20) + '...'
     });
@@ -837,23 +837,23 @@ async function processPayment() {
       body: JSON.stringify(requestBody)
     });
     
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response status text:', response.statusText);
+    console.log('?? Response status:', response.status);
+    console.log('?? Response status text:', response.statusText);
     
     // Try to get response body
     let data;
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       data = await response.json();
-      console.log('📦 Response data:', data);
+      console.log('?? Response data:', data);
     } else {
       const text = await response.text();
-      console.log('📦 Response text:', text);
+      console.log('?? Response text:', text);
       data = { error: 'Invalid response from server' };
     }
     
     if (response.status === 401) {
-      console.error('❌ Authentication failed - 401 Unauthorized');
+      console.error('? Authentication failed - 401 Unauthorized');
       console.error('Error details:', data);
       localStorage.removeItem('token');
       alert('Your session has expired. Please log in again.');
@@ -862,19 +862,19 @@ async function processPayment() {
     }
     
     if (response.ok && data.url) {
-      console.log('✅ Payment session created, redirecting to:', data.url);
+      console.log('? Payment session created, redirecting to:', data.url);
       if (checkoutMode === 'cart') {
         safeLocalStorageSet('cart', '[]');
       }
       window.location.href = data.url;
     } else {
-      console.error('❌ Payment failed:', data);
+      console.error('? Payment failed:', data);
       alert(data.error || data.message || 'Payment failed. Please try again.');
       button.innerHTML = originalText;
       button.disabled = false;
     }
   } catch (err) {
-    console.error('❌ Network error:', err);
+    console.error('? Network error:', err);
     alert('Network error: ' + err.message);
     button.innerHTML = originalText;
     button.disabled = false;
@@ -895,11 +895,11 @@ function formatExpiry(input) {
 
 // Check auth on page load
 async function checkAuthOnLoad() {
-  console.log('🔐 Checking authentication on page load...');
+  console.log('?? Checking authentication on page load...');
   const token = getToken();
   
   if (!token) {
-    console.warn('❌ No token found on checkout page');
+    console.warn('? No token found on checkout page');
     showErrorMessage('Please log in to continue with checkout.');
     document.getElementById('payBtn').disabled = true;
     
@@ -917,11 +917,11 @@ async function checkAuthOnLoad() {
     return false;
   }
   
-  console.log('✅ Token found, validating...');
+  console.log('? Token found, validating...');
   const isValid = await validateToken();
   
   if (!isValid) {
-    console.warn('❌ Invalid or expired token');
+    console.warn('? Invalid or expired token');
     showErrorMessage('Your session has expired. Please log in again.');
     document.getElementById('payBtn').disabled = true;
     localStorage.removeItem('token');
@@ -932,13 +932,13 @@ async function checkAuthOnLoad() {
     return false;
   }
   
-  console.log('✅ Authentication verified successfully');
+  console.log('? Authentication verified successfully');
   return true;
 }
 
 // Debug: Check what's in localStorage on load
 function debugLocalStorage() {
-  console.log('=== 🔍 LocalStorage Debug ===');
+  console.log('=== ?? LocalStorage Debug ===');
   console.log('All items in localStorage:', { ...localStorage });
   const token = localStorage.getItem('token');
   if (token) {
@@ -959,7 +959,7 @@ function debugLocalStorage() {
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log('📄 Checkout page loaded');
+  console.log('?? Checkout page loaded');
   debugLocalStorage();
   
   if (window.lucide) lucide.createIcons();
@@ -988,10 +988,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (isAuthenticated) {
     const itemId = getQueryParam('id');
     if (itemId) {
-      console.log('🛍️ Loading single item:', itemId);
+      console.log('??? Loading single item:', itemId);
       await loadSingleItem();
     } else {
-      console.log('🛒 Loading cart');
+      console.log('?? Loading cart');
       renderCart();
     }
   }

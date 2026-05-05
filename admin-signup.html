@@ -1,10 +1,10 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Registration | Artisan Crafts</title>
-  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
   <style>
     /* === YOUR EXACT SAME CSS (unchanged) === */
     :root { --primary: #6C2929; --dark: #3d1616; --light-bg: #fdf6ee; }
@@ -56,9 +56,9 @@
       <label for="email">Email</label>
       <div class="input-box"><i class="fa-regular fa-envelope"></i><input type="email" id="email" name="email" autocomplete="email" placeholder="admin@example.com" required></div>
       <label for="password">Password</label>
-      <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="password" name="password" autocomplete="new-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required></div>
+      <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="password" name="password" autocomplete="new-password" placeholder="••••••••" required></div>
       <label for="confirmPassword">Confirm Password</label>
-      <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required></div>
+      <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••" required></div>
       <label for="phone">Phone Number</label>
       <div class="input-box"><i class="fa-solid fa-phone"></i><input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="+20 100 123 4567 or 01001234567" required></div>
       <label for="gender">Gender</label>
@@ -116,7 +116,7 @@ document.getElementById('adminSignupForm').addEventListener('submit', async (e) 
     console.log('Response:', response.status, data);
     if (response.ok && data.success) {
       localStorage.setItem('token', data.token);
-      // âœ… REDIRECT TO ADMIN LOGIN PAGE
+      // ? REDIRECT TO ADMIN LOGIN PAGE
       window.location.href = 'admin-login.html';
     } else {
       errorDiv.textContent = data.error || 'Admin registration failed';
@@ -136,6 +136,7 @@ document.getElementById('adminSignupForm').addEventListener('submit', async (e) 
   <script src="navbar.js"></script>
 </body>
 </html>
+
 
 
 

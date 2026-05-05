@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Confirmed - Artivio</title>
-  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
   <script src="assets/lucide.min.js"></script>
   <link rel="stylesheet" href="navbar.css">
 
@@ -135,7 +135,7 @@
 </header>
 
 <div class="success-container">
-  <div class="success-icon">✓</div>
+  <div class="success-icon">?</div>
   <h1>Order Confirmed!</h1>
   <p>Thank you for your purchase. Your order has been received.</p>
 
@@ -217,12 +217,12 @@
           }
           
           if (successCount === courseItems.length) {
-            statusDiv.innerHTML = '<p style="color: #16a34a;">✓ Successfully enrolled in all courses!</p>';
+            statusDiv.innerHTML = '<p style="color: #16a34a;">? Successfully enrolled in all courses!</p>';
             enrollmentComplete = true;
           } else if (successCount > 0) {
-            statusDiv.innerHTML = `<p style="color: #f59e0b;">✓ Enrolled in ${successCount} out of ${courseItems.length} courses.</p>`;
+            statusDiv.innerHTML = `<p style="color: #f59e0b;">? Enrolled in ${successCount} out of ${courseItems.length} courses.</p>`;
           } else {
-            statusDiv.innerHTML = '<p style="color: #dc2626;">⚠️ Please go to "My Purchases" to access your courses.</p>';
+            statusDiv.innerHTML = '<p style="color: #dc2626;">?? Please go to "My Purchases" to access your courses.</p>';
           }
         } else {
           statusDiv.innerHTML = '<p>Your order contains products only. No enrollment needed.</p>';
@@ -255,6 +255,7 @@
 <script src="navbar.js"></script>
 </body>
 </html>
+
 
 
 
