@@ -1,10 +1,18 @@
 const { v2: cloudinary } = require('cloudinary');
 
-if (
-  process.env.CLOUDINARY_CLOUD_NAME &&
-  process.env.CLOUDINARY_API_KEY &&
-  process.env.CLOUDINARY_API_SECRET
-) {
+const hasRealValue = (value) => Boolean(
+  value &&
+  !String(value).trim().toLowerCase().startsWith('your_')
+);
+
+const hasCloudinaryUrl = hasRealValue(process.env.CLOUDINARY_URL);
+const hasCloudinaryParts = (
+  hasRealValue(process.env.CLOUDINARY_CLOUD_NAME) &&
+  hasRealValue(process.env.CLOUDINARY_API_KEY) &&
+  hasRealValue(process.env.CLOUDINARY_API_SECRET)
+);
+
+if (!hasCloudinaryUrl && hasCloudinaryParts) {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -12,14 +20,7 @@ if (
   });
 }
 
-const isCloudinaryConfigured = () => Boolean(
-  process.env.CLOUDINARY_URL ||
-  (
-    process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_SECRET
-  )
-);
+const isCloudinaryConfigured = () => hasCloudinaryUrl || hasCloudinaryParts;
 
 const uploadToCloudinary = (file, options = {}) => {
   if (!file || !file.buffer) return Promise.resolve(null);
