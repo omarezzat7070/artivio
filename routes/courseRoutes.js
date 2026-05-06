@@ -17,8 +17,8 @@ const {
   updateCoursePartModeration
 } = require("../controllers/courseController");
 
-// Limit per-file size to 50MB to avoid very large uploads resetting connections
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+// Keep a cap, but allow normal phone-recorded lesson videos.
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } });
 
 // Routes
 router.route("/")

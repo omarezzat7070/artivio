@@ -576,8 +576,11 @@
   const API_BASE = window.API_BASE || window.location.origin;
   function getMediaUrl(media) {
     if (!media) return '';
-    if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
-    return `${API_BASE}/uploads/${media}`;
+    const value = String(media).trim();
+    if (/^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
+    const cleanPath = value.replace(/\\/g, '/').replace(/^\/+/, '');
+    if (cleanPath.startsWith('uploads/')) return `${API_BASE}/${cleanPath}`;
+    return `${API_BASE}/uploads/${cleanPath}`;
   }
   let products = [];
   let categories = ['All'];

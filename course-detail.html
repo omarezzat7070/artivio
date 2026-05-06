@@ -126,8 +126,11 @@
 const API_BASE = window.API_BASE || window.location.origin;
     function getMediaUrl(media) {
       if (!media) return '';
-      if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
-      return `${API_BASE}/uploads/${media}`;
+      const value = String(media).trim();
+      if (/^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
+      const cleanPath = value.replace(/\\/g, '/').replace(/^\/+/, '');
+      if (cleanPath.startsWith('uploads/')) return `${API_BASE}/${cleanPath}`;
+      return `${API_BASE}/uploads/${cleanPath}`;
     }
     let currentCourse = null;
     let isPurchased = false;
@@ -307,7 +310,7 @@ async function checkPurchaseStatus(courseId) {
       } else if (lesson.mediaUrl) {
         videoBox.innerHTML = `
           <video controls style="width:100%; max-height:380px; border-radius:20px;">
-            <source src="${getMediaUrl(lesson.mediaUrl)}" type="video/mp4">
+            <source src="${getMediaUrl(lesson.mediaUrl)}">
             Your browser does not support video playback.
           </video>
         `;

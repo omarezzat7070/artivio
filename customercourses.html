@@ -492,8 +492,11 @@
     const API_BASE = window.API_BASE || window.location.origin;
     function getMediaUrl(media) {
       if (!media) return '';
-      if (/^(https?:)?\/\//.test(media) || media.startsWith('data:')) return media;
-      return `${API_BASE}/uploads/${media}`;
+      const value = String(media).trim();
+      if (/^(https?:)?\/\//.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
+      const cleanPath = value.replace(/\\/g, '/').replace(/^\/+/, '');
+      if (cleanPath.startsWith('uploads/')) return `${API_BASE}/${cleanPath}`;
+      return `${API_BASE}/uploads/${cleanPath}`;
     }
     let selectedCategory = 'All';
     let allCourses = [];
@@ -605,7 +608,7 @@
         const videoFile = getCourseCardVideo(course);
         const cardMedia = course.image || !videoFile
           ? `<img src="${imageUrl}" class="card-img" alt="${escapeHtml(course.title)}" onerror="this.src='${getDefaultImage(course.category)}'">`
-          : `<video class="card-img" muted preload="metadata" controls><source src="${getMediaUrl(videoFile)}" type="video/mp4"></video>`;
+          : `<video class="card-img" muted preload="metadata" controls><source src="${getMediaUrl(videoFile)}"></video>`;
         const instructor = course.artisan?.name || "Expert Artisan";
         const studentsCount = course.students?.length || 0;
         

@@ -4,6 +4,7 @@ const asyncHandler = require("../middleware/asyncHandler");
 const path = require('path');
 const fs = require('fs');
 const { isCloudinaryConfigured, uploadToCloudinary } = require("../config/cloudinary");
+const { saveUploadLocally } = require("../config/localUpload");
 let ffmpeg;
 try {
   ffmpeg = require('fluent-ffmpeg');
@@ -46,7 +47,7 @@ async function transcodeIfNeeded(file) {
 const uploadCourseImage = async (file) => {
   if (!file) return "";
   if (!isCloudinaryConfigured()) {
-    throw new Error("Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+    return saveUploadLocally(file, "course");
   }
   const result = await uploadToCloudinary(file, {
     folder: "artivio/courses/images",
@@ -58,7 +59,7 @@ const uploadCourseImage = async (file) => {
 const uploadCourseVideo = async (file) => {
   if (!file) return "";
   if (!isCloudinaryConfigured()) {
-    throw new Error("Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+    return saveUploadLocally(file, "course-video");
   }
   const result = await uploadToCloudinary(file, {
     folder: "artivio/courses/videos",
@@ -97,6 +98,7 @@ const sanitizeCoursePartsForViewer = (req, courseDoc) => {
 };
 
 const normalizePartInput = (part = {}) => ({
+  _id: part._id || part.id || undefined,
   partNumber: Number(part.partNumber),
   title: (part.title || "").trim(),
   description: part.description || "",
@@ -123,10 +125,17 @@ const parsePartsFromBody = (req) => {
   }
 };
 
-const mapUploadedPartVideos = async (req) => {
+const mapUploadedPartVideos = async (req, existingCourse = null) => {
   if (!Array.isArray(req.body.parts)) return;
 
   const partVideos = req.files && req.files.partVideo ? req.files.partVideo : [];
+  const existingPartsById = new Map();
+
+  if (existingCourse && Array.isArray(existingCourse.parts)) {
+    existingCourse.parts.forEach((part) => {
+      if (part && part._id) existingPartsById.set(part._id.toString(), part);
+    });
+  }
 
   if (partVideos.length) {
     for (let i = 0; i < partVideos.length; i++) {
@@ -134,16 +143,21 @@ const mapUploadedPartVideos = async (req) => {
     }
   }
 
-  req.body.parts = await Promise.all(req.body.parts.map(async (p, idx) => ({
-    ...normalizePartInput(p),
-    partNumber: Number(p.partNumber) || idx + 1,
-    moderationStatus: "pending",
-    moderationNote: "",
-    moderatedBy: null,
-    moderatedAt: null,
-    submittedAt: new Date(),
-    video: (partVideos[idx] && await uploadCourseVideo(partVideos[idx])) || p.video || ''
-  })));
+  req.body.parts = await Promise.all(req.body.parts.map(async (p, idx) => {
+    const normalized = normalizePartInput(p);
+    const existingPart = normalized._id ? existingPartsById.get(String(normalized._id)) : null;
+
+    return {
+      ...normalized,
+      partNumber: Number(p.partNumber) || idx + 1,
+      moderationStatus: "pending",
+      moderationNote: "",
+      moderatedBy: null,
+      moderatedAt: null,
+      submittedAt: new Date(),
+      video: (partVideos[idx] && await uploadCourseVideo(partVideos[idx])) || p.video || existingPart?.video || ''
+    };
+  }));
 };
 
 // GET all courses
@@ -253,7 +267,7 @@ exports.updateCourse = asyncHandler(async (req, res) => {
   }
 
   parsePartsFromBody(req);
-  await mapUploadedPartVideos(req);
+  await mapUploadedPartVideos(req, course);
 
   if (req.user.role !== "admin") {
     req.body.moderationStatus = "pending";

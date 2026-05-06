@@ -2,6 +2,7 @@ const Product = require("../models/product");
 const Order = require("../models/order");
 const asyncHandler = require("../middleware/asyncHandler");
 const { isCloudinaryConfigured, uploadToCloudinary } = require("../config/cloudinary");
+const { saveUploadLocally } = require("../config/localUpload");
 
 const canAccessUnapprovedProduct = (req, product) => {
   if (!req.user) return false;
@@ -14,7 +15,7 @@ const canAccessUnapprovedProduct = (req, product) => {
 const uploadProductImage = async (file) => {
   if (!file) return "";
   if (!isCloudinaryConfigured()) {
-    throw new Error("Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+    return saveUploadLocally(file, "product");
   }
   const result = await uploadToCloudinary(file, {
     folder: "artivio/products",
