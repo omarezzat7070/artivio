@@ -11,8 +11,12 @@ const {
   getOrderById,
   updateOrder,
   trackOrder,
-  getOrderStatusUpdate
+  getOrderStatusUpdate,
+  trackOrderByEmail
 } = require('../controllers/orderController');
+
+// Email-only tracking route (MUST be BEFORE the /:id route)
+router.get('/track/email', trackOrderByEmail);
 
 router.get('/my-orders', protect, async (req, res) => {
   try {
@@ -25,7 +29,7 @@ router.get('/my-orders', protect, async (req, res) => {
 });
 
 router.get('/admin/stats', protect, authorize('admin'), getOrderStats);
-router.get('/track/email', trackOrderByEmail);
+
 router.get('/seller-product-orders', protect, async (req, res) => {
   try {
     const sellerProducts = await Product.find({ artisan: req.user._id });

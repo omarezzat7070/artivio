@@ -68,7 +68,7 @@ exports.updateOrder = asyncHandler(async (req, res) => {
   });
 });
 
-// ✅ NEW: Track orders by email only
+// Track orders by email only
 exports.trackOrderByEmail = asyncHandler(async (req, res) => {
   const { email } = req.query;
   
@@ -79,23 +79,29 @@ exports.trackOrderByEmail = asyncHandler(async (req, res) => {
     });
   }
   
-  // Find all orders with this email
-  const orders = await Order.find({ 
-    'paymentDetails.email': email 
-  }).populate('user', 'name email').sort({ createdAt: -1 });
+  // Find all orders and populate user
+  const orders = await Order.find({}).populate('user', 'name email').sort({ createdAt: -1 });
   
-  // Also check user email field
-  const userOrders = await Order.find({}).populate('user', 'name email');
-  const allOrders = [...orders];
-  
-  userOrders.forEach(order => {
-    if (order.user && order.user.email === email && !allOrders.find(o => o._id.toString() === order._id.toString())) {
-      allOrders.push(order);
+  // Filter by email (check both user email and paymentDetails email)
+  const matchingOrders = [];
+  for (let i = 0; i < orders.length; i++) {
+    const order = orders[i];
+    if (order.user && order.user.email === email) {
+      matchingOrders.push(order);
+    } else if (order.paymentDetails && order.paymentDetails.email === email) {
+      matchingOrders.push(order);
+    } else if (order.paymentDetails && order.paymentDetails.deliveryEmail === email) {
+      matchingOrders.push(order);
     }
-  });
+  }
   
   // Filter only paid orders
-  const paidOrders = allOrders.filter(order => order.paymentStatus === 'paid');
+  const paidOrders = [];
+  for (let i = 0; i < matchingOrders.length; i++) {
+    if (matchingOrders[i].paymentStatus === 'paid') {
+      paidOrders.push(matchingOrders[i]);
+    }
+  }
   
   if (paidOrders.length === 0) {
     return res.status(404).json({
@@ -104,20 +110,26 @@ exports.trackOrderByEmail = asyncHandler(async (req, res) => {
     });
   }
   
-  res.status(200).json({
-    success: true,
-    count: paidOrders.length,
-    orders: paidOrders.map(order => ({
+  // Return simplified order data
+  const result = [];
+  for (let i = 0; i < paidOrders.length; i++) {
+    const order = paidOrders[i];
+    result.push({
       _id: order._id,
       createdAt: order.createdAt,
       amount: order.amount,
       paymentStatus: order.paymentStatus,
       items: order.items,
       paymentDetails: order.paymentDetails
-    }))
+    });
+  }
+  
+  res.status(200).json({
+    success: true,
+    count: result.length,
+    orders: result
   });
-});
-
+})
         
 
 exports.getOrderStatusUpdate = asyncHandler(async (req, res) => {
