@@ -296,19 +296,16 @@
     <p class="subtitle">Enter your order ID and email to track your shipment</p>
     
     <div class="search-form">
-      <div class="form-group">
-        <label for="orderNumber">Order Number</label>
-        <input type="text" id="orderNumber" placeholder="Enter your order number (e.g., 65f4a2b3c8d9e1f2a3b4c5d6)">
-      </div>
-      <div class="form-group">
-        <label for="trackEmail">Email Address</label>
-        <input type="email" id="trackEmail" placeholder="Enter the email used for this order">
-      </div>
-      <button class="track-btn" onclick="trackOrder()">
-        <i class="fa-solid fa-search"></i> Track Order
-      </button>
-    </div>
-    
+  <div class="form-group">
+    <label for="trackEmail">Email Address</label>
+    <input type="email" id="trackEmail" placeholder="Enter your email address" required>
+    <small style="color: #666; display: block; margin-top: 5px;">We'll show all orders associated with this email</small>
+  </div>
+  <button class="track-btn" onclick="trackOrder()">
+    <i class="fa-solid fa-search"></i> Track My Orders
+  </button>
+</div>
+
     <div id="errorMessage" class="error-message"></div>
     <div id="orderDetails" class="order-details"></div>
   </div>
@@ -317,61 +314,173 @@
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
   
-  async function trackOrder() {
-    const orderNumber = document.getElementById('orderNumber').value.trim();
+ async function trackOrder() {
     const email = document.getElementById('trackEmail').value.trim();
     const errorDiv = document.getElementById('errorMessage');
     const orderDetailsDiv = document.getElementById('orderDetails');
-    
-    // Input validation
-    if (!orderNumber || !email) {
-      showError('Please enter both order number and email address');
-      return;
+
+    if (!email) {
+        showError('Please enter your email address');
+        return;
     }
-    
+
     if (!email.includes('@') || !email.includes('.')) {
-      showError('Please enter a valid email address');
-      return;
+        showError('Please enter a valid email address');
+        return;
     }
-    
-    // Hide previous results
+
     orderDetailsDiv.style.display = 'none';
     errorDiv.style.display = 'none';
-    
-    // Show loading
+
     const trackBtn = document.querySelector('.track-btn');
     const originalText = trackBtn.innerHTML;
-    trackBtn.innerHTML = '<i class="fa-solid fa-spinner fa-pulse"></i> Tracking...';
+
+    trackBtn.innerHTML =
+        '<i class="fa-solid fa-spinner fa-pulse"></i> Tracking...';
+
     trackBtn.disabled = true;
-    
+
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-      
-      const response = await fetch(`${API_BASE}/api/orders/track/${orderNumber}?email=${encodeURIComponent(email)}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        displayOrderDetails(data.data);
-      } else {
-        showError(data.error || 'Order not found. Please check your order number and email.');
-      }
+        const response = await fetch(
+            API_BASE +
+                '/api/orders/track/email?email=' +
+                encodeURIComponent(email)
+        );
+
+        const data = await response.json();
+
+        if (
+            response.ok &&
+            data.success &&
+            Array.isArray(data.orders) &&
+            data.orders.length > 0
+        ) {
+            displayOrdersList(data.orders);
+        } else {
+            showError('No orders found for this email address.');
+        }
     } catch (error) {
-      console.error('Track order error:', error);
-      if (error.name === 'AbortError') {
-        showError('Request timeout. Please try again.');
-      } else {
-        showError('Network error. Please check your connection and try again.');
-      }
+        console.error('Track order error:', error);
+        showError('Network error. Please try again.');
     } finally {
-      trackBtn.innerHTML = originalText;
-      trackBtn.disabled = false;
+        trackBtn.innerHTML = originalText;
+        trackBtn.disabled = false;
     }
-  }
+}
+
+function displayOrdersList(orders) {
+    const container = document.getElementById('orderDetails');
+
+    let html =
+        '<div style="margin-bottom: 20px;">' +
+        '<h3 style="color: #6C2929;">Found ' +
+        orders.length +
+        ' Order(s)</h3>' +
+        '</div>';
+
+    for (let i = 0; i < orders.length; i++) {
+        const order = orders[i];
+
+        const orderNumber = order._id
+            ? order._id.toString().slice(-8).toUpperCase()
+            : 'UNKNOWN';
+
+        const orderDate = order.createdAt
+            ? new Date(order.createdAt).toLocaleDateString()
+            : 'N/A';
+
+        const statusText =
+            order.paymentStatus === 'paid'
+                ? 'Paid'
+                : 'Processing';
+
+        const statusColor =
+            order.paymentStatus === 'paid'
+                ? '#d1fae5'
+                : '#fef3c7';
+
+        const statusTextColor =
+            order.paymentStatus === 'paid'
+                ? '#065f46'
+                : '#92400e';
+
+        let itemsHtml = '';
+
+        if (Array.isArray(order.items)) {
+            for (let j = 0; j < order.items.length; j++) {
+                const item = order.items[j];
+
+                const itemPrice = Number(item.price) || 0;
+                const itemQty = Number(item.quantity) || 0;
+
+                const itemTotal = (itemPrice * itemQty).toFixed(2);
+
+                itemsHtml +=
+                    '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">' +
+                    '<span>' +
+                    escapeHtml(item.name || 'Unnamed Item') +
+                    ' x ' +
+                    itemQty +
+                    '</span>' +
+                    '<span>LE ' +
+                    itemTotal +
+                    '</span>' +
+                    '</div>';
+            }
+        }
+
+        const totalAmount = Number(order.amount || 0).toFixed(2);
+
+        html +=
+            '<div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">' +
+
+            '<div style="border-bottom:1px solid #e5e7eb; padding-bottom:15px; margin-bottom:15px;">' +
+
+            '<div style="font-size:18px; font-weight:bold; color:#6C2929;">' +
+            'Order #' +
+            orderNumber +
+            '</div>' +
+
+            '<div style="color:#666; margin-top:5px;">' +
+            'Placed on ' +
+            orderDate +
+            '</div>' +
+
+            '<span style="display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; margin-top:8px; background:' +
+            statusColor +
+            '; color:' +
+            statusTextColor +
+            ';">' +
+            statusText +
+            '</span>' +
+
+            '</div>' +
+
+            '<div>' +
+            '<h4 style="margin-bottom:10px;">Items</h4>' +
+            itemsHtml +
+
+            '<div style="display:flex; justify-content:space-between; padding-top:10px; margin-top:10px; border-top:1px solid #e5e7eb; font-weight:bold;">' +
+
+            '<span>Total Amount</span>' +
+
+            '<span style="color:#6C2929;">LE ' +
+            totalAmount +
+            '</span>' +
+
+            '</div>' +
+            '</div>' +
+            '</div>';
+    }
+
+    container.innerHTML = html;
+    container.style.display = 'block';
+
+    container.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
   
   function showError(message) {
     const errorDiv = document.getElementById('errorMessage');

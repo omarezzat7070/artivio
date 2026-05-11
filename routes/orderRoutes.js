@@ -25,7 +25,7 @@ router.get('/my-orders', protect, async (req, res) => {
 });
 
 router.get('/admin/stats', protect, authorize('admin'), getOrderStats);
-
+router.get('/track/email', trackOrderByEmail);
 router.get('/seller-product-orders', protect, async (req, res) => {
   try {
     const sellerProducts = await Product.find({ artisan: req.user._id });

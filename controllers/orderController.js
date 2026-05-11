@@ -68,54 +68,57 @@ exports.updateOrder = asyncHandler(async (req, res) => {
   });
 });
 
-// ============= ORDER TRACKING FEATURES =============
-
-exports.trackOrder = asyncHandler(async (req, res) => {
-  const { orderNumber } = req.params;
+// ✅ NEW: Track orders by email only
+exports.trackOrderByEmail = asyncHandler(async (req, res) => {
   const { email } = req.query;
   
   if (!email) {
     return res.status(400).json({
       success: false,
-      error: "Email is required to track order"
+      error: "Email is required to track orders"
     });
   }
   
-  const order = await Order.findById(orderNumber).populate('user', 'name email');
+  // Find all orders with this email
+  const orders = await Order.find({ 
+    'paymentDetails.email': email 
+  }).populate('user', 'name email').sort({ createdAt: -1 });
   
-  if (!order) {
+  // Also check user email field
+  const userOrders = await Order.find({}).populate('user', 'name email');
+  const allOrders = [...orders];
+  
+  userOrders.forEach(order => {
+    if (order.user && order.user.email === email && !allOrders.find(o => o._id.toString() === order._id.toString())) {
+      allOrders.push(order);
+    }
+  });
+  
+  // Filter only paid orders
+  const paidOrders = allOrders.filter(order => order.paymentStatus === 'paid');
+  
+  if (paidOrders.length === 0) {
     return res.status(404).json({
       success: false,
-      error: "Order not found"
+      error: "No orders found for this email"
     });
   }
-  
-  if (order.user && order.user.email !== email) {
-    return res.status(403).json({
-      success: false,
-      error: "Email does not match order"
-    });
-  }
-  
-  const orderStatus = getOrderStatus(order);
   
   res.status(200).json({
     success: true,
-    data: {
-      orderId: order._id,
-      orderNumber: order._id.toString().slice(-8).toUpperCase(),
-      date: order.createdAt,
+    count: paidOrders.length,
+    orders: paidOrders.map(order => ({
+      _id: order._id,
+      createdAt: order.createdAt,
       amount: order.amount,
       paymentStatus: order.paymentStatus,
-      orderStatus: orderStatus.status,
-      statusMessage: orderStatus.message,
-      estimatedDelivery: orderStatus.estimatedDelivery,
       items: order.items,
-      shippingAddress: order.paymentDetails?.deliveryAddress || 'Not specified',
-      timeline: getOrderTimeline(order)
-    }
+      paymentDetails: order.paymentDetails
+    }))
   });
 });
+
+        
 
 exports.getOrderStatusUpdate = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
