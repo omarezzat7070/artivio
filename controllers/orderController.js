@@ -242,6 +242,58 @@ function getOrderTimeline(order) {
     completed: daysSince >= 7,
     timestamp: daysSince >= 7 ? new Date(orderDate.getTime() + 7 * 86400000) : null
   });
+  // ✅ ADD THIS FUNCTION - Track orders by email only
+exports.trackOrderByEmail = asyncHandler(async (req, res) => {
+  const { email } = req.query;
   
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      error: "Email is required to track orders"
+    });
+  }
+  
+  // Find orders where user email matches
+  const orders = await Order.find({})
+    .populate('user', 'name email')
+    .sort({ createdAt: -1 });
+  
+  // Filter orders by email
+  const filteredOrders = orders.filter(order => {
+    if (order.user && order.user.email === email) {
+      return true;
+    }
+    if (order.paymentDetails && order.paymentDetails.email === email) {
+      return true;
+    }
+    if (order.paymentDetails && order.paymentDetails.deliveryEmail === email) {
+      return true;
+    }
+    return false;
+  });
+  
+  // Only return paid orders
+  const paidOrders = filteredOrders.filter(order => order.paymentStatus === 'paid');
+  
+  if (paidOrders.length === 0) {
+    return res.status(404).json({
+      success: false,
+      error: "No orders found for this email"
+    });
+  }
+  
+  res.status(200).json({
+    success: true,
+    count: paidOrders.length,
+    orders: paidOrders.map(order => ({
+      _id: order._id,
+      createdAt: order.createdAt,
+      amount: order.amount,
+      paymentStatus: order.paymentStatus,
+      items: order.items,
+      paymentDetails: order.paymentDetails
+    }))
+  });
+});
   return timeline;
 }
