@@ -30,7 +30,6 @@ try {
   console.log('✅ Rate limiter loaded');
 } catch (e) {
   console.log('⚠️ express-rate-limit not installed - rate limiting disabled');
-  rateLimit = () => (req, res, next) => next();
   rateLimit = (options) => (req, res, next) => next();
 }
 
@@ -38,7 +37,7 @@ dotenv.config();
 
 const app = express();
 
-// Security middleware with CSP disabled for Font Awesome compatibility
+// Security middleware
 if (helmet && typeof helmet === 'function') {
   app.use(helmet({
     contentSecurityPolicy: false,
@@ -47,7 +46,6 @@ if (helmet && typeof helmet === 'function') {
   }));
 }
 
-// Prevent MongoDB injection
 app.use(mongoSanitize ? mongoSanitize() : (req, res, next) => next());
 
 // CORS Configuration
@@ -67,10 +65,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) {
-      return callback(null, true);
-    }
-    
+    if (!origin) return callback(null, true);
     const isAllowed = allowedOrigins.some(allowed => {
       if (allowed.includes('*')) {
         const pattern = allowed.replace('*', '.*');
@@ -78,7 +73,6 @@ app.use(cors({
       }
       return allowed === origin;
     });
-    
     if (isAllowed) {
       callback(null, true);
     } else {
@@ -94,53 +88,54 @@ app.use(cors({
   optionsSuccessStatus: 204
 }));
 
-// Cookie Parser
+// Body parsing & cookies
 app.use(cookieParser());
-
-// Regular JSON body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/upload", require("./routes/uploadRoutes"));
-// Apply rate limiting if available
+
+// Rate limiting
 if (rateLimit && typeof rateLimit === 'function') {
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-    message: {
-      success: false,
-      error: 'Too many requests from this IP, please try again after 15 minutes'
-    },
+    message: { success: false, error: 'Too many requests from this IP, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
   });
-  
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
-    message: {
-      success: false,
-      error: 'Too many login attempts, please try again after 15 minutes'
-    },
+    message: { success: false, error: 'Too many login attempts, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
   });
-  
   app.use('/api/', apiLimiter);
   app.use('/api/users/login', authLimiter);
   app.use('/api/users/register', authLimiter);
 }
 
-// Handle favicon request
-app.get('/favicon.ico', (req, res) => {
-  res.status(204).end();
-});
-app.get('/', (req, res) => {
-  res.redirect('/index.html');
-});
+// Database Connection
+connectDB();
+
+// ── API Routes (MUST be before static files) ─────────────────────────────────
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/upload", require("./routes/uploadRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/courses", require("./routes/courseRoutes"));
+app.use("/api/payment", require("./routes/paymentRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/settings", require("./routes/settingsRoutes"));
+app.use("/api/staff", require("./routes/staffRoutes"));
+app.use('/api/chatbot', require('./routes/chatbotRoutes'));
+
+// Error Handler (after routes, before static)
+app.use(errorHandler);
+
+// ── Static / Frontend (MUST be after API routes) ─────────────────────────────
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 app.get('/customerhome.html', (req, res) => {
-  console.log('Serving customerhome.html - fresh copy');
   res.set({
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
@@ -158,7 +153,6 @@ app.get('/admin-dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'admindashboard.html'));
 });
 
-// Serve frontend static files
 app.use(express.static(path.join(__dirname), {
   maxAge: 0,
   etag: false,
@@ -174,21 +168,9 @@ app.use(express.static(path.join(__dirname), {
   }
 }));
 
-// Database Connection
-connectDB();
+app.get('/', (req, res) => res.redirect('/index.html'));
 
-// Routes
-app.use("/api/users", require("./routes/userRoutes"));
-app.use("/api/products", require("./routes/productRoutes"));
-app.use("/api/courses", require("./routes/courseRoutes"));
-app.use("/api/payment", require("./routes/paymentRoutes"));
-app.use("/api/orders", require("./routes/orderRoutes"));
-app.use("/api/settings", require("./routes/settingsRoutes"));
-app.use("/api/staff", require("./routes/staffRoutes"));
-app.use('/api/chatbot', require('./routes/chatbotRoutes'));
-
-// Error Handler
-app.use(errorHandler);
+// ─────────────────────────────────────────────────────────────────────────────
 
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Rejection:', err && err.message ? err.message : err);
