@@ -583,12 +583,7 @@ function displayOrdersList(orders) {
       if (m === '>') return '&gt;';
       return m;
     });
-  }
-  
-  // Enter key support
-  document.getElementById('orderNumber')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') trackOrder();
-  });
+  };
   document.getElementById('trackEmail')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') trackOrder();
   });
