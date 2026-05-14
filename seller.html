@@ -820,16 +820,15 @@
           <i class="fa-solid fa-user" style="font-size:11px;margin-right:4px"></i>
           ${customer ? `${escapeHtml(customer.name)} &mdash; ${escapeHtml(customer.email)}` : 'Guest'}
         </span>
-        ${customer?.phone ? `<span class="order-customer"><i class="fa-solid fa-phone" style="font-size:11px;margin-right:4px"></i>${escapeHtml(customer.phone)}</span>` : ''}
         ${customer?.address ? `
-          <span class="order-customer">
-            <i class="fa-solid fa-location-dot" style="font-size:11px;margin-right:4px"></i>
-            ${typeof customer.address === 'string'
-              ? escapeHtml(customer.address)
-              : [customer.address.street, customer.address.city, customer.address.state, customer.address.country]
-                  .filter(Boolean).map(escapeHtml).join(', ')
-            }
-          </span>` : ''}
+  <span class="order-customer">
+    <i class="fa-solid fa-location-dot" style="font-size:11px;margin-right:4px"></i>
+    ${typeof customer.address === 'string'
+      ? escapeHtml(customer.address)
+      : [customer.address.street, customer.address.city, customer.address.state, customer.address.country]
+          .filter(Boolean).map(escapeHtml).join(', ')
+    }
+  </span>` : '<span class="order-customer"><i class="fa-solid fa-location-dot" style="font-size:11px;margin-right:4px"></i>No address provided</span>'}
         <span class="order-date">${date}</span>
       </div>
       <div class="order-total">LE ${order.amount}</div>
