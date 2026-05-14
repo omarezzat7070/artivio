@@ -155,6 +155,58 @@ exports.getOrderStatusUpdate = asyncHandler(async (req, res) => {
   });
 });
 
+exports.cancelOrderProduct = asyncHandler(async (req, res) => {
+  const { id, itemId } = req.params;
+  const { reason } = req.body || {};
+
+  const order = await Order.findById(id);
+
+  if (!order) {
+    return res.status(404).json({ success: false, error: "Order not found" });
+  }
+
+  if (order.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return res.status(403).json({ success: false, error: "Not authorized" });
+  }
+
+  if (order.paymentStatus !== "paid") {
+    return res.status(400).json({ success: false, error: "Only paid product orders can be cancelled" });
+  }
+
+  const item = order.items.id(itemId) || order.items.find(orderItem =>
+    orderItem.item && orderItem.item.toString() === itemId && orderItem.itemType === "Product"
+  );
+
+  if (!item || item.itemType !== "Product") {
+    return res.status(404).json({ success: false, error: "Product item not found in this order" });
+  }
+
+  if (item.status === "cancelled") {
+    return res.status(400).json({ success: false, error: "This product is already cancelled" });
+  }
+
+  const orderAgeMs = Date.now() - new Date(order.createdAt).getTime();
+  const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+  if (orderAgeMs >= threeDaysMs && req.user.role !== "admin") {
+    return res.status(400).json({
+      success: false,
+      error: "This product can no longer be cancelled because it is already being shipped"
+    });
+  }
+
+  item.status = "cancelled";
+  item.cancelledAt = new Date();
+  item.cancellationReason = String(reason || "Cancelled by customer").trim();
+
+  await order.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Product cancelled successfully",
+    data: order
+  });
+});
+
 // Helpers
 
 function getOrderStatus(order) {
@@ -178,7 +230,7 @@ function getProductDeliveryTracking(order) {
   const deliveryDate = new Date(shippingDate.getTime() + 2 * 86400000);
 
   const hasProduct = Array.isArray(order.items) &&
-    order.items.some(item => item.itemType === "Product");
+    order.items.some(item => item.itemType === "Product" && item.status !== "cancelled");
 
   if (!hasProduct) {
     return {

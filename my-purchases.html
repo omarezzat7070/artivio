@@ -138,7 +138,33 @@
       margin-left: 10px;
     }
 
-    .view-btn:hover, .track-btn:hover {
+    .cancel-product-btn {
+      background: #b91c1c;
+      color: white;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .cancel-product-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .cancelled-badge {
+      display: inline-block;
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .view-btn:hover, .track-btn:hover, .cancel-product-btn:hover {
       opacity: 0.9;
     }
 
@@ -364,8 +390,9 @@
               });
             }
           } else if (item.itemType === 'Product') {
-            if (!productsMap.has(item.item)) {
-              productsMap.set(item.item, {
+            const productPurchaseKey = `${order._id}-${item._id || item.item}`;
+            if (!productsMap.has(productPurchaseKey)) {
+              productsMap.set(productPurchaseKey, {
                 id: item.item,
                 name: item.name,
                 price: item.price,
@@ -373,7 +400,9 @@
                 category: item.category || 'Handmade',
                 image: null,
                 orderId: order._id,
-                status: 'active'
+                orderItemId: item._id,
+                status: item.status || 'active',
+                cancelledAt: item.cancelledAt || null
               });
             }
           }
@@ -489,9 +518,11 @@
           <div class="purchase-title">${escapeHtml(product.name)}</div>
           <div class="purchase-meta">${product.category || 'Handmade'} � Qty: ${product.quantity || 1}</div>
           <div class="purchase-price">Paid: ${formatPrice(product.price)}</div>
+          ${product.status === 'cancelled' ? '<span class="cancelled-badge">Cancelled</span>' : ''}
         </div>
         <div class="button-group">
           <button class="track-btn" data-order-id="${product.orderId}">Track Order</button>
+          ${product.status === 'cancelled' ? '' : `<button class="cancel-product-btn" data-order-id="${product.orderId}" data-item-id="${product.orderItemId || product.id}">Cancel Product</button>`}
         </div>
       </div>
     `).join('');
@@ -502,6 +533,54 @@
         window.location.href = `track-order.html?order=${orderId}`;
       });
     });
+
+    document.querySelectorAll('.cancel-product-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const orderId = this.getAttribute('data-order-id');
+        const itemId = this.getAttribute('data-item-id');
+        cancelProduct(orderId, itemId, this);
+      });
+    });
+  }
+
+  async function cancelProduct(orderId, itemId, button) {
+    const token = getToken();
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    if (!confirm('Cancel this product from your purchase?')) return;
+
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Cancelling...';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}/items/${itemId}/cancel`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason: 'Cancelled by customer from My Purchases' })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || 'Failed to cancel product');
+        button.disabled = false;
+        button.textContent = originalText;
+        return;
+      }
+
+      await loadPurchases();
+      alert('Product cancelled successfully.');
+    } catch (err) {
+      alert('Network error. Please try again.');
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 
   async function viewCourse(courseId) {

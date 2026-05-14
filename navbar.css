@@ -38,6 +38,7 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--navbar-hover);
+  position: relative;
 }
 
 .nav-logo img {
@@ -49,6 +50,19 @@
   font-family: 'Dancing Script', cursive;
   font-size: 30px;
   font-weight: 700;
+}
+
+.brand-settings-toggle {
+  background: transparent;
+  border: 0;
+  color: var(--navbar-hover);
+  cursor: pointer;
+  padding: 0;
+}
+
+.brand-settings-dropdown {
+  left: 50px;
+  right: auto;
 }
 
 .nav-links {
@@ -107,10 +121,11 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: white;
-  min-width: 180px;
+  background: var(--navbar-bg);
+  min-width: 220px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border: 1px solid var(--navbar-border);
   z-index: 1000;
   margin-top: 8px;
   overflow: hidden;
@@ -125,21 +140,79 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  color: #333;
+  color: var(--navbar-text);
   text-decoration: none;
   font-size: 14px;
   transition: background 0.2s;
 }
 
 .profile-dropdown a:hover {
-  background: #f5f5f5;
+  background: rgba(108, 41, 41, 0.08);
   color: var(--navbar-hover);
 }
 
 .profile-dropdown hr {
   margin: 0;
   border: none;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--navbar-border);
+}
+
+.nav-settings {
+  padding: 12px 14px;
+}
+
+.nav-settings-title {
+  display: block;
+  color: var(--navbar-text);
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  opacity: 0.8;
+}
+
+.nav-toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.nav-toggle-group:last-child {
+  margin-bottom: 0;
+}
+
+.nav-toggle-group button {
+  border: 1px solid var(--navbar-border);
+  background: transparent;
+  color: var(--navbar-text);
+  border-radius: 8px;
+  cursor: pointer;
+  font: 600 13px 'Segoe UI', sans-serif;
+  padding: 8px 10px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.nav-toggle-group button:hover,
+.nav-toggle-group button.active {
+  background: var(--navbar-hover);
+  border-color: var(--navbar-hover);
+  color: #fff;
+}
+
+body[dir="rtl"] .profile-dropdown {
+  right: auto;
+  left: 0;
+  text-align: right;
+}
+
+body[dir="rtl"] .brand-settings-dropdown {
+  left: auto;
+  right: 50px;
+}
+
+body[dir="rtl"] .nav-links a,
+body[dir="rtl"] .profile-dropdown a {
+  flex-direction: row-reverse;
 }
 
 /* Mobile responsive */

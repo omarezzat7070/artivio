@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -145,6 +145,57 @@ body {
   text-decoration: none;
   font-weight: 600;
 }
+.forgot-row {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
+.forgot-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.forgot-panel {
+  display: none;
+  text-align: left;
+  background: #faf6f5;
+  border: 1px solid #ead9d4;
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 20px;
+}
+
+.forgot-panel.active {
+  display: block;
+}
+
+.forgot-panel h3 {
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.forgot-panel p {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.secondary-btn {
+  width: 100%;
+  background: #e5e7eb;
+  color: #333;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
   </style>
   <link rel="stylesheet" href="navbar.css">
 </head>
@@ -199,7 +250,11 @@ body {
   <label for="password">Password</label>
   <div class="input-box">
     <i class="fa-solid fa-lock"></i>
-    <input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+    <input type="password" id="password" name="password" autocomplete="current-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
+  </div>
+
+  <div class="forgot-row">
+    <button type="button" class="forgot-btn" id="showForgotBtn">Forgot password?</button>
   </div>
 
       <button type="submit" class="login-btn" id="loginBtn">
@@ -213,7 +268,34 @@ body {
         <a href="sign-up.html">Sign up</a>
       </p>
     </form>
+    <div class="forgot-panel" id="forgotPanel">
+      <h3>Reset Password</h3>
+      <p>Enter the same full name and email on your account, then choose a new password.</p>
 
+      <form id="forgotPasswordForm">
+        <label for="forgotName">Full Name</label>
+        <div class="input-box">
+          <i class="fa-regular fa-user"></i>
+          <input type="text" id="forgotName" placeholder="Your full name" required>
+        </div>
+
+        <label for="forgotEmail">Email</label>
+        <div class="input-box">
+          <i class="fa-regular fa-envelope"></i>
+          <input type="email" id="forgotEmail" placeholder="your@email.com" required>
+        </div>
+
+        <label for="forgotNewPassword">New Password</label>
+        <div class="input-box">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="forgotNewPassword" placeholder="At least 6 characters" required>
+        </div>
+
+        <button type="submit" class="login-btn" id="resetPasswordBtn">Reset Password</button>
+        <button type="button" class="secondary-btn" id="hideForgotBtn">Back to Login</button>
+        <p class="signup-text" id="forgotMessage" role="status" aria-live="polite"></p>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -232,7 +314,33 @@ document.addEventListener('DOMContentLoaded', function(){
   const loginMessage = document.getElementById("loginMessage");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
+  const showForgotBtn = document.getElementById("showForgotBtn");
+  const hideForgotBtn = document.getElementById("hideForgotBtn");
+  const forgotPanel = document.getElementById("forgotPanel");
+  const forgotPasswordForm = document.getElementById("forgotPasswordForm");
+  const forgotMessage = document.getElementById("forgotMessage");
+  const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+  const forgotName = document.getElementById("forgotName");
+  const forgotEmail = document.getElementById("forgotEmail");
+  const forgotNewPassword = document.getElementById("forgotNewPassword");
   let selectedRole = "customer";
+
+  if (showForgotBtn && forgotPanel) {
+    showForgotBtn.addEventListener("click", () => {
+      forgotPanel.classList.add("active");
+      forgotMessage.textContent = "";
+      forgotEmail.value = emailInput.value.trim();
+      forgotName.focus();
+    });
+  }
+
+  if (hideForgotBtn && forgotPanel) {
+    hideForgotBtn.addEventListener("click", () => {
+      forgotPanel.classList.remove("active");
+      forgotPasswordForm.reset();
+      forgotMessage.textContent = "";
+    });
+  }
 
   if (customerBtn && artisanBtn && loginBtn) {
     customerBtn.addEventListener("click", (e) => {
@@ -316,12 +424,71 @@ document.addEventListener('DOMContentLoaded', function(){
       }
     });
   }
+
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      forgotMessage.textContent = "";
+
+      const name = forgotName.value.trim();
+      const email = forgotEmail.value.trim();
+      const newPassword = forgotNewPassword.value;
+
+      if (!name || !email || !newPassword) {
+        forgotMessage.style.color = "red";
+        forgotMessage.textContent = "All fields are required";
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        forgotMessage.style.color = "red";
+        forgotMessage.textContent = "Password must be at least 6 characters";
+        return;
+      }
+
+      resetPasswordBtn.disabled = true;
+      resetPasswordBtn.textContent = "Resetting...";
+
+      try {
+        const response = await fetch(`${window.API_BASE}/api/users/forgot-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, newPassword })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          forgotMessage.style.color = "red";
+          forgotMessage.textContent = result.error || "Failed to reset password";
+          resetPasswordBtn.disabled = false;
+          resetPasswordBtn.textContent = "Reset Password";
+          return;
+        }
+
+        forgotMessage.style.color = "green";
+        forgotMessage.textContent = "Password reset successfully. You can sign in now.";
+        passwordInput.value = "";
+        forgotPasswordForm.reset();
+        setTimeout(() => {
+          forgotPanel.classList.remove("active");
+          resetPasswordBtn.disabled = false;
+          resetPasswordBtn.textContent = "Reset Password";
+        }, 1200);
+      } catch (err) {
+        forgotMessage.style.color = "red";
+        forgotMessage.textContent = "Network error. Please try again.";
+        resetPasswordBtn.disabled = false;
+        resetPasswordBtn.textContent = "Reset Password";
+      }
+    });
+  }
 });
 </script>
 
 <script src="navbar.js"></script>
 </body>
 </html>
+
 
 
 

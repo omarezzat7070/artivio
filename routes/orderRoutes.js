@@ -12,7 +12,8 @@ const {
   updateOrder,
   trackOrder,
   getOrderStatusUpdate,
-  trackOrderByEmail
+  trackOrderByEmail,
+  cancelOrderProduct
 } = require('../controllers/orderController');
 
 // --- Specific/static routes FIRST (before any /:param wildcards) ---
@@ -74,6 +75,7 @@ router.get('/', protect, authorize('admin'), getAllOrders);
 
 // Order status (authenticated)
 router.get('/:id/status', protect, getOrderStatusUpdate);
+router.patch('/:id/items/:itemId/cancel', protect, cancelOrderProduct);
 
 // Admin: get, update single order
 router.get('/:id', protect, authorize('admin'), getOrderById);
