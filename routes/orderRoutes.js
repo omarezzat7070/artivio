@@ -16,6 +16,8 @@ const {
   cancelOrderProduct
 } = require('../controllers/orderController');
 
+// --- Specific/static routes FIRST (before any /:param wildcards) ---
+
 // Email-only tracking route
 router.get('/track/email', trackOrderByEmail);
 
@@ -36,7 +38,7 @@ router.get('/my-orders', protect, async (req, res) => {
 // Admin stats
 router.get('/admin/stats', protect, authorize('admin'), getOrderStats);
 
-// Seller's product orders — WITH customer info populated
+// Seller's product orders — WITH customer info + product images populated
 router.get('/seller-product-orders', protect, async (req, res) => {
   try {
     const sellerProducts = await Product.find({ artisan: req.user._id });
@@ -51,13 +53,27 @@ router.get('/seller-product-orders', protect, async (req, res) => {
       'items.itemType': 'Product',
       paymentStatus: 'paid'
     })
-    .populate('user', 'name email phone')
+    .populate('user', 'name email phone address')  // populate customer with address
+    .populate('items.item')                         // populate product to get image
     .sort({ createdAt: -1 });
 
     const enrichedOrders = orders.map(order => {
-      const orderedProducts = order.items.filter(item =>
-        item.itemType === 'Product' && productIds.includes(item.item.toString())
-      );
+      const orderedProducts = order.items
+        .filter(item =>
+          item.itemType === 'Product' &&
+          item.item &&
+          productIds.includes(item.item._id.toString())
+        )
+        .map(item => ({
+          _id: item._id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          sellerStatus: item.sellerStatus || 'pending',
+          sellerStatusUpdatedAt: item.sellerStatusUpdatedAt,
+          image: item.item?.image || null,  // pull image from populated product
+        }));
+
       return { ...order.toObject(), orderedProducts };
     });
 

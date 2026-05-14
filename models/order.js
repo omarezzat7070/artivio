@@ -9,8 +9,12 @@ const orderItemSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   status: { type: String, enum: ['active', 'cancelled'], default: 'active' },
   cancelledAt: { type: Date, default: null },
-  cancellationReason: { type: String, default: '' },  // ← comma was missing here
-  sellerStatus: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+  cancellationReason: { type: String, default: '' },
+  sellerStatus: {
+    type: String,
+    enum: ['pending', 'accepted', 'rejected'],
+    default: 'pending'
+  },
   sellerStatusUpdatedAt: { type: Date, default: null }
 });
 
@@ -24,13 +28,13 @@ const orderSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     currency: { type: String, required: true, default: 'egp' },
     stripeSessionId: { type: String },
-    paymentMethod: { 
-      type: String, 
-      enum: ['card', 'instapay', 'cash', 'fake'], 
-      default: 'fake' 
+    paymentMethod: {
+      type: String,
+      enum: ['card', 'instapay', 'cash', 'fake'],
+      default: 'fake'
     },
     paymentDetails: { type: mongoose.Schema.Types.Mixed },
-    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'paid' }, // ← DEFAULT CHANGED TO 'paid'
+    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'paid' },
     hasCourse: { type: Boolean, default: false }
   },
   { timestamps: true }
