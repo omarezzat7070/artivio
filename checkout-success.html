@@ -175,7 +175,7 @@
         }
       });
       const data = await res.json();
-      return res.ok && data.success;
+      return (res.ok && data.success) || data.message === 'Already enrolled in this course';
     } catch (err) {
       console.error('Enrollment error for course', courseId, err);
       return false;
@@ -205,7 +205,7 @@
         const courseItems = data.order.items.filter(item => item.itemType === 'Course' && item.item);
         
         if (courseItems.length > 0) {
-          statusDiv.innerHTML = '<div class="loading-spinner"></div> Enrolling you in your courses...';
+          statusDiv.innerHTML = '<div class="loading-spinner"></div> Preparing your course access...';
           
           let successCount = 0;
           for (const item of courseItems) {
@@ -217,15 +217,16 @@
           }
           
           if (successCount === courseItems.length) {
-            statusDiv.innerHTML = '<p style="color: #16a34a;">? Successfully enrolled in all courses!</p>';
+            statusDiv.innerHTML = '<p style="color: #16a34a;">Your courses are ready in My Purchases.</p>';
             enrollmentComplete = true;
           } else if (successCount > 0) {
-            statusDiv.innerHTML = `<p style="color: #f59e0b;">? Enrolled in ${successCount} out of ${courseItems.length} courses.</p>`;
+            statusDiv.innerHTML = `<p style="color: #f59e0b;">${successCount} out of ${courseItems.length} courses are ready. Your paid order is saved in My Purchases.</p>`;
           } else {
-            statusDiv.innerHTML = '<p style="color: #dc2626;">?? Please go to "My Purchases" to access your courses.</p>';
+            statusDiv.innerHTML = '<p style="color: #16a34a;">Your paid courses are saved in My Purchases.</p>';
+            enrollmentComplete = true;
           }
         } else {
-          statusDiv.innerHTML = '<p>Your order contains products only. No enrollment needed.</p>';
+          statusDiv.innerHTML = '<p>Your products are saved in My Purchases.</p>';
           enrollmentComplete = true;
         }
         

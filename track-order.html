@@ -119,41 +119,39 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .order-header {
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 15px;
-      margin-bottom: 20px;
+    .error-message {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
     }
 
-    .order-number {
-      font-size: 20px;
-      font-weight: bold;
-      color: var(--primary);
+    .estimated-delivery {
+      background: #fef3c7;
+      padding: 14px;
+      border-radius: 8px;
+      margin: 16px 0;
+      text-align: center;
     }
 
-    .order-date {
-      color: #666;
-      margin-top: 5px;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
+    .delivery-countdown-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       margin-top: 10px;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 600;
     }
 
-    .status-pending_payment { background: #fef3c7; color: #92400e; }
-    .status-processing { background: #dbeafe; color: #1e40af; }
-    .status-shipped { background: #d1fae5; color: #065f46; }
-    .status-in_transit { background: #fed7aa; color: #9a3412; }
-    .status-delivered { background: #d1fae5; color: #065f46; }
-    .status-completed { background: #e5e7eb; color: #374151; }
+    .delivery-countdown-line i {
+      color: var(--pending);
+    }
 
     .timeline {
-      margin: 30px 0;
+      margin: 20px 0;
       position: relative;
       padding-left: 30px;
     }
@@ -170,7 +168,7 @@
 
     .timeline-item {
       position: relative;
-      margin-bottom: 30px;
+      margin-bottom: 28px;
     }
 
     .timeline-dot {
@@ -204,7 +202,8 @@
 
     .timeline-title {
       font-weight: 600;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
+      font-size: 14px;
     }
 
     .timeline-desc {
@@ -215,46 +214,32 @@
     .timeline-date {
       font-size: 11px;
       color: #999;
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
     .items-list {
-      margin-top: 20px;
+      margin-top: 16px;
       border-top: 1px solid var(--border);
-      padding-top: 20px;
+      padding-top: 16px;
     }
 
     .item-row {
       display: flex;
       justify-content: space-between;
-      padding: 10px 0;
+      gap: 16px;
+      padding: 8px 0;
       border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
     }
 
     .total-row {
       display: flex;
       justify-content: space-between;
-      padding: 15px 0;
+      gap: 16px;
+      padding: 12px 0 0;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 16px;
       color: var(--primary);
-    }
-
-    .error-message {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 15px;
-      display: none;
-    }
-
-    .estimated-delivery {
-      background: #fef3c7;
-      padding: 12px;
-      border-radius: 8px;
-      margin: 20px 0;
-      text-align: center;
     }
 
     @media (max-width: 600px) {
@@ -293,18 +278,18 @@
 <div class="container">
   <div class="track-card">
     <h1>Track Your Order</h1>
-    <p class="subtitle">Enter your order ID and email to track your shipment</p>
-    
+    <p class="subtitle">Enter your email to track your shipment</p>
+
     <div class="search-form">
-  <div class="form-group">
-    <label for="trackEmail">Email Address</label>
-    <input type="email" id="trackEmail" placeholder="Enter your email address" required>
-    <small style="color: #666; display: block; margin-top: 5px;">We'll show all orders associated with this email</small>
-  </div>
-  <button class="track-btn" onclick="trackOrder()">
-    <i class="fa-solid fa-search"></i> Track My Orders
-  </button>
-</div>
+      <div class="form-group">
+        <label for="trackEmail">Email Address</label>
+        <input type="email" id="trackEmail" placeholder="Enter your email address" required>
+        <small style="color:#666; display:block; margin-top:5px;">We'll show all orders associated with this email</small>
+      </div>
+      <button class="track-btn" onclick="trackOrder()">
+        <i class="fa-solid fa-search"></i> Track My Orders
+      </button>
+    </div>
 
     <div id="errorMessage" class="error-message"></div>
     <div id="orderDetails" class="order-details"></div>
@@ -313,20 +298,235 @@
 
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
-  
- async function trackOrder() {
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function getStatusText(status) {
+    const map = {
+      pending_payment: 'Pending Payment',
+      processing: 'Processing',
+      shipped: 'Shipped',
+      in_transit: 'In Transit',
+      delivered: 'Delivered',
+      completed: 'Completed'
+    };
+    return map[status] || status;
+  }
+
+  function formatRemainingTime(ms) {
+    const safeMs = Math.max(0, Number(ms) || 0);
+    const totalHours = Math.ceil(safeMs / (1000 * 60 * 60));
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+
+    if (days > 0 && hours > 0) return days + ' day(s) and ' + hours + ' hour(s) left';
+    if (days > 0) return days + ' day(s) left';
+    if (hours > 0) return hours + ' hour(s) left';
+    return 'Less than 1 hour left';
+  }
+
+  function buildDeliveryTracking(createdAt, items) {
+    const now = new Date();
+    const purchaseDate = createdAt ? new Date(createdAt) : new Date();
+    const shippingDate = new Date(purchaseDate.getTime() + 3 * 86400000);
+    const deliveryDate = new Date(shippingDate.getTime() + 2 * 86400000);
+
+    const hasProduct = Array.isArray(items) && items.some(function(item) {
+      return item.itemType === 'Product';
+    });
+
+    if (!hasProduct) {
+      return {
+        status: 'completed',
+        message: 'Digital course purchase. No shipping is required.',
+        remainingText: 'Available now in My Purchases',
+        shippingDate: null,
+        deliveryDate: null,
+        timeline: [
+          { title: 'Order Placed', description: 'Your order has been received', completed: true, timestamp: purchaseDate.toISOString() },
+          { title: 'Payment Confirmed', description: 'Payment has been verified', completed: true, timestamp: purchaseDate.toISOString() },
+          { title: 'Ready', description: 'Your course is available in My Purchases', completed: true, timestamp: purchaseDate.toISOString() }
+        ]
+      };
+    }
+
+    let status = 'processing';
+    let message = 'Payment confirmed. Your product is being prepared for shipping.';
+
+    if (now >= deliveryDate) {
+      status = 'delivered';
+      message = 'Your product should be delivered to the customer.';
+    } else if (now >= shippingDate) {
+      status = 'shipped';
+      message = 'Your product is shipping to the customer.';
+    }
+
+    return {
+      status: status,
+      message: message,
+      remainingText: now >= deliveryDate ? 'Delivered' : formatRemainingTime(deliveryDate - now),
+      shippingDate: shippingDate.toISOString(),
+      deliveryDate: deliveryDate.toISOString(),
+      timeline: [
+        {
+          title: 'Order Placed',
+          description: 'Your order has been received',
+          completed: true,
+          timestamp: purchaseDate.toISOString()
+        },
+        {
+          title: 'Payment Confirmed',
+          description: 'Payment has been verified',
+          completed: true,
+          timestamp: purchaseDate.toISOString()
+        },
+        {
+          title: 'Preparing Product',
+          description: 'This lasts 3 days after payment',
+          completed: now >= shippingDate,
+          timestamp: now >= shippingDate ? shippingDate.toISOString() : null
+        },
+        {
+          title: 'Shipped',
+          description: 'Shipping starts 3 days after payment',
+          completed: now >= shippingDate,
+          timestamp: now >= shippingDate ? shippingDate.toISOString() : null
+        },
+        {
+          title: 'Delivered',
+          description: 'Delivery is expected 2 days after shipping',
+          completed: now >= deliveryDate,
+          timestamp: now >= deliveryDate ? deliveryDate.toISOString() : null
+        }
+      ]
+    };
+  }
+
+  function renderTrackingTimeline(timeline) {
+    if (!Array.isArray(timeline) || timeline.length === 0) return '';
+
+    let lastCompletedIndex = -1;
+    for (let i = 0; i < timeline.length; i++) {
+      if (timeline[i].completed) lastCompletedIndex = i;
+    }
+    const activeIndex = lastCompletedIndex + 1;
+
+    return timeline.map(function(event, index) {
+      let cls = '';
+      if (event.completed) {
+        cls = 'completed';
+      } else if (index === activeIndex) {
+        cls = 'active';
+      }
+
+      const dateDisplay = event.timestamp ? new Date(event.timestamp).toLocaleString() : 'Pending';
+
+      return (
+        '<div class="timeline-item ' + cls + '">' +
+          '<div class="timeline-dot"></div>' +
+          '<div class="timeline-title">' + escapeHtml(event.title || '') + '</div>' +
+          '<div class="timeline-desc">' + escapeHtml(event.description || '') + '</div>' +
+          '<div class="timeline-date">' + escapeHtml(dateDisplay) + '</div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  function displayOrdersList(orders) {
+    const container = document.getElementById('orderDetails');
+    let html = '<div style="margin-bottom:20px;"><h3 style="color:#6C2929;">Found ' + orders.length + ' Order(s)</h3></div>';
+
+    for (let i = 0; i < orders.length; i++) {
+      const order = orders[i];
+
+      const orderNumber = order._id ? order._id.toString().slice(-8).toUpperCase() : 'UNKNOWN';
+      const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A';
+      const statusText = order.paymentStatus === 'paid' ? 'Paid' : 'Processing';
+      const statusColor = order.paymentStatus === 'paid' ? '#d1fae5' : '#fef3c7';
+      const statusTextColor = order.paymentStatus === 'paid' ? '#065f46' : '#92400e';
+
+      const tracking = order.tracking || buildDeliveryTracking(order.createdAt, order.items || []);
+      const trackStatus = getStatusText(tracking.status || 'processing');
+      const trackMsg = tracking.message || 'Payment confirmed. Your order is being prepared.';
+      const remainText = tracking.remainingText || '';
+      const shippingDate = tracking.shippingDate ? new Date(tracking.shippingDate).toLocaleString() : 'N/A';
+      const deliveryDate = tracking.deliveryDate ? new Date(tracking.deliveryDate).toLocaleString() : null;
+      const timelineHtml = renderTrackingTimeline(tracking.timeline || []);
+
+      const deliveryHtml = deliveryDate
+        ? '<div style="font-size:22px;font-weight:700;color:#6C2929;margin-top:6px;">' + escapeHtml(remainText) + '</div>' +
+          '<div style="color:#666;margin-top:5px;">Expected delivery: ' + escapeHtml(deliveryDate) + '</div>' +
+          '<div style="color:#666;margin-top:5px;">Ships by: ' + escapeHtml(shippingDate) + '</div>'
+        : '<div style="font-size:18px;font-weight:700;color:#6C2929;margin-top:6px;">' + escapeHtml(remainText) + '</div>';
+      const deliveryLine = remainText
+        ? '<div class="delivery-countdown-line"><i class="fa-regular fa-clock"></i><span>Time left to receive your product: <strong>' + escapeHtml(remainText) + '</strong></span></div>'
+        : '';
+
+      let itemsHtml = '';
+      if (Array.isArray(order.items)) {
+        for (let j = 0; j < order.items.length; j++) {
+          const item = order.items[j];
+          const quantity = Number(item.quantity) || 0;
+          const itemTotal = ((Number(item.price) || 0) * quantity).toFixed(2);
+
+          itemsHtml +=
+            '<div class="item-row">' +
+              '<span>' + escapeHtml(item.name || 'Unnamed Item') + ' x ' + quantity + '</span>' +
+              '<span>LE ' + itemTotal + '</span>' +
+            '</div>';
+        }
+      }
+
+      const totalAmount = Number(order.amount || 0).toFixed(2);
+
+      html +=
+        '<div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">' +
+          '<div style="border-bottom:1px solid #e5e7eb;padding-bottom:14px;margin-bottom:14px;">' +
+            '<div style="font-size:18px;font-weight:bold;color:#6C2929;">Order #' + orderNumber + '</div>' +
+            '<div style="color:#666;margin-top:5px;">Placed on ' + orderDate + '</div>' +
+            '<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;margin-top:8px;background:' + statusColor + ';color:' + statusTextColor + ';">' + statusText + '</span>' +
+            deliveryLine +
+          '</div>' +
+          '<div class="estimated-delivery">' +
+            '<div style="font-weight:700;">' + escapeHtml(trackStatus) + '</div>' +
+            '<div style="color:#666;margin-top:5px;">' + escapeHtml(trackMsg) + '</div>' +
+            deliveryHtml +
+          '</div>' +
+          '<div class="timeline">' + timelineHtml + '</div>' +
+          '<div class="items-list">' +
+            '<h4 style="margin-bottom:10px;">Items</h4>' +
+            itemsHtml +
+            '<div class="total-row">' +
+              '<span>Total Amount</span>' +
+              '<span>LE ' + totalAmount + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    container.innerHTML = html;
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function trackOrder() {
     const email = document.getElementById('trackEmail').value.trim();
     const errorDiv = document.getElementById('errorMessage');
     const orderDetailsDiv = document.getElementById('orderDetails');
 
     if (!email) {
-        showError('Please enter your email address');
-        return;
+      showError('Please enter your email address');
+      return;
     }
 
     if (!email.includes('@') || !email.includes('.')) {
-        showError('Please enter a valid email address');
-        return;
+      showError('Please enter a valid email address');
+      return;
     }
 
     orderDetailsDiv.style.display = 'none';
@@ -334,267 +534,54 @@
 
     const trackBtn = document.querySelector('.track-btn');
     const originalText = trackBtn.innerHTML;
-
-    trackBtn.innerHTML =
-        '<i class="fa-solid fa-spinner fa-pulse"></i> Tracking...';
-
+    trackBtn.innerHTML = '<i class="fa-solid fa-spinner fa-pulse"></i> Tracking...';
     trackBtn.disabled = true;
 
     try {
-        const response = await fetch(
-            API_BASE +
-                '/api/orders/track/email?email=' +
-                encodeURIComponent(email)
-        );
+      const response = await fetch(API_BASE + '/api/orders/track/email?email=' + encodeURIComponent(email));
+      const data = await response.json();
 
-        const data = await response.json();
-
-        if (
-            response.ok &&
-            data.success &&
-            Array.isArray(data.orders) &&
-            data.orders.length > 0
-        ) {
-            displayOrdersList(data.orders);
-        } else {
-            showError('No orders found for this email address.');
-        }
+      if (response.ok && data.success && Array.isArray(data.orders) && data.orders.length > 0) {
+        displayOrdersList(data.orders);
+      } else {
+        showError('No orders found for this email address.');
+      }
     } catch (error) {
-        console.error('Track order error:', error);
-        showError('Network error. Please try again.');
+      console.error('Track order error:', error);
+      showError('Network error. Please try again.');
     } finally {
-        trackBtn.innerHTML = originalText;
-        trackBtn.disabled = false;
+      trackBtn.innerHTML = originalText;
+      trackBtn.disabled = false;
     }
-}
+  }
 
-function displayOrdersList(orders) {
-    const container = document.getElementById('orderDetails');
-
-    let html =
-        '<div style="margin-bottom: 20px;">' +
-        '<h3 style="color: #6C2929;">Found ' +
-        orders.length +
-        ' Order(s)</h3>' +
-        '</div>';
-
-    for (let i = 0; i < orders.length; i++) {
-        const order = orders[i];
-
-        const orderNumber = order._id
-            ? order._id.toString().slice(-8).toUpperCase()
-            : 'UNKNOWN';
-
-        const orderDate = order.createdAt
-            ? new Date(order.createdAt).toLocaleDateString()
-            : 'N/A';
-
-        const statusText =
-            order.paymentStatus === 'paid'
-                ? 'Paid'
-                : 'Processing';
-
-        const statusColor =
-            order.paymentStatus === 'paid'
-                ? '#d1fae5'
-                : '#fef3c7';
-
-        const statusTextColor =
-            order.paymentStatus === 'paid'
-                ? '#065f46'
-                : '#92400e';
-
-        let itemsHtml = '';
-
-        if (Array.isArray(order.items)) {
-            for (let j = 0; j < order.items.length; j++) {
-                const item = order.items[j];
-
-                const itemPrice = Number(item.price) || 0;
-                const itemQty = Number(item.quantity) || 0;
-
-                const itemTotal = (itemPrice * itemQty).toFixed(2);
-
-                itemsHtml +=
-                    '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">' +
-                    '<span>' +
-                    escapeHtml(item.name || 'Unnamed Item') +
-                    ' x ' +
-                    itemQty +
-                    '</span>' +
-                    '<span>LE ' +
-                    itemTotal +
-                    '</span>' +
-                    '</div>';
-            }
-        }
-
-        const totalAmount = Number(order.amount || 0).toFixed(2);
-
-        html +=
-            '<div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">' +
-
-            '<div style="border-bottom:1px solid #e5e7eb; padding-bottom:15px; margin-bottom:15px;">' +
-
-            '<div style="font-size:18px; font-weight:bold; color:#6C2929;">' +
-            'Order #' +
-            orderNumber +
-            '</div>' +
-
-            '<div style="color:#666; margin-top:5px;">' +
-            'Placed on ' +
-            orderDate +
-            '</div>' +
-
-            '<span style="display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; margin-top:8px; background:' +
-            statusColor +
-            '; color:' +
-            statusTextColor +
-            ';">' +
-            statusText +
-            '</span>' +
-
-            '</div>' +
-
-            '<div>' +
-            '<h4 style="margin-bottom:10px;">Items</h4>' +
-            itemsHtml +
-
-            '<div style="display:flex; justify-content:space-between; padding-top:10px; margin-top:10px; border-top:1px solid #e5e7eb; font-weight:bold;">' +
-
-            '<span>Total Amount</span>' +
-
-            '<span style="color:#6C2929;">LE ' +
-            totalAmount +
-            '</span>' +
-
-            '</div>' +
-            '</div>' +
-            '</div>';
-    }
-
-    container.innerHTML = html;
-    container.style.display = 'block';
-
-    container.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
-}
-  
   function showError(message) {
     const errorDiv = document.getElementById('errorMessage');
     errorDiv.textContent = message;
     errorDiv.style.display = 'block';
     document.getElementById('orderDetails').style.display = 'none';
-    
-    // Auto hide after 5 seconds
-    setTimeout(() => {
-      if (errorDiv.style.display === 'block') {
-        errorDiv.style.display = 'none';
-      }
+
+    setTimeout(function() {
+      if (errorDiv.style.display === 'block') errorDiv.style.display = 'none';
     }, 5000);
   }
-  
-  function displayOrderDetails(order) {
-    const container = document.getElementById('orderDetails');
-    
-    const statusClass = `status-${order.orderStatus}`;
-    const statusText = getStatusText(order.orderStatus);
-    
-    let itemsHtml = '';
-    order.items.forEach(item => {
-      itemsHtml += `
-        <div class="item-row">
-          <span>${escapeHtml(item.name)} x ${item.quantity}</span>
-          <span>LE ${(item.price * item.quantity).toFixed(2)}</span>
-        </div>
-      `;
-    });
-    
-    let timelineHtml = '';
-    order.timeline.forEach((event, index) => {
-      const isCompleted = event.completed;
-      const currentStatusIndex = order.timeline.findIndex(e => e.status === order.orderStatus);
-      const isActive = !isCompleted && currentStatusIndex === index;
-      const statusClass = isCompleted ? 'completed' : (isActive ? 'active' : '');
-      const dateDisplay = event.timestamp ? new Date(event.timestamp).toLocaleDateString() : 'Pending';
-      
-      timelineHtml += `
-        <div class="timeline-item ${statusClass}">
-          <div class="timeline-dot"></div>
-          <div class="timeline-title">${escapeHtml(event.title)}</div>
-          <div class="timeline-desc">${escapeHtml(event.description)}</div>
-          <div class="timeline-date">${dateDisplay}</div>
-        </div>
-      `;
-    });
-    
-    container.innerHTML = `
-      <div class="order-header">
-        <div class="order-number">Order #${escapeHtml(order.orderNumber)}</div>
-        <div class="order-date">Placed on ${new Date(order.date).toLocaleDateString()}</div>
-        <span class="status-badge ${statusClass}">${statusText}</span>
-      </div>
-      
-      ${order.estimatedDelivery ? `
-        <div class="estimated-delivery">
-          <i class="fa-solid fa-truck"></i> Estimated Delivery: ${order.estimatedDelivery}
-        </div>
-      ` : ''}
-      
-      <div class="timeline">
-        ${timelineHtml}
-      </div>
-      
-      <div class="items-list">
-        <h3 style="margin-bottom: 15px;">Order Items</h3>
-        ${itemsHtml}
-        <div class="total-row">
-          <span>Total Amount</span>
-          <span>LE ${order.amount.toFixed(2)}</span>
-        </div>
-      </div>
-    `;
-    
-    container.style.display = 'block';
-    
-    // Scroll to order details
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  
-  function getStatusText(status) {
-    const statusMap = {
-      'pending_payment': 'Pending Payment',
-      'processing': 'Processing',
-      'shipped': 'Shipped',
-      'in_transit': 'In Transit',
-      'delivered': 'Delivered',
-      'completed': 'Completed'
-    };
-    return statusMap[status] || status;
-  }
-  
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  };
-  document.getElementById('trackEmail')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') trackOrder();
-  });
-  
+
   document.addEventListener('DOMContentLoaded', function() {
     if (window.lucide) lucide.createIcons();
-    
+
+    const trackEmail = document.getElementById('trackEmail');
+    if (trackEmail) {
+      trackEmail.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') trackOrder();
+      });
+    }
+
     const menuIcon = document.getElementById('menuIcon');
     const navLinks = document.getElementById('navLinks');
     if (menuIcon && navLinks) {
-      menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
+      menuIcon.addEventListener('click', function() {
+        navLinks.classList.toggle('active');
+      });
     }
   });
 </script>

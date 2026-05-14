@@ -5,6 +5,27 @@ const Order = require('../models/order');
 const Course = require('../models/course');
 const crypto = require('crypto');
 
+async function enrollPaidOrderCourses(order) {
+  if (!order || !order.hasCourse) return;
+
+  const userId = order.user && order.user._id ? order.user._id : order.user;
+  if (!userId) return;
+
+  for (const item of order.items || []) {
+    if (item.itemType !== 'Course' || !item.item) continue;
+
+    try {
+      await Course.findByIdAndUpdate(
+        item.item,
+        { $addToSet: { students: userId } },
+        { new: false }
+      );
+    } catch (err) {
+      console.error('Auto-enrollment error:', err);
+    }
+  }
+}
+
 // POST /api/payment/create-checkout-session
 router.post('/create-checkout-session', protect, async (req, res) => {
   const { items, successUrl, cancelUrl, payment, paymentMethod } = req.body;
@@ -84,22 +105,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       hasCourse
     });
 
-    // Auto-enroll user in courses immediately after payment
-    if (hasCourse) {
-      for (const item of items) {
-        if (item.type === 'Course' && item.id) {
-          try {
-            const course = await Course.findById(item.id);
-            if (course && course.students && !course.students.includes(req.user._id)) {
-              course.students.push(req.user._id);
-              await course.save();
-            }
-          } catch (err) {
-            console.error('Auto-enrollment error:', err);
-          }
-        }
-      }
-    }
+    await enrollPaidOrderCourses(order);
 
     const fakeSession = { 
       url: (successUrl || '/') + '?session_id=' + fakeSessionId + '&method=' + selectedMethod, 
@@ -122,6 +128,10 @@ router.get('/checkout-session', async (req, res) => {
   try {
     const order = await Order.findOne({ stripeSessionId: session_id }).populate('user', 'name email');
     if (order) {
+      if (order.paymentStatus === 'paid') {
+        await enrollPaidOrderCourses(order);
+      }
+
       return res.json({ 
         session: { 
           id: session_id, 
@@ -152,18 +162,7 @@ router.post('/instapay-webhook', async (req, res) => {
       order.paymentDetails.status = 'completed';
       await order.save();
       
-      // Auto-enroll for courses
-      if (order.hasCourse) {
-        for (const item of order.items) {
-          if (item.itemType === 'Course' && item.item) {
-            const course = await Course.findById(item.item);
-            if (course && course.students && !course.students.includes(order.user)) {
-              course.students.push(order.user);
-              await course.save();
-            }
-          }
-        }
-      }
+      await enrollPaidOrderCourses(order);
     }
     res.json({ success: true });
   } catch (err) {

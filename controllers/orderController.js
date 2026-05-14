@@ -24,10 +24,7 @@ exports.getOrderStats = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: {
-      totalRevenue,
-      totalOrders
-    }
+    data: { totalRevenue, totalOrders }
   });
 });
 
@@ -70,11 +67,13 @@ exports.trackOrderByEmail = asyncHandler(async (req, res) => {
     .populate("user", "name email")
     .sort({ createdAt: -1 });
 
+  const normalizedEmail = String(email).trim().toLowerCase();
+
   const paidOrders = orders.filter(order => {
     if (order.paymentStatus !== "paid") return false;
-    if (order.user && order.user.email === email) return true;
-    if (order.paymentDetails && order.paymentDetails.email === email) return true;
-    if (order.paymentDetails && order.paymentDetails.deliveryEmail === email) return true;
+    if (order.user && String(order.user.email || "").toLowerCase() === normalizedEmail) return true;
+    if (order.paymentDetails && String(order.paymentDetails.email || "").toLowerCase() === normalizedEmail) return true;
+    if (order.paymentDetails && String(order.paymentDetails.deliveryEmail || "").toLowerCase() === normalizedEmail) return true;
     return false;
   });
 
@@ -85,23 +84,28 @@ exports.trackOrderByEmail = asyncHandler(async (req, res) => {
     });
   }
 
-  res.status(200).json({
-    success: true,
-    count: paidOrders.length,
-    orders: paidOrders.map(order => ({
+  const trackedOrders = paidOrders.map(order => {
+    const tracking = getProductDeliveryTracking(order);
+
+    return {
       _id: order._id,
       createdAt: order.createdAt,
       amount: order.amount,
       paymentStatus: order.paymentStatus,
       items: order.items,
-      paymentDetails: order.paymentDetails
-    }))
+      tracking
+    };
+  });
+
+  res.status(200).json({
+    success: true,
+    count: paidOrders.length,
+    orders: trackedOrders
   });
 });
 
 exports.trackOrder = asyncHandler(async (req, res) => {
   const { orderNumber } = req.params;
-
   const order = await Order.findOne({ orderNumber }).populate("user", "name email");
 
   if (!order) {
@@ -122,7 +126,6 @@ exports.trackOrder = asyncHandler(async (req, res) => {
       timeline,
       items: order.items,
       amount: order.amount,
-      paymentDetails: order.paymentDetails,
       createdAt: order.createdAt
     }
   });
@@ -152,92 +155,131 @@ exports.getOrderStatusUpdate = asyncHandler(async (req, res) => {
   });
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 function getOrderStatus(order) {
-  const now = new Date();
-  const orderDate = new Date(order.createdAt);
-  const daysSince = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+  const tracking = getProductDeliveryTracking(order);
 
-  if (daysSince < 1) {
-    return {
-      status: "processing",
-      message: "Order confirmed. Preparing for shipment.",
-      estimatedDelivery: getEstimatedDelivery(orderDate, 5)
-    };
-  } else if (daysSince < 3) {
-    return {
-      status: "shipped",
-      message: "Your order has been shipped and is on its way!",
-      estimatedDelivery: getEstimatedDelivery(orderDate, 5)
-    };
-  } else if (daysSince < 7) {
-    return {
-      status: "in_transit",
-      message: "Your order is in transit. Expected delivery soon.",
-      estimatedDelivery: getEstimatedDelivery(orderDate, 7)
-    };
-  } else if (daysSince < 14) {
-    return {
-      status: "delivered",
-      message: "Your order has been delivered. Thank you for shopping with Artivio!",
-      estimatedDelivery: null
-    };
-  } else {
-    return {
-      status: "completed",
-      message: "Order completed. We hope you enjoyed your purchase!",
-      estimatedDelivery: null
-    };
-  }
-}
-
-function getEstimatedDelivery(orderDate, daysToAdd) {
-  const estimate = new Date(orderDate);
-  estimate.setDate(estimate.getDate() + daysToAdd);
-  return estimate.toLocaleDateString();
+  return {
+    status: tracking.status,
+    message: tracking.message,
+    estimatedDelivery: tracking.estimatedDelivery
+  };
 }
 
 function getOrderTimeline(order) {
-  const now = new Date();
-  const orderDate = new Date(order.createdAt);
-  const daysSince = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+  return getProductDeliveryTracking(order).timeline;
+}
 
-  return [
-    {
-      status: "order_placed",
-      title: "Order Placed",
-      description: "Your order has been received",
-      completed: true,
-      timestamp: order.createdAt
-    },
-    {
-      status: "payment_confirmed",
-      title: "Payment Confirmed",
-      description: "Payment has been verified",
-      completed: true,
-      timestamp: order.updatedAt
-    },
-    {
-      status: "processing",
-      title: "Processing",
-      description: "Order is being prepared",
-      completed: daysSince >= 1,
-      timestamp: daysSince >= 1 ? new Date(orderDate.getTime() + 86400000) : null
-    },
-    {
-      status: "shipped",
-      title: "Shipped",
-      description: "Order has been shipped",
-      completed: daysSince >= 3,
-      timestamp: daysSince >= 3 ? new Date(orderDate.getTime() + 3 * 86400000) : null
-    },
-    {
-      status: "delivered",
-      title: "Delivered",
-      description: "Order has been delivered",
-      completed: daysSince >= 7,
-      timestamp: daysSince >= 7 ? new Date(orderDate.getTime() + 7 * 86400000) : null
-    }
-  ];
+function getProductDeliveryTracking(order) {
+  const now = new Date();
+  const purchaseDate = new Date(order.createdAt);
+  const shippingDate = new Date(purchaseDate.getTime() + 3 * 86400000);
+  const deliveryDate = new Date(shippingDate.getTime() + 2 * 86400000);
+
+  const hasProduct = Array.isArray(order.items) &&
+    order.items.some(item => item.itemType === "Product");
+
+  if (!hasProduct) {
+    return {
+      status: "completed",
+      message: "Digital course purchase. No shipping is required.",
+      estimatedDelivery: null,
+      remainingText: "Available now in My Purchases",
+      shippingDate,
+      deliveryDate: null,
+      timeline: [
+        {
+          status: "order_placed",
+          title: "Order Placed",
+          description: "Your order has been received",
+          completed: true,
+          timestamp: order.createdAt
+        },
+        {
+          status: "payment_confirmed",
+          title: "Payment Confirmed",
+          description: "Payment has been verified",
+          completed: true,
+          timestamp: order.updatedAt || order.createdAt
+        },
+        {
+          status: "completed",
+          title: "Ready",
+          description: "Your course is available in My Purchases",
+          completed: true,
+          timestamp: order.updatedAt || order.createdAt
+        }
+      ]
+    };
+  }
+
+  let status = "processing";
+  let message = "Payment confirmed. Your product is being prepared for shipping.";
+
+  if (now >= deliveryDate) {
+    status = "delivered";
+    message = "Your product should be delivered to the customer.";
+  } else if (now >= shippingDate) {
+    status = "shipped";
+    message = "Your product is shipping to the customer.";
+  }
+
+  return {
+    status,
+    message,
+    estimatedDelivery: deliveryDate.toLocaleDateString(),
+    remainingText: now >= deliveryDate ? "Delivered" : formatRemainingTime(deliveryDate - now),
+    shippingDate,
+    deliveryDate,
+    timeline: [
+      {
+        status: "order_placed",
+        title: "Order Placed",
+        description: "Your order has been received",
+        completed: true,
+        timestamp: order.createdAt
+      },
+      {
+        status: "payment_confirmed",
+        title: "Payment Confirmed",
+        description: "Payment has been verified",
+        completed: true,
+        timestamp: order.updatedAt || order.createdAt
+      },
+      {
+        status: "processing",
+        title: "Preparing Product",
+        description: "This lasts 3 days after payment",
+        completed: now >= shippingDate,
+        timestamp: now >= shippingDate ? shippingDate : null
+      },
+      {
+        status: "shipped",
+        title: "Shipped",
+        description: "Shipping starts 3 days after payment",
+        completed: now >= shippingDate,
+        timestamp: now >= shippingDate ? shippingDate : null
+      },
+      {
+        status: "delivered",
+        title: "Delivered",
+        description: "Delivery is expected 2 days after shipping",
+        completed: now >= deliveryDate,
+        timestamp: now >= deliveryDate ? deliveryDate : null
+      }
+    ]
+  };
+}
+
+function formatRemainingTime(ms) {
+  const safeMs = Math.max(0, Number(ms) || 0);
+  const totalHours = Math.ceil(safeMs / (1000 * 60 * 60));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+
+  if (days > 0 && hours > 0) return `${days} day(s) and ${hours} hour(s) left`;
+  if (days > 0) return `${days} day(s) left`;
+  if (hours > 0) return `${hours} hour(s) left`;
+  return "Less than 1 hour left";
 }

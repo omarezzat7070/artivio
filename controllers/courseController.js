@@ -504,10 +504,11 @@ exports.enrollCourse = asyncHandler(async (req, res) => {
   }
 
   // Check if already enrolled
-  if (course.students && course.students.includes(req.user.id)) {
-    return res.status(400).json({
-      success: false,
-      error: "Already enrolled in this course"
+  if (course.students && course.students.some(student => student.toString() === req.user.id)) {
+    return res.status(200).json({
+      success: true,
+      data: course,
+      message: "Already enrolled in this course"
     });
   }
 
@@ -532,7 +533,7 @@ exports.enrollCourse = asyncHandler(async (req, res) => {
 
   // Add student to course
   if (!course.students) course.students = [];
-  course.students.push(req.user.id);
+  course.students.push(req.user._id);
   await course.save();
 
   res.status(200).json({
