@@ -35,9 +35,14 @@ const orderSchema = new mongoose.Schema(
     },
     paymentDetails: { type: mongoose.Schema.Types.Mixed },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'paid' },
-    hasCourse: { type: Boolean, default: false }
+    hasCourse: { type: Boolean, default: false },
+    shippingAddress: {           
+      fullName: { type: String, default: '' },
+      address:  { type: String, default: '' },
+      phone:    { type: String, default: '' }
+    }
   },
-  { timestamps: true }
+  { timestamps: true }           
 );
 
 module.exports = mongoose.model('Order', orderSchema);

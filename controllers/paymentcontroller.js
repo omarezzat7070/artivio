@@ -70,22 +70,28 @@ exports.createCheckoutSession = asyncHandler(async (req, res) => {
     });
     
     // Create order record
-    const order = await Order.create({
-      user: req.user._id,
-      items: items.map(item => ({
-        item: item.id,
-        itemType: item.type,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity
-      })),
-      amount: totalAmount,
-      shippingCost: SHIPPING_COST,
-      paymentMethod: paymentMethod,
-      paymentStatus: 'pending',
-      stripeSessionId: session.id
-    });
-    
+   const payment = req.body.payment || {};
+
+const order = await Order.create({
+  user: req.user._id,
+  items: items.map(item => ({
+    item: item.id,
+    itemType: item.type,
+    name: item.name,
+    price: item.price,
+    quantity: item.quantity
+  })),
+  amount: totalAmount,
+  shippingCost: SHIPPING_COST,
+  paymentMethod: paymentMethod,
+  paymentStatus: 'pending',
+  stripeSessionId: session.id,
+  shippingAddress: {
+    fullName: payment.fullName || payment.name || '',
+    address:  payment.deliveryAddress || payment.billingAddress || '',
+    phone:    payment.phoneNumber || ''
+  }
+});
     console.log('Order created:', order._id);
     console.log('Stripe session created:', session.id);
     console.log('Redirect URL:', session.url);
