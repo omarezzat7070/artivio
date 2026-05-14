@@ -414,6 +414,11 @@
     font-size: 20px;
   }
 }
+  @media (max-width: 480px) {
+    #artivio-chat-widget { bottom: 12px; right: 12px; }
+    #chat-window { width: calc(100vw - 24px); height: 520px; }
+    #chat-messages { padding: 14px; }
+  }
   </style>
 </head>
 <body>
@@ -548,7 +553,9 @@
   #artivio-chat-widget {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: 20px; 
+    max-width: calc(100vw - 40px);
+
     z-index: 1000;
     font-family: 'Segoe UI', sans-serif;
   }
@@ -572,6 +579,7 @@
     display: none;
     width: 380px;
     height: 550px;
+    max-height: calc(100vh - 120px);
     background: var(--surface);
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);

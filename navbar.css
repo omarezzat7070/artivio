@@ -221,6 +221,14 @@ body[dir="rtl"] .profile-dropdown a {
     display: block;
   }
 
+  .nav-logo img {
+    height: 40px;
+  }
+
+  .nav-logo .artivio {
+    font-size: 24px;
+  }
+
   .nav-links {
     display: none;
     position: absolute;

@@ -237,6 +237,27 @@
   padding: 60px 0 20px;
 }
 
+/* Small screens adjustments */
+@media (max-width: 480px) {
+  .hero-content h1 {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+
+  .hero-buttons {
+    width: 100%;
+  }
+
+  .btn {
+    padding: 12px 18px;
+  }
+
+  .footer-content {
+    gap: 20px;
+  }
+}
+
+
 .footer-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

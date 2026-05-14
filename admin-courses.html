@@ -295,6 +295,18 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
+    /* Responsive table on mobile */
+    @media (max-width: 768px) {
+      table thead { display: none; }
+      table, tbody, tr, td { display: block; width: 100%; }
+      tbody tr { margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+      tbody td { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-bottom: none; }
+
+      .container { padding: 15px; }
+      .tabs { padding: 0 8px; gap: 8px; }
+      .topbar { padding: 10px; }
+    }
   </style>
 </head>
 <body>

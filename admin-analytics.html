@@ -61,6 +61,14 @@
     @media (max-width: 900px) { .analysis-section-centered { flex-direction: column; } .chart-box-left, .chart-box-middle, .chart-box-right { width: 100%; } }
     @media (max-width: 700px) { .monthly-bars { gap: 2px; } .single-bar { width: 22px; } .month-item { min-width: 44px; } .summary-stats { font-size: 11px; flex-direction: column; align-items: center; text-align: center; } .profit-bar { width: 60px; } }
     @media (max-width: 550px) { .single-bar { width: 20px; } .bar-pair { gap: 3px; } }
+
+    /* Safer small screens */
+    @media (max-width: 768px) {
+      .container { padding: 15px; }
+      .tabs { padding: 0 8px; gap: 8px; flex-wrap: wrap; }
+      .legend { flex-wrap: wrap; gap: 10px; }
+      .summary-stats { justify-content: center; }
+    }
 </style>
 </head>
 <body>

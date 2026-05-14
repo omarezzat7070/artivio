@@ -39,6 +39,14 @@
     .message.success { background: #d1fae5; color: #065f46; }
     .message.error { background: #fee2e2; color: #991b1b; }
     @media (max-width: 768px) { .settings-layout { flex-direction: column; } }
+
+    /* Responsive staff table */
+    @media (max-width: 768px) {
+      #staffTable thead { display: none; }
+      #staffTable, #staffTable tbody, #staffTable tr, #staffTable td { display: block; width: 100%; }
+      #staffTable tbody tr { margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+      #staffTable tbody td { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-bottom: none; }
+    }
   </style>
 </head>
 <body>

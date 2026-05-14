@@ -159,6 +159,22 @@
 
     @media (max-width: 600px) {
       .order-card-header { flex-direction: column; align-items: flex-start; }
+      .container { padding: 15px; }
+      .tabs { padding: 0 5px; }
+      table { display: block; }
+      thead { display: none; }
+      tbody tr { display: block; border-bottom: 1px solid var(--border); }
+      tbody td { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-logo .artivio { font-size: 20px; }
+      .nav-logo img { height: 36px; }
+    }
+
+    @media (max-width: 600px) {
+      .order-card-header { flex-direction: column; align-items: flex-start; }
+
       .order-item-row { gap: 10px; }
       .order-item-actions { width: 100%; justify-content: flex-end; margin-top: 6px; }
       .order-item-img { width: 44px; height: 44px; }

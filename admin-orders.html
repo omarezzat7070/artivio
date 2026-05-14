@@ -39,6 +39,19 @@
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
     .modal-content { background-color: white; margin: 5% auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; }
     .modal-content h3 { margin-bottom: 20px; color: var(--primary); }
+
+    /* Responsive table on mobile */
+    @media (max-width: 768px) {
+      table thead { display: none; }
+      table, tbody, tr, td { display: block; width: 100%; }
+      tbody tr { margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+      tbody td { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-bottom: none; }
+
+      .container { padding: 15px; }
+      .tabs { padding: 0 8px; gap: 8px; }
+      .topbar { padding: 10px; }
+    }
+
   </style>
 </head>
 <body>
