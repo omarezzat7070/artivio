@@ -16,8 +16,6 @@ const {
   cancelOrderProduct
 } = require('../controllers/orderController');
 
-// --- Specific/static routes FIRST (before any /:param wildcards) ---
-
 // Email-only tracking route
 router.get('/track/email', trackOrderByEmail);
 
@@ -38,7 +36,7 @@ router.get('/my-orders', protect, async (req, res) => {
 // Admin stats
 router.get('/admin/stats', protect, authorize('admin'), getOrderStats);
 
-// Seller's product orders
+// Seller's product orders — WITH customer info populated
 router.get('/seller-product-orders', protect, async (req, res) => {
   try {
     const sellerProducts = await Product.find({ artisan: req.user._id });
@@ -52,7 +50,9 @@ router.get('/seller-product-orders', protect, async (req, res) => {
       'items.item': { $in: productIds },
       'items.itemType': 'Product',
       paymentStatus: 'paid'
-    }).sort({ createdAt: -1 });
+    })
+    .populate('user', 'name email phone')
+    .sort({ createdAt: -1 });
 
     const enrichedOrders = orders.map(order => {
       const orderedProducts = order.items.filter(item =>
@@ -68,16 +68,43 @@ router.get('/seller-product-orders', protect, async (req, res) => {
   }
 });
 
+// Seller accepts or rejects a specific item in an order
+router.patch('/seller-product-orders/:orderId/items/:itemId', protect, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+
+    const sellerProducts = await Product.find({ artisan: req.user._id });
+    const productIds = sellerProducts.map(p => p._id.toString());
+
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
+
+    const item = order.items.id(req.params.itemId);
+    if (!item) return res.status(404).json({ success: false, error: 'Item not found' });
+
+    if (!productIds.includes(item.item.toString())) {
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+
+    item.sellerStatus = status;
+    item.sellerStatusUpdatedAt = new Date();
+    await order.save();
+
+    res.json({ success: true, data: order });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Admin: list all orders
 router.get('/', protect, authorize('admin'), getAllOrders);
 
 // --- Wildcard /:id routes LAST ---
-
-// Order status (authenticated)
 router.get('/:id/status', protect, getOrderStatusUpdate);
 router.patch('/:id/items/:itemId/cancel', protect, cancelOrderProduct);
-
-// Admin: get, update single order
 router.get('/:id', protect, authorize('admin'), getOrderById);
 router.put('/:id', protect, authorize('admin'), updateOrder);
 

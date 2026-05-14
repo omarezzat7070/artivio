@@ -9,7 +9,9 @@ const orderItemSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   status: { type: String, enum: ['active', 'cancelled'], default: 'active' },
   cancelledAt: { type: Date, default: null },
-  cancellationReason: { type: String, default: '' }
+  cancellationReason: { type: String, default: '' },  // ← comma was missing here
+  sellerStatus: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+  sellerStatusUpdatedAt: { type: Date, default: null }
 });
 
 const orderSchema = new mongoose.Schema(

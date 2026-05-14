@@ -511,7 +511,141 @@
         padding: 20px;
       }
     }
+    /* Orders */
+.order-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
 
+.order-card-header {
+  background: #f9f9f9;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.order-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.order-number {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 15px;
+}
+
+.order-customer {
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.order-date {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.order-items {
+  padding: 0;
+}
+
+.order-item-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+
+.order-item-row:last-child {
+  border-bottom: none;
+}
+
+.order-item-img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #eee;
+}
+
+.order-item-info {
+  flex: 1;
+  min-width: 120px;
+}
+
+.order-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+
+.order-item-qty {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.order-item-price {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.order-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-accept {
+  background: #d1fae5;
+  color: #065f46;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-accept:hover { background: #a7f3d0; }
+
+.btn-reject {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reject:hover { background: #fecaca; }
+
+.no-orders {
+  text-align: center;
+  padding: 40px;
+  color: var(--gray);
+}
+
+@media (max-width: 600px) {
+  .order-card-header { flex-direction: column; align-items: flex-start; }
+  .order-item-row { gap: 10px; }
+  .order-item-actions { width: 100%; justify-content: flex-end; }
+}
     .icon-sm {
       width: 18px;
       height: 18px;
@@ -578,6 +712,7 @@
     <button class="tab-btn" onclick="showTab('add-course-tab')">Add Course</button>
     <button class="tab-btn active" onclick="showTab('my-products-tab')">My Products</button>
     <button class="tab-btn" onclick="showTab('my-courses-tab')">My Courses</button>
+    <button class="tab-btn" onclick="showTab('my-orders-tab')">Orders</button>
   </div>
 
   <!-- ADD PRODUCT TAB -->
@@ -785,7 +920,30 @@
     </form>
   </div>
 </div>
+<!-- MY ORDERS TAB -->
+<div id="my-orders-tab" class="tab-content">
+  <div class="card">
+    <h2>Customer Orders</h2>
+    <br>
 
+    <!-- Filter bar -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+      <select id="orderStatusFilter" onchange="filterOrders()" style="width:auto; padding:8px 12px;">
+        <option value="all">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="accepted">Accepted</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <input type="text" id="orderSearch" oninput="filterOrders()" 
+        placeholder="Search by customer or product..." 
+        style="width:auto; flex:1; min-width:180px; padding:8px 12px;">
+    </div>
+
+    <div id="ordersContainer">
+      <p>Loading orders...</p>
+    </div>
+  </div>
+</div>
 <!-- Edit Course Modal -->
 <div id="editCourseModal" class="modal">
   <div class="modal-content">
@@ -1489,6 +1647,139 @@ async function uploadToCloudinary(file, folder) {
     loadMyCourses();
     addPart(); // Initialize with one part
   });
+  let allSellerOrders = [];
+
+async function loadSellerOrders() {
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/seller-product-orders`, {
+      headers: authHeaders()
+    });
+    const data = await res.json();
+    allSellerOrders = data.data || [];
+    renderOrders(allSellerOrders);
+  } catch (err) {
+    document.getElementById('ordersContainer').innerHTML =
+      '<p style="color:red">Failed to load orders.</p>';
+  }
+}
+
+function filterOrders() {
+  const status = document.getElementById('orderStatusFilter').value;
+  const search = document.getElementById('orderSearch').value.toLowerCase();
+
+  const filtered = allSellerOrders.filter(order => {
+    const customerName = order.user?.name?.toLowerCase() || '';
+    const customerEmail = order.user?.email?.toLowerCase() || '';
+    const matchesSearch = !search ||
+      customerName.includes(search) ||
+      customerEmail.includes(search) ||
+      order.orderedProducts?.some(p => p.name?.toLowerCase().includes(search));
+
+    const matchesStatus = status === 'all' ||
+      order.orderedProducts?.some(p => (p.sellerStatus || 'pending') === status);
+
+    return matchesSearch && matchesStatus;
+  });
+
+  renderOrders(filtered);
+}
+
+function renderOrders(orders) {
+  const container = document.getElementById('ordersContainer');
+
+  if (!orders.length) {
+    container.innerHTML = '<div class="no-orders"><i class="fa-solid fa-box-open" style="font-size:40px;color:#ccc;margin-bottom:12px"></i><p>No orders found.</p></div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(order => {
+    const customer = order.user;
+    const date = new Date(order.createdAt).toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+
+    const itemsHtml = order.orderedProducts.map(item => {
+      const itemStatus = item.sellerStatus || 'pending';
+      const badgeClass = getBadgeClass(itemStatus);
+      const isPending = itemStatus === 'pending';
+
+      return `
+        <div class="order-item-row" id="item-row-${item._id}">
+          <img class="order-item-img"
+            src="${item.image ? getMediaUrl(item.image) : 'assets/no-background.png'}"
+            onerror="this.src='assets/no-background.png'"
+            alt="${escapeHtml(item.name)}">
+          <div class="order-item-info">
+            <div class="order-item-name">${escapeHtml(item.name)}</div>
+            <div class="order-item-qty">Qty: ${item.quantity}</div>
+          </div>
+          <div class="order-item-price">LE ${item.price * item.quantity}</div>
+          <div class="order-item-actions">
+            ${isPending ? `
+              <button class="btn-accept" onclick="updateOrderItemStatus('${order._id}', '${item._id}', 'accepted')">
+                ✓ Accept
+              </button>
+              <button class="btn-reject" onclick="updateOrderItemStatus('${order._id}', '${item._id}', 'rejected')">
+                ✗ Reject
+              </button>
+            ` : `
+              <span class="badge ${badgeClass}">${formatStatus(itemStatus)}</span>
+            `}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="order-card" id="order-card-${order._id}">
+        <div class="order-card-header">
+          <div class="order-meta">
+            <span class="order-number"># ${order._id.slice(-8).toUpperCase()}</span>
+            <span class="order-customer">
+              <i class="fa-solid fa-user" style="font-size:11px"></i>
+              ${customer ? `${escapeHtml(customer.name)} — ${escapeHtml(customer.email)}` : 'Guest'}
+            </span>
+            <span class="order-date">${date}</span>
+          </div>
+          <div style="font-weight:700; color:var(--primary); font-size:15px">
+            LE ${order.amount}
+          </div>
+        </div>
+        <div class="order-items">${itemsHtml}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function updateOrderItemStatus(orderId, itemId, status) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/orders/seller-product-orders/${orderId}/items/${itemId}`,
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      }
+    );
+    const data = await res.json();
+    if (res.ok) {
+      // Update locally without full reload
+      const order = allSellerOrders.find(o => o._id === orderId);
+      if (order) {
+        const item = order.orderedProducts.find(i => i._id === itemId);
+        if (item) item.sellerStatus = status;
+      }
+      renderOrders(allSellerOrders);
+    } else {
+      alert(data.error || 'Failed to update status');
+    }
+  } catch (err) {
+    alert('Network error: ' + err.message);
+  }
+}
+
+window.updateOrderItemStatus = updateOrderItemStatus;
+window.filterOrders = filterOrders;
 </script>
 
 <script src="navbar.js"></script>
