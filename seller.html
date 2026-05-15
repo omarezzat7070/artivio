@@ -319,8 +319,8 @@
           <select id="courseCategory" name="courseCategory">
             <option value="Pottery">Pottery</option>
             <option value="Jewelry">Jewelry</option>
-            <option value="crochet">Crochet</option>
-            <option value="Embroidery">Embroidery</option>
+            <option value="Crochet">Crochet</option>         
+           <option value="Embroidery">Embroidery</option>
             <option value="Woodwork">Woodwork</option>
             <option value="Other">Other</option>
           </select>
@@ -433,7 +433,7 @@
         <select id="editProductCategory" required>
           <option value="Pottery">Pottery</option>
           <option value="Jewelry">Jewelry</option>
-          <option value="Crochet">Crochet</option>
+          <option value="crochet">Crochet</option>
           <option value="Embroidery">Embroidery</option>
           <option value="Woodwork">Woodwork</option>
           <option value="Other">Other</option>
@@ -1134,8 +1134,7 @@
       if (isNaN(duration) || duration < 1) throw new Error('Duration must be at least 1 hour');
       if (isNaN(price) || price < 0) throw new Error('Price must be a valid number');
 
-      // Normalize crochet casing
-      if (category === 'Crochet') category = 'crochet';
+
 
       const formData = new FormData();
       formData.append('title', title);
