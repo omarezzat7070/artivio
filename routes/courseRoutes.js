@@ -1,7 +1,7 @@
-const express = require("express");
-const router = express.Router();
-const { protect, authorize, optionalAuth } = require("../middleware/auth");
-const multer = require("multer");
+const express = require('express');
+const router  = express.Router();
+const multer  = require('multer');
+const { protect, authorize, optionalAuth } = require('../middleware/auth');
 const {
   getCourses,
   getCourse,
@@ -15,39 +15,55 @@ const {
   addCoursePart,
   getPendingCourseParts,
   updateCoursePartModeration
-} = require("../controllers/courseController");
+} = require('../controllers/courseController');
 
-// Keep a cap, but allow normal phone-recorded lesson videos.
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } });
+// Allow up to 200 MB for lesson videos
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 200 * 1024 * 1024 }
+});
 
-// Routes
-router.route("/")
+// ── Routes ────────────────────────────────────────────────────────────────────
+
+router.route('/')
   .get(optionalAuth, getCourses)
-  .post(protect, authorize("artisan", "seller", "admin"), upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "partVideo", maxCount: 40 }
-  ]), createCourse);
+  .post(
+    protect,
+    authorize('artisan', 'seller', 'admin'),
+    upload.fields([
+      { name: 'image',     maxCount: 1  },
+      { name: 'partVideo', maxCount: 40 }
+    ]),
+    createCourse
+  );
 
-router.get("/admin/pending", protect, authorize("admin"), getPendingCourses);
-router.get("/admin/pending-parts", protect, authorize("admin"), getPendingCourseParts);
-router.patch("/admin/:id/moderation", protect, authorize("admin"), updateCourseModeration);
-router.patch("/admin/:id/parts/:partId/moderation", protect, authorize("admin"), updateCoursePartModeration);
+// Specific named routes BEFORE /:id to avoid param conflicts
+router.get(  '/admin/pending',                       protect, authorize('admin'), getPendingCourses);
+router.get(  '/admin/pending-parts',                 protect, authorize('admin'), getPendingCourseParts);
+router.patch('/admin/:id/moderation',                protect, authorize('admin'), updateCourseModeration);
+router.patch('/admin/:id/parts/:partId/moderation',  protect, authorize('admin'), updateCoursePartModeration);
 
-router.route("/:id")
+router.route('/:id')
   .get(optionalAuth, getCourse)
-  .put(protect, authorize("artisan", "seller", "admin"), upload.fields([
-    { name: "image", maxCount: 1 },
-    { name: "partVideo", maxCount: 40 }
-  ]), updateCourse)
-  .delete(protect, authorize("artisan", "seller", "admin"), deleteCourse);
+  .put(
+    protect,
+    authorize('artisan', 'seller', 'admin'),
+    upload.fields([
+      { name: 'image',     maxCount: 1  },
+      { name: 'partVideo', maxCount: 40 }
+    ]),
+    updateCourse
+  )
+  .delete(protect, authorize('artisan', 'seller', 'admin'), deleteCourse);
 
-// Enroll route
-router.post("/:id/enroll", protect, enrollCourse);
-router.post("/:id/parts", protect, authorize("artisan", "seller", "admin"), upload.fields([
-  { name: "partVideo", maxCount: 1 }
-]), addCoursePart);
-
-// Check purchased route
-router.get("/:id/purchased", protect, checkPurchased);
+router.post('/:id/enroll',    protect, enrollCourse);
+router.get( '/:id/purchased', protect, checkPurchased);
+router.post(
+  '/:id/parts',
+  protect,
+  authorize('artisan', 'seller', 'admin'),
+  upload.fields([{ name: 'partVideo', maxCount: 1 }]),
+  addCoursePart
+);
 
 module.exports = router;

@@ -10,57 +10,68 @@ const hasRealValue = (value) => Boolean(
   !cleanEnv(value).toLowerCase().startsWith('your_')
 );
 
-const hasCloudinaryUrl = hasRealValue(process.env.CLOUDINARY_URL);
+// Read once at startup so every function uses the same values
+const cloudName = cleanEnv(process.env.CLOUDINARY_CLOUD_NAME);
+const apiKey    = cleanEnv(process.env.CLOUDINARY_API_KEY);
+const apiSecret = cleanEnv(process.env.CLOUDINARY_API_SECRET);
+
 const hasCloudinaryParts = (
-  hasRealValue(process.env.CLOUDINARY_CLOUD_NAME) &&
-  hasRealValue(process.env.CLOUDINARY_API_KEY) &&
-  hasRealValue(process.env.CLOUDINARY_API_SECRET)
+  hasRealValue(cloudName) &&
+  hasRealValue(apiKey) &&
+  hasRealValue(apiSecret)
 );
 
 if (hasCloudinaryParts) {
-  cloudinary.config({
-    cloud_name: cleanEnv(process.env.CLOUDINARY_CLOUD_NAME),
-    api_key: cleanEnv(process.env.CLOUDINARY_API_KEY),
-    api_secret: cleanEnv(process.env.CLOUDINARY_API_SECRET)
-  });
-} else if (hasRealValue(process.env.CLOUDINARY_CLOUD_NAME)) {
-  cloudinary.config({
-    cloud_name: cleanEnv(process.env.CLOUDINARY_CLOUD_NAME)
-  });
+  cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
+  console.log('✅ Cloudinary configured with API key/secret');
+} else if (hasRealValue(process.env.CLOUDINARY_URL)) {
+  // SDK auto-reads CLOUDINARY_URL — just log it
+  console.log('✅ Cloudinary configured via CLOUDINARY_URL');
+} else {
+  console.warn('⚠️  Cloudinary NOT fully configured — uploads will fall back to local storage');
 }
 
-const getUploadPreset = () => cleanEnv(process.env.CLOUDINARY_UPLOAD_PRESET);
+/** True when we have enough credentials for signed uploads */
+const isCloudinaryConfigured = () =>
+  hasRealValue(process.env.CLOUDINARY_CLOUD_NAME) &&
+  (hasRealValue(process.env.CLOUDINARY_API_SECRET) || hasRealValue(process.env.CLOUDINARY_URL));
 
-const isCloudinaryConfigured = () => (
-  (hasRealValue(process.env.CLOUDINARY_CLOUD_NAME) && hasRealValue(process.env.CLOUDINARY_UPLOAD_PRESET)) ||
-  hasCloudinaryUrl ||
-  hasCloudinaryParts
-);
-
+/**
+ * Upload a multer memory-buffer file to Cloudinary (server-side signed stream).
+ * options: any Cloudinary upload API options e.g. { folder, resource_type }
+ */
 const uploadToCloudinary = (file, options = {}) => {
   if (!file || !file.buffer) return Promise.resolve(null);
 
   return new Promise((resolve, reject) => {
-    const uploadOptions = {
-      folder: 'artivio',
-      resource_type: 'auto',
-      ...options
-    };
-    const uploadPreset = getUploadPreset();
-    const callback = (error, result) => {
-      if (error) return reject(error);
-      resolve(result);
-    };
-
-    const stream = uploadPreset
-      ? cloudinary.uploader.unsigned_upload_stream(uploadPreset, uploadOptions, callback)
-      : cloudinary.uploader.upload_stream(uploadOptions, callback);
-
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'artivio', resource_type: 'auto', ...options },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
     stream.end(file.buffer);
   });
 };
 
+/**
+ * Generate a signed upload signature for direct browser → Cloudinary uploads.
+ * Returns exactly what seller.html's uploadToCloudinary() expects:
+ *   { signature, timestamp, folder, apiKey, cloudName }
+ */
+const generateUploadSignature = (folder = 'artivio/products') => {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = cloudinary.utils.api_sign_request(
+    { timestamp, folder },
+    apiSecret
+  );
+  return { signature, timestamp, folder, apiKey, cloudName };
+};
+
 module.exports = {
+  cloudinary,
   isCloudinaryConfigured,
-  uploadToCloudinary
+  uploadToCloudinary,
+  generateUploadSignature
 };
