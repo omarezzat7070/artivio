@@ -574,21 +574,30 @@
   }
 
   async function uploadToCloudinary(file, folder) {
-    folder = folder || 'artivio/products';
-    const sigData = await getUploadSignature(folder);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', sigData.apiKey);
-    formData.append('timestamp', sigData.timestamp);
-    formData.append('signature', sigData.signature);
+  folder = folder || 'artivio/products';
+  const sigData = await getUploadSignature(folder);
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', sigData.apiKey);
+  formData.append('timestamp', sigData.timestamp);
+  formData.append('signature', sigData.signature);
+
+  // Only append folder if the backend included it in the signature
+  if (sigData.folder) {
     formData.append('folder', sigData.folder);
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`, {
-      method: 'POST', body: formData
-    });
-    const data = await response.json();
-    if (data.secure_url) return data.secure_url;
-    throw new Error(data.error?.message || 'Upload failed');
   }
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
+    { method: 'POST', body: formData }
+  );
+
+  const data = await response.json();
+  console.log('Cloudinary response:', data); // helpful for debugging
+  if (data.secure_url) return data.secure_url;
+  throw new Error(data.error?.message || 'Upload failed');
+}
 
   // =====================
   // TABS
