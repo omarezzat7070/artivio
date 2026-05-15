@@ -69,7 +69,11 @@ const courseSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
-    category: { type: String, default: '' },
+category: {
+  type: String,
+  enum: ['Pottery', 'Jewelry', 'Embroidery', 'Woodwork', 'Crochet', 'Other'],
+  default: ''
+},
     parts: [partSchema],
     artisan: {
       type: mongoose.Schema.Types.ObjectId,

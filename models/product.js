@@ -22,11 +22,13 @@ const productSchema = new mongoose.Schema(
       required: [true, "Please provide a brief description"],
       maxlength: [500, "Brief cannot be more than 500 characters"]
     },
-    category: {
-      type: String,
-      required: [true, "Please provide a category"],
-      enum: ['Pottery', 'Jewelry', 'Textiles', 'Woodwork', 'Other']
-    },
+    // In your product model file
+category: {
+  type: String,
+  required: [true, "Please provide a category"],
+  enum: ['Pottery', 'Jewelry', 'crochet', 'Embroidery', 'Woodwork', 'Other']
+  // Note: 'crochet' is lowercase to match your frontend
+},
     artisan: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
