@@ -174,7 +174,6 @@
 
     @media (max-width: 600px) {
       .order-card-header { flex-direction: column; align-items: flex-start; }
-
       .order-item-row { gap: 10px; }
       .order-item-actions { width: 100%; justify-content: flex-end; margin-top: 6px; }
       .order-item-img { width: 44px; height: 44px; }
@@ -183,6 +182,16 @@
     .icon-sm { width: 18px; height: 18px; }
     .icon-xs { width: 14px; height: 14px; }
   </style>
+  <script>
+  // Defined early so inline onclick attributes can find it
+  function showTab(tabId, event) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const tab = document.getElementById(tabId);
+    if (tab) tab.classList.add('active');
+    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  }
+</script>
 </head>
 <body>
 <script src="config.js"></script>
@@ -308,13 +317,13 @@
         <div class="form-group">
           <label for="courseCategory">Category</label>
           <select id="courseCategory" name="courseCategory">
-  <option value="Pottery">Pottery</option>
-  <option value="Jewelry">Jewelry</option>
-  <option value="crochet">Crochet</option>  <!-- Keep lowercase 'crochet' -->
-  <option value="Embroidery">Embroidery</option>
-  <option value="Woodwork">Woodwork</option>
-  <option value="Other">Other</option>
-</select>
+            <option value="Pottery">Pottery</option>
+            <option value="Jewelry">Jewelry</option>
+            <option value="crochet">Crochet</option>
+            <option value="Embroidery">Embroidery</option>
+            <option value="Woodwork">Woodwork</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
         <div class="form-group">
           <label for="courseDuration">Duration (hours) *</label>
@@ -424,7 +433,7 @@
         <select id="editProductCategory" required>
           <option value="Pottery">Pottery</option>
           <option value="Jewelry">Jewelry</option>
-          <option value="Crochet">Crochet</option>  <!-- Value is capitalized "Crochet" -->
+          <option value="Crochet">Crochet</option>
           <option value="Embroidery">Embroidery</option>
           <option value="Woodwork">Woodwork</option>
           <option value="Other">Other</option>
@@ -471,12 +480,12 @@
         <label for="editCourseCategory">Category</label>
         <select id="editCourseCategory">
           <option value="">Select Category</option>
-  <option value="Pottery">Pottery</option>
-  <option value="Jewelry">Jewelry</option>
-  <option value="Embroidery">Embroidery</option>
-  <option value="Woodwork">Woodwork</option>
-  <option value="Crochet">Crochet</option>  <!-- Value is capitalized "Crochet" -->  <!-- Added Crochet -->
-  <option value="Other">Other</option>
+          <option value="Pottery">Pottery</option>
+          <option value="Jewelry">Jewelry</option>
+          <option value="Embroidery">Embroidery</option>
+          <option value="Woodwork">Woodwork</option>
+          <option value="Crochet">Crochet</option>
+          <option value="Other">Other</option>
         </select>
       </div>
       <div class="form-group">
@@ -556,36 +565,52 @@
   }
 
   // =====================
+  // TAB SWITCHING
+  // =====================
+  function showTab(tabId, event) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.remove('active');
+    });
+
+    // Remove active from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    // Show selected tab content
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) selectedTab.classList.add('active');
+
+    // Mark the clicked button as active
+    if (event && event.currentTarget) {
+      event.currentTarget.classList.add('active');
+    }
+  }
+
+  // =====================
   // CLOUDINARY UPLOAD
   // =====================
   async function getUploadSignature(folder, resourceType = 'image') {
-  const token = getToken();
-  if (!token) throw new Error('Not authenticated');
-  const response = await fetch(`${API_BASE}/api/upload/signature`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      folder: folder || 'artivio/products',
-      resourceType: resourceType 
-    })
-  });
-  if (!response.ok) throw new Error('Failed to get upload signature');
-  return await response.json();
-}
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    const response = await fetch(`${API_BASE}/api/upload/signature`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        folder: folder || 'artivio/products',
+        resourceType: resourceType
+      })
+    });
+    if (!response.ok) throw new Error('Failed to get upload signature');
+    return await response.json();
+  }
 
   async function uploadToCloudinary(file, folder) {
   folder = folder || 'artivio/products';
-  
-  // Determine if this is a video or image
   const isVideo = file.type.startsWith('video/');
   const resourceType = isVideo ? 'video' : 'image';
-  
-  console.log(`Uploading ${resourceType} to folder: ${folder}`, {
-    fileName: file.name,
-    fileSize: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
-    fileType: file.type
-  });
-  
+
   const sigData = await getUploadSignature(folder, resourceType);
 
   const formData = new FormData();
@@ -593,19 +618,13 @@
   formData.append('api_key', sigData.apiKey);
   formData.append('timestamp', sigData.timestamp);
   formData.append('signature', sigData.signature);
+  formData.append('resource_type', resourceType); // ← critical for video
+  if (sigData.folder) formData.append('folder', sigData.folder);
 
-  if (sigData.folder) {
-    formData.append('folder', sigData.folder);
-  }
-
-  // Use the correct endpoint based on file type
   const uploadUrl = `https://api.cloudinary.com/v1_1/${sigData.cloudName}/${resourceType}/upload`;
-  console.log('Upload URL:', uploadUrl);
-  
   const response = await fetch(uploadUrl, { method: 'POST', body: formData });
   const data = await response.json();
-  console.log('Cloudinary response:', data);
-  
+
   if (data.secure_url) return data.secure_url;
   throw new Error(data.error?.message || 'Upload failed');
 }
@@ -624,59 +643,63 @@
   function previewEditImage(input, previewId) { previewImage(input, previewId); }
 
   // =====================
+  // VIDEO PREVIEW
+  // =====================
+  function previewVideo(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const videoURL = URL.createObjectURL(file);
+      preview.innerHTML = `
+        <video controls style="max-width: 100%; max-height: 150px; border-radius: 8px;">
+          <source src="${videoURL}" type="${file.type}">
+          Your browser does not support the video tag.
+        </video>
+        <br>
+        <small>${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)</small>
+      `;
+    } else {
+      preview.innerHTML = '<small style="color: var(--gray);">Video preview will appear here</small>';
+    }
+  }
+
+  // =====================
   // PARTS (COURSE LESSONS)
   // =====================
   let partCounter = 0;
+
   function addPart() {
-  const container = document.getElementById('partsContainer');
-  partCounter++;
-  container.insertAdjacentHTML('beforeend', `
-    <div class="part-card">
-      <div class="part-header">
-        <strong>Part ${partCounter}</strong>
-        <button type="button" class="remove-part" onclick="this.closest('.part-card').remove()">Remove</button>
-      </div>
-      <div class="form-group">
-        <label>Part Title *</label>
-        <input type="text" class="part-title" placeholder="Part ${partCounter} title" required>
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea class="part-description" rows="2" placeholder="Part description"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Duration (minutes)</label>
-        <input type="number" class="part-duration" placeholder="Duration in minutes" step="any" value="0">
-      </div>
-      <div class="form-group">
-        <label>Video File *</label>
-        <input type="file" class="part-video" accept="video/*" required onchange="previewVideo(this, 'video-preview-${partCounter}')">
-        <div id="video-preview-${partCounter}" class="preview-wrap" style="margin-top: 10px;">
-          <small style="color: var(--gray);">Video preview will appear here</small>
+    const container = document.getElementById('partsContainer');
+    partCounter++;
+    container.insertAdjacentHTML('beforeend', `
+      <div class="part-card">
+        <div class="part-header">
+          <strong>Part ${partCounter}</strong>
+          <button type="button" class="remove-part" onclick="this.closest('.part-card').remove()">Remove</button>
+        </div>
+        <div class="form-group">
+          <label>Part Title *</label>
+          <input type="text" class="part-title" placeholder="Part ${partCounter} title" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea class="part-description" rows="2" placeholder="Part description"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Duration (minutes)</label>
+          <input type="number" class="part-duration" placeholder="Duration in minutes" step="any" value="0">
+        </div>
+        <div class="form-group">
+          <label>Video File *</label>
+          <input type="file" class="part-video" accept="video/*" required onchange="previewVideo(this, 'video-preview-${partCounter}')">
+          <div id="video-preview-${partCounter}" class="preview-wrap" style="margin-top: 10px;">
+            <small style="color: var(--gray);">Video preview will appear here</small>
+          </div>
         </div>
       </div>
-    </div>
-  `);
-}
-
-// Add video preview function
-function previewVideo(input, previewId) {
-  const preview = document.getElementById(previewId);
-  if (input.files && input.files[0]) {
-    const file = input.files[0];
-    const videoURL = URL.createObjectURL(file);
-    preview.innerHTML = `
-      <video controls style="max-width: 100%; max-height: 150px; border-radius: 8px;">
-        <source src="${videoURL}" type="${file.type}">
-        Your browser does not support the video tag.
-      </video>
-      <br>
-      <small>${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)</small>
-    `;
-  } else {
-    preview.innerHTML = '<small style="color: var(--gray);">Video preview will appear here</small>';
+    `);
   }
-}
+
   function addEditPart() {
     const container = document.getElementById('editPartsContainer');
     const partNum = container.children.length + 1;
@@ -858,29 +881,29 @@ function previewVideo(input, previewId) {
       }).join('');
 
       return `
-  <div class="order-card" id="order-card-${order._id}">
-    <div class="order-card-header">
-      <div class="order-meta">
-        <span class="order-number">#${order._id.slice(-8).toUpperCase()}</span>
-        <span class="order-customer">
-          <i class="fa-solid fa-user" style="font-size:11px;margin-right:4px"></i>
-          ${customer ? `${escapeHtml(customer.name)} &mdash; ${escapeHtml(customer.email)}` : 'Guest'}
-        </span>
-        ${customer?.address ? `
-  <span class="order-customer">
-    <i class="fa-solid fa-location-dot" style="font-size:11px;margin-right:4px"></i>
-    ${typeof customer.address === 'string'
-      ? escapeHtml(customer.address)
-      : [customer.address.street, customer.address.city, customer.address.state, customer.address.country]
-          .filter(Boolean).map(escapeHtml).join(', ')
-    }
-  </span>` : '<span class="order-customer"><i class="fa-solid fa-location-dot" style="font-size:11px;margin-right:4px"></i>No address provided</span>'}
-        <span class="order-date">${date}</span>
-      </div>
-      <div class="order-total">LE ${order.amount}</div>
-    </div>
-    <div class="order-items-list">${itemsHtml}</div>
-  </div>`;
+        <div class="order-card" id="order-card-${order._id}">
+          <div class="order-card-header">
+            <div class="order-meta">
+              <span class="order-number">#${order._id.slice(-8).toUpperCase()}</span>
+              <span class="order-customer">
+                <i class="fa-solid fa-user" style="font-size:11px;margin-right:4px"></i>
+                ${customer ? `${escapeHtml(customer.name)} &mdash; ${escapeHtml(customer.email)}` : 'Guest'}
+              </span>
+              ${customer?.address ? `
+                <span class="order-customer">
+                  <i class="fa-solid fa-location-dot" style="font-size:11px;margin-right:4px"></i>
+                  ${typeof customer.address === 'string'
+                    ? escapeHtml(customer.address)
+                    : [customer.address.street, customer.address.city, customer.address.state, customer.address.country]
+                        .filter(Boolean).map(escapeHtml).join(', ')
+                  }
+                </span>` : '<span class="order-customer"><i class="fa-solid fa-location-dot" style="font-size:11px;margin-right:4px"></i>No address provided</span>'}
+              <span class="order-date">${date}</span>
+            </div>
+            <div class="order-total">LE ${order.amount}</div>
+          </div>
+          <div class="order-items-list">${itemsHtml}</div>
+        </div>`;
     }).join('');
   }
 
@@ -893,7 +916,6 @@ function previewVideo(input, previewId) {
       });
       const data = await res.json();
       if (res.ok) {
-        // Update locally
         const order = allSellerOrders.find(o => o._id === orderId);
         if (order) {
           const item = order.orderedProducts.find(i => i._id === itemId);
@@ -1090,134 +1112,119 @@ function previewVideo(input, previewId) {
   // =====================
   // ADD COURSE
   // =====================
- // =====================
-// ADD COURSE (FIXED)
-// =====================
-async function addCourse(event) {
-  event.preventDefault();
-  
-  // Show loading state
-  const submitBtn = event.target.querySelector('.btn');
-  const originalText = submitBtn.textContent;
-  submitBtn.textContent = 'Uploading...';
-  submitBtn.disabled = true;
-  
-  const messageDiv = document.getElementById('courseMessage');
-  
-  try {
-    // Collect basic course info
-    const title = document.getElementById('courseTitle').value.trim();
-    const description = document.getElementById('courseDescription').value.trim();
-    const duration = parseFloat(document.getElementById('courseDuration').value);
-    const price = parseFloat(document.getElementById('coursePrice').value);
-    let category = document.getElementById('courseCategory').value;
-    
-    // Validate required fields
-    if (!title) throw new Error('Course title is required');
-    if (!description) throw new Error('Course description is required');
-    if (isNaN(duration) || duration < 1) throw new Error('Duration must be at least 1 hour');
-    if (isNaN(price) || price < 0) throw new Error('Price must be a valid number');
-    
-    // Fix category casing to match backend enum
-    if (category === 'crochet') category = 'crochet'; // Keep lowercase
-    if (category === 'Crochet') category = 'crochet'; // Normalize to lowercase
-    
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('duration', duration.toString());
-    formData.append('price', price.toString());
-    formData.append('category', category);
-    
-    // Upload course image if provided
-    const imageFile = document.getElementById('courseImage').files[0];
-    if (imageFile) {
-      try {
-        const imageUrl = await uploadToCloudinary(imageFile, 'artivio/courses');
-        formData.append('image', imageUrl);
-        console.log('Course image uploaded:', imageUrl);
-      } catch (uploadError) {
-        throw new Error('Failed to upload course image: ' + uploadError.message);
+  async function addCourse(event) {
+    event.preventDefault();
+
+    const submitBtn = event.target.querySelector('.btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Uploading...';
+    submitBtn.disabled = true;
+
+    const messageDiv = document.getElementById('courseMessage');
+
+    try {
+      const title = document.getElementById('courseTitle').value.trim();
+      const description = document.getElementById('courseDescription').value.trim();
+      const duration = parseFloat(document.getElementById('courseDuration').value);
+      const price = parseFloat(document.getElementById('coursePrice').value);
+      let category = document.getElementById('courseCategory').value;
+
+      if (!title) throw new Error('Course title is required');
+      if (!description) throw new Error('Course description is required');
+      if (isNaN(duration) || duration < 1) throw new Error('Duration must be at least 1 hour');
+      if (isNaN(price) || price < 0) throw new Error('Price must be a valid number');
+
+      // Normalize crochet casing
+      if (category === 'Crochet') category = 'crochet';
+
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('duration', duration.toString());
+      formData.append('price', price.toString());
+      formData.append('category', category);
+
+      const imageFile = document.getElementById('courseImage').files[0];
+      if (imageFile) {
+        try {
+          const imageUrl = await uploadToCloudinary(imageFile, 'artivio/courses');
+          formData.append('image', imageUrl);
+          console.log('Course image uploaded:', imageUrl);
+        } catch (uploadError) {
+          throw new Error('Failed to upload course image: ' + uploadError.message);
+        }
       }
-    }
-    
-    // Process parts and upload videos
-    const partCards = document.querySelectorAll('#partsContainer .part-card');
-    if (!partCards.length) throw new Error('Please add at least one course part/lesson');
-    
-    const parts = [];
-    
-    for (let index = 0; index < partCards.length; index++) {
-      const part = partCards[index];
-      const partTitle = part.querySelector('.part-title')?.value.trim();
-      const partDescription = part.querySelector('.part-description')?.value.trim();
-      const partDuration = parseFloat(part.querySelector('.part-duration')?.value);
-      const videoFile = part.querySelector('.part-video')?.files[0];
-      
-      if (!partTitle) throw new Error(`Part ${index + 1} requires a title`);
-      if (!videoFile) throw new Error(`Part ${index + 1} requires a video file`);
-      
-      // Upload video to Cloudinary
-      let videoUrl = null;
-      try {
-        videoUrl = await uploadToCloudinary(videoFile, 'artivio/course-videos');
-        console.log(`Part ${index + 1} video uploaded:`, videoUrl);
-      } catch (uploadError) {
-        throw new Error(`Failed to upload video for Part ${index + 1}: ${uploadError.message}`);
+
+      const partCards = document.querySelectorAll('#partsContainer .part-card');
+      if (!partCards.length) throw new Error('Please add at least one course part/lesson');
+
+      const parts = [];
+
+      for (let index = 0; index < partCards.length; index++) {
+        const part = partCards[index];
+        const partTitle = part.querySelector('.part-title')?.value.trim();
+        const partDescription = part.querySelector('.part-description')?.value.trim();
+        const partDuration = parseFloat(part.querySelector('.part-duration')?.value);
+        const videoFile = part.querySelector('.part-video')?.files[0];
+
+        if (!partTitle) throw new Error(`Part ${index + 1} requires a title`);
+        if (!videoFile) throw new Error(`Part ${index + 1} requires a video file`);
+
+        let videoUrl = null;
+        try {
+          videoUrl = await uploadToCloudinary(videoFile, 'artivio/course-videos');
+          console.log(`Part ${index + 1} video uploaded:`, videoUrl);
+        } catch (uploadError) {
+          throw new Error(`Failed to upload video for Part ${index + 1}: ${uploadError.message}`);
+        }
+
+        parts.push({
+          partNumber: index + 1,
+          title: partTitle,
+          description: partDescription || '',
+          duration: partDuration || 0,
+          video: videoUrl
+        });
       }
-      
-      parts.push({
-        partNumber: index + 1,
-        title: partTitle,
-        description: partDescription || '',
-        duration: partDuration || 0,
-        video: videoUrl // Add the video URL to the part
+
+      formData.append('parts', JSON.stringify(parts));
+
+      const res = await fetch(`${API_BASE}/api/courses`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: formData
       });
-    }
-    
-    formData.append('parts', JSON.stringify(parts));
-    
-    // Submit course data
-    const res = await fetch(`${API_BASE}/api/courses`, { 
-      method: 'POST', 
-      headers: authHeaders(), 
-      body: formData 
-    });
-    
-    const data = await res.json();
-    console.log('Server response:', data);
-    
-    if (res.ok) {
-      messageDiv.className = 'message success';
-      messageDiv.textContent = 'Course added successfully! Waiting for admin approval.';
+
+      const data = await res.json();
+      console.log('Server response:', data);
+
+      if (res.ok) {
+        messageDiv.className = 'message success';
+        messageDiv.textContent = 'Course added successfully! Waiting for admin approval.';
+        messageDiv.style.display = 'block';
+
+        document.getElementById('courseForm').reset();
+        document.getElementById('coursePreview').style.display = 'none';
+        document.getElementById('partsContainer').innerHTML = '';
+        partCounter = 0;
+        addPart();
+
+        await loadMyCourses();
+        setTimeout(() => messageDiv.style.display = 'none', 3000);
+      } else {
+        throw new Error(data.error || data.message || 'Failed to add course');
+      }
+    } catch (err) {
+      console.error('Add course error:', err);
+      messageDiv.className = 'message error';
+      messageDiv.textContent = err.message;
       messageDiv.style.display = 'block';
-      
-      // Reset form
-      document.getElementById('courseForm').reset();
-      document.getElementById('coursePreview').style.display = 'none';
-      document.getElementById('partsContainer').innerHTML = '';
-      partCounter = 0;
-      addPart(); // Add one empty part form
-      
-      // Reload courses list
-      await loadMyCourses();
-      
-      setTimeout(() => messageDiv.style.display = 'none', 3000);
-    } else {
-      throw new Error(data.error || data.message || 'Failed to add course');
+      setTimeout(() => messageDiv.style.display = 'none', 5000);
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
     }
-  } catch (err) {
-    console.error('Add course error:', err);
-    messageDiv.className = 'message error';
-    messageDiv.textContent = err.message;
-    messageDiv.style.display = 'block';
-    setTimeout(() => messageDiv.style.display = 'none', 5000);
-  } finally {
-    // Reset button state
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
   }
-}
 
   // =====================
   // DELETE
@@ -1237,24 +1244,6 @@ async function addCourse(event) {
       loadMyCourses();
     } catch (err) { alert('Failed to delete course'); }
   }
-
-  // =====================
-  // EXPOSE GLOBALS
-  // =====================
-  window.showTab = showTab;
-  window.addPart = addPart;
-  window.addEditPart = addEditPart;
-  window.editProduct = editProduct;
-  window.editCourse = editCourse;
-  window.deleteProduct = deleteProduct;
-  window.deleteCourse = deleteCourse;
-  window.previewImage = previewImage;
-  window.previewEditImage = previewEditImage;
-  window.closeEditProductModal = closeEditProductModal;
-  window.closeEditCourseModal = closeEditCourseModal;
-  window.markPartForRemoval = markPartForRemoval;
-  window.updateOrderItemStatus = updateOrderItemStatus;
-  window.filterOrders = filterOrders;
 
   // =====================
   // EVENT LISTENERS

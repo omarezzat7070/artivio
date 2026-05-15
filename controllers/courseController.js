@@ -155,7 +155,10 @@ const mapUploadedPartVideos = async (req, existingCourse = null) => {
       moderatedBy: null,
       moderatedAt: null,
       submittedAt: new Date(),
-      video: (partVideos[idx] && await uploadCourseVideo(partVideos[idx])) || p.video || existingPart?.video || ''
+      video: (partVideos[idx] ? await uploadCourseVideo(partVideos[idx]) : null)
+       ?? (p.video || null)          // URL sent from frontend (Cloudinary direct upload)
+       ?? existingPart?.video        // keep old video if nothing new provided
+       ?? ''
     };
   }));
 };

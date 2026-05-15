@@ -2,12 +2,6 @@ const express = require('express');
 const router  = express.Router();
 const { protect, authorize }                        = require('../middleware/auth');
 const { generateUploadSignature, isCloudinaryConfigured } = require('../config/cloudinary');
-
-/**
- * POST /api/upload/signature
- * Returns a Cloudinary signed-upload signature for direct browser uploads.
- * Requires the user to be logged in as artisan, seller, or admin.
- */
 router.post(
   '/signature',
   protect,
@@ -21,10 +15,10 @@ router.post(
     }
 
     try {
-      const folder  = req.body.folder || 'artivio/products';
-      const sigData = generateUploadSignature(folder);
+      const folder       = req.body.folder       || 'artivio/products';
+      const resourceType = req.body.resourceType || 'image';        // ← ADD THIS
+      const sigData      = generateUploadSignature(folder, resourceType); // ← PASS IT
 
-      // sigData = { signature, timestamp, folder, apiKey, cloudName }
       res.json({ success: true, ...sigData });
     } catch (error) {
       console.error('Signature generation error:', error);
