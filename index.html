@@ -266,13 +266,19 @@
     }
 
     @media (max-width: 768px) {
-      .hero-content h1 {
-        font-size: 32px;
-      }
-      .product-img {
-        height: 200px;
-      }
-    }
+  .hero {
+    background-position: center top; /* shows top of image on mobile */
+    background-size: cover;
+    background-attachment: scroll; /* 'fixed' causes bugs on iOS Safari */
+    min-height: 100svh; /* uses small viewport height — accounts for mobile browser chrome */
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    background-position: center 20%; /* adjust % to focus on the most important part of your image */
+  }
+}
     /* =========================
    RESPONSIVE CSS
    Add at end of your style
@@ -282,9 +288,14 @@
 @media (max-width: 992px) {
 
   .hero {
-    height: 75vh;
-    padding: 20px;
-  }
+  height: 85vh;
+  background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), 
+              url('./pottery.jpeg') no-repeat center center / cover;
+  background-attachment: local; /* fixes iOS fixed bg bug */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
   .hero-content {
     max-width: 90%;
