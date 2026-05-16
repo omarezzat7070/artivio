@@ -149,7 +149,7 @@
   }
 
   function getTheme() {
-    return safeLocalStorageGet("artivioTheme") || "light";
+    return safeLocalStorageGet("artivioTheme") || safeLocalStorageGet("theme") || "light";
   }
 
   function t(key) {
@@ -200,6 +200,197 @@
     });
   }
 
+  function ensureGlobalThemeStyles() {
+    if (document.getElementById("artivio-global-theme-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "artivio-global-theme-styles";
+    style.textContent = `
+      html[data-theme="dark"],
+      html.dark-mode,
+      body.dark-mode {
+        color-scheme: dark;
+        --primary: #d38a7d;
+        --primary-dark: #efb0a4;
+        --dark: #f4ddd7;
+        --bg: #14100f;
+        --card: #211817;
+        --border: #3a2a27;
+        --light-bg: #14100f;
+        --page-text: #f8ebe7;
+        --surface: #211817;
+        --surface-soft: #1a1312;
+        --muted-text: #d6c2bc;
+        --card-shadow: rgba(0, 0, 0, 0.45);
+        --navbar-bg: rgba(22, 16, 15, 0.96);
+        --navbar-border: #3a2a27;
+        --navbar-text: #f8ebe7;
+        --navbar-hover: #f0a194;
+      }
+
+      body.dark-mode {
+        background: #14100f !important;
+        color: #f8ebe7 !important;
+      }
+
+      body.dark-mode .navbar,
+      body.dark-mode header.navbar,
+      body.dark-mode .nav-links,
+      body.dark-mode .profile-dropdown {
+        background: rgba(22, 16, 15, 0.96) !important;
+        border-color: #3a2a27 !important;
+        color: #f8ebe7 !important;
+      }
+
+      body.dark-mode .nav-links a,
+      body.dark-mode .profile-dropdown a,
+      body.dark-mode .nav-logo,
+      body.dark-mode .brand-settings-toggle,
+      body.dark-mode .menu-icon {
+        color: #f8ebe7 !important;
+      }
+
+      body.dark-mode .nav-links a:hover,
+      body.dark-mode .profile-dropdown a:hover,
+      body.dark-mode .brand-settings-toggle:hover {
+        color: #f0a194 !important;
+      }
+
+      body.dark-mode main,
+      body.dark-mode section:not(.hero):not(.cta-section),
+      body.dark-mode article,
+      body.dark-mode aside,
+      body.dark-mode .dashboard,
+      body.dark-mode .admin-content,
+      body.dark-mode .main-content,
+      body.dark-mode .content,
+      body.dark-mode .page,
+      body.dark-mode .wrapper {
+        background-color: #14100f !important;
+        color: #f8ebe7 !important;
+      }
+
+      body.dark-mode .container:not(.nav-content):not(.hero-content),
+      body.dark-mode .card,
+      body.dark-mode .stat-card,
+      body.dark-mode .product-card,
+      body.dark-mode .course-card,
+      body.dark-mode .purchase-card,
+      body.dark-mode .order-card,
+      body.dark-mode .settings-card,
+      body.dark-mode .profile-card,
+      body.dark-mode .form-container,
+      body.dark-mode .login-container,
+      body.dark-mode .signup-container,
+      body.dark-mode .checkout-container,
+      body.dark-mode .summary-card,
+      body.dark-mode .modal-content,
+      body.dark-mode .topbar,
+      body.dark-mode .box,
+      body.dark-mode .panel,
+      body.dark-mode .part,
+      body.dark-mode table {
+        background: #211817 !important;
+        border-color: #3a2a27 !important;
+        color: #f8ebe7 !important;
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28) !important;
+      }
+
+      body.dark-mode .tabs,
+      body.dark-mode th,
+      body.dark-mode thead,
+      body.dark-mode tbody,
+      body.dark-mode tr,
+      body.dark-mode .section,
+      body.dark-mode .why,
+      body.dark-mode .products,
+      body.dark-mode .details,
+      body.dark-mode .empty-state,
+      body.dark-mode .summary-stats,
+      body.dark-mode .progress-bg,
+      body.dark-mode .order,
+      body.dark-mode .media {
+        background: #1a1312 !important;
+        color: #f8ebe7 !important;
+        border-color: #3a2a27 !important;
+      }
+
+      body.dark-mode td,
+      body.dark-mode th,
+      body.dark-mode tr,
+      body.dark-mode hr,
+      body.dark-mode .order {
+        border-color: #3a2a27 !important;
+      }
+
+      body.dark-mode h1,
+      body.dark-mode h2,
+      body.dark-mode h3,
+      body.dark-mode h4,
+      body.dark-mode h5,
+      body.dark-mode h6,
+      body.dark-mode p,
+      body.dark-mode label,
+      body.dark-mode li,
+      body.dark-mode .meta,
+      body.dark-mode .tab,
+      body.dark-mode .loading-message {
+        color: #f8ebe7 !important;
+      }
+
+      body.dark-mode small,
+      body.dark-mode .muted,
+      body.dark-mode .meta,
+      body.dark-mode .subtitle,
+      body.dark-mode .description {
+        color: #d6c2bc !important;
+      }
+
+      body.dark-mode input,
+      body.dark-mode select,
+      body.dark-mode textarea {
+        background: #181211 !important;
+        border-color: #3a2a27 !important;
+        color: #f8ebe7 !important;
+      }
+
+      body.dark-mode input::placeholder,
+      body.dark-mode textarea::placeholder {
+        color: #a99590 !important;
+      }
+
+      body.dark-mode .btn-outline,
+      body.dark-mode button.btn-outline,
+      body.dark-mode .action-btn {
+        background: #2a1c1a !important;
+        border-color: #3a2a27 !important;
+        color: #f0a194 !important;
+      }
+
+      body.dark-mode .btn-primary,
+      body.dark-mode .btn-view-all,
+      body.dark-mode .signup-btn,
+      body.dark-mode button[type="submit"] {
+        background: #d38a7d !important;
+        color: #2a1512 !important;
+      }
+
+      body.dark-mode a {
+        color: #f0a194;
+      }
+
+      body.dark-mode img {
+        filter: brightness(0.92);
+      }
+
+      body.dark-mode .hero,
+      body.dark-mode .hero * {
+        color: #fff !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function applyLanguage(lang) {
     const currentLang = translations[lang] ? lang : "en";
     safeLocalStorageSet("artivioLanguage", currentLang);
@@ -224,6 +415,8 @@
     const currentTheme = theme === "dark" ? "dark" : "light";
     safeLocalStorageSet("artivioTheme", currentTheme);
     document.documentElement.dataset.theme = currentTheme;
+    document.documentElement.classList.toggle("dark-mode", currentTheme === "dark");
+    ensureGlobalThemeStyles();
     if (document.body) document.body.classList.toggle("dark-mode", currentTheme === "dark");
     updateSettingsControls();
     window.dispatchEvent(new CustomEvent("artivio:themechange", { detail: { theme: currentTheme } }));
