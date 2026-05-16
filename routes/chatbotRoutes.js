@@ -185,6 +185,14 @@ function isProductQuestion(message) {
   return /\b(product|products|item|items|shop|buy|price|gift|gifts|stock|available|pottery|jewelry|jewellery|crochet|embroidery|wood|woodwork)\b/.test(text);
 }
 
+function isGeneralKnowledgeQuestion(message) {
+  const text = normalize(message);
+  const hasCatalogAction = /\b(show|list|browse|buy|shop|price|cost|stock|available|have|sell|recommend|gift|course|courses|class|learn)\b/.test(text);
+  const asksDefinition = /\b(what is|what are|define|explain|meaning of|how to|how do|why is|why are)\b/.test(text);
+  const mentionsCraftTopic = /\b(pottery|ceramic|crochet|embroidery|jewelry|jewellery|woodwork|wooden crafts|handmade)\b/.test(text);
+  return asksDefinition && mentionsCraftTopic && !hasCatalogAction;
+}
+
 function isGreeting(message) {
   return /\b(hello|hi|hey|good morning|good afternoon|good evening|salam|مرحبا|اهلا)\b/i.test(message);
 }
@@ -346,12 +354,71 @@ function specificItemAnswer(message) {
   return null;
 }
 
+function generalAnswer(message) {
+  const text = normalize(message);
+  const original = String(message || '').trim();
+
+  if (isGreeting(message)) {
+    return 'Hi! How can I help you today?';
+  }
+
+  if (/\b(thanks|thank you|thx|appreciate it)\b/.test(text)) {
+    return 'You are welcome. Happy to help.';
+  }
+
+  if (/\b(who are you|what are you)\b/.test(text)) {
+    return 'I am Artivio Assistant. I can help with general questions, craft ideas, and anything related to Artivio products or courses.';
+  }
+
+  const craftTopics = {
+    pottery: 'Pottery is the craft of shaping clay into objects like mugs, bowls, vases, and plates, then drying and firing them so they become hard and durable.',
+    ceramic: 'Ceramics are objects made from clay or similar materials that are hardened by heat. Pottery is one common type of ceramic work.',
+    crochet: 'Crochet is a textile craft that uses one hook to make fabric from yarn. It is often used for bags, clothing, toys, blankets, and decorative pieces.',
+    embroidery: 'Embroidery is decorating fabric with stitched patterns, lettering, or images using thread.',
+    jewelry: 'Jewelry is wearable decoration, such as necklaces, bracelets, rings, and earrings. Handmade jewelry often focuses on unique materials and personal style.',
+    woodwork: 'Woodwork is the craft of shaping, joining, and finishing wood to make useful or decorative objects.'
+  };
+
+  for (const [topic, answer] of Object.entries(craftTopics)) {
+    if (text.includes(`what is ${topic}`) || text.includes(`what are ${topic}`) || text === topic) {
+      return answer;
+    }
+  }
+
+  const howToMatch = text.match(/\bhow (?:do|can|to) (?:i |you |we )?(.+)/);
+  if (howToMatch) {
+    const task = howToMatch[1].replace(/\?$/, '').trim();
+    return `A good way to ${task} is to start with the goal, break it into small steps, gather the tools or information you need, then test one step at a time. If you tell me the exact result you want, I can make the steps more specific.`;
+  }
+
+  const whyMatch = text.match(/\bwhy (?:is|are|do|does|should|can) (.+)/);
+  if (whyMatch) {
+    const subject = whyMatch[1].replace(/\?$/, '').trim();
+    return `Usually, ${subject} comes down to the reason behind the process, the materials involved, or the goal you are trying to reach. If you share the context, I can explain it more clearly.`;
+  }
+
+  const compareMatch = text.match(/\b(?:compare|difference between|which is better)\b(.+)?/);
+  if (compareMatch) {
+    return 'The best comparison depends on what matters most: price, quality, difficulty, durability, time, or style. Tell me the two options and what you care about most, and I will compare them clearly.';
+  }
+
+  if (text.includes('idea') || text.includes('ideas')) {
+    return 'Sure. A good idea should match your goal, budget, and the person or situation you are designing for. Give me the theme or purpose and I can suggest several options.';
+  }
+
+  if (original.endsWith('?')) {
+    return 'Yes, I can help with that. Give me the main detail or context, and I will answer directly.';
+  }
+
+  return 'Tell me what you want to do, learn, compare, or choose, and I will help you with a clear answer.';
+}
+
 function smartDatabaseAnswer(message) {
   const specific = specificItemAnswer(message);
   if (specific) return specific;
 
-  if (isGreeting(message)) {
-    return 'Hi! How can I help you today?';
+  if (isGeneralKnowledgeQuestion(message)) {
+    return generalAnswer(message);
   }
 
   if (normalize(message).includes('gift')) {
@@ -374,7 +441,7 @@ function smartDatabaseAnswer(message) {
     return 'I can help you browse Artivio, compare products or courses, choose gifts, answer questions, and explain things clearly. What do you need?';
   }
 
-  return 'I understand. Tell me a little more about what you mean, and I will help.';
+  return generalAnswer(message);
 }
 
 function shouldUseAI(message) {
@@ -382,6 +449,7 @@ function shouldUseAI(message) {
 }
 
 function isCatalogQuestion(message) {
+  if (isGeneralKnowledgeQuestion(message)) return false;
   return isProductQuestion(message) || isCourseQuestion(message) || normalize(message).includes('gift');
 }
 
