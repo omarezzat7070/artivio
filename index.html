@@ -50,20 +50,16 @@
     }
 
     .hero {
-  min-height: 85vh;
-  width: 100%;
-  background:
-    linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
-    url('./pottery.jpeg');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  background-attachment: scroll;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-}
+      min-height: 85vh;
+      width: 100%;
+      background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), 
+                  url('./pottery.jpeg') no-repeat center center / cover;
+      background-attachment: scroll;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+    }
 
 
     .hero-content {
@@ -73,7 +69,7 @@
     }
 
     .hero-content h1 {
-      font-size: 48px;
+      font-size: clamp(1.75rem, 8vw, 3rem);
       margin-bottom: 15px;
     }
 
@@ -304,11 +300,9 @@
 /* Tablets + Mobiles */
 @media (max-width: 768px) {
   .hero {
-    min-height: 100vh;
-    height: auto;
-    padding: 120px 20px 80px;
+    min-height: 100svh;
+    padding: 100px 20px 60px;
     background-position: center top;
-    background-size: cover;
   }
 
   .hero-content {
@@ -379,7 +373,6 @@
 /* Small phones */
 @media (max-width: 480px) {
   .hero {
-    min-height: 90vh;
     padding: 100px 15px 60px;
     background-position: center;
   }
@@ -1001,7 +994,3 @@
 <script src="navbar.js"></script>
 </body>
 </html>
-
-
-
-
