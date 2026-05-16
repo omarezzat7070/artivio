@@ -50,15 +50,21 @@
     }
 
     .hero {
-      min-height: 85vh;
       width: 100%;
-      background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), 
-                  url('./pottery.jpeg') no-repeat center center / cover;
-      background-attachment: scroll;
+      /* Keeps the hero readable while making the background image scale nicely */
+      min-height: clamp(420px, 85vh, 720px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 80px 20px;
+
+      /* Responsive background image rules */
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      background-attachment: scroll;
+
+      background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('./pottery.jpeg');
     }
 
 
@@ -300,9 +306,12 @@
 /* Tablets + Mobiles */
 @media (max-width: 768px) {
   .hero {
-    min-height: 100svh;
+    /* Avoid overly tall hero that can crop text; still uses a responsive background */
+    min-height: clamp(520px, 100svh, 720px);
     padding: 100px 20px 60px;
-    background-position: center top;
+
+    background-position: 50% 12%;
+    background-size: cover;
   }
 
   .hero-content {
@@ -374,7 +383,10 @@
 @media (max-width: 480px) {
   .hero {
     padding: 100px 15px 60px;
-    background-position: center;
+
+    /* Slightly higher focal point on tiny screens so faces/details aren't cut */
+    background-position: 50% 10%;
+    background-size: cover;
   }
 
   .hero-content h1 {
