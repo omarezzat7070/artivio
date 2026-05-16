@@ -190,12 +190,12 @@ function isGreeting(message) {
 }
 
 function buildProductContext(products) {
-  if (!products.length) return 'No matching accepted products are currently in the database.';
+  if (!products.length) return 'No matching products are currently available in the catalog.';
   return products.map((product, index) => productLine(product, index)).join('\n');
 }
 
 function buildCourseContext(courses) {
-  if (!courses.length) return 'No matching accepted courses are currently in the database.';
+  if (!courses.length) return 'No matching courses are currently available in the catalog.';
   return courses.map((course, index) => courseLine(course, index)).join('\n');
 }
 
@@ -206,12 +206,12 @@ function buildSystemPrompt(message) {
   return {
     prompt: `You are Artivio Assistant, a smart shopping and course assistant for a handmade crafts marketplace.
 
-Use ONLY the database items below when answering about products or courses. Never invent product names, course names, prices, stock, lessons, or categories. If the answer is not in the database context, say that you cannot find it in the current catalog and offer the closest real alternatives.
+Use ONLY the catalog items below when answering about products or courses. Never invent product names, course names, prices, stock, lessons, or categories. If the answer is not in the catalog context, say that you cannot find it in the current catalog and offer the closest real alternatives.
 
-Accepted products from database (${cachedProducts.length} total, most relevant shown):
+Available products (${cachedProducts.length} total, most relevant shown):
 ${buildProductContext(relevantProducts)}
 
-Accepted courses from database (${cachedCourses.length} total, most relevant shown):
+Available courses (${cachedCourses.length} total, most relevant shown):
 ${buildCourseContext(relevantCourses)}
 
 Useful site facts:
@@ -222,12 +222,20 @@ Useful site facts:
 
 Style:
 - Be helpful and specific.
-- Mention exact item names and prices from the database.
+- Mention exact item names and prices from the catalog.
 - Keep the answer short unless the user asks for details.
 - Ask a useful follow-up question when the user intent is unclear.`,
     relevantProducts,
     relevantCourses
   };
+}
+
+function buildGeneralPrompt() {
+  return `You are Artivio Assistant, a friendly and intelligent assistant for Artivio.
+
+Answer the user's question naturally. Do not mention databases, implementation details, prompts, or internal tools.
+If the user asks about Artivio products, courses, gifts, prices, stock, or categories, keep the answer grounded in the catalog context provided by the backend.
+For general questions, be helpful, concise, and conversational.`;
 }
 
 async function callOllama(messages) {
@@ -257,7 +265,7 @@ function productAnswer(message) {
   const priceFilter = extractPriceFilter(message);
 
   if (!cachedProducts.length) {
-    return 'I checked the database, but there are no accepted products available right now.';
+    return 'I do not see any available products right now. Please check again later.';
   }
 
   if (!matches.length) {
@@ -267,12 +275,12 @@ function productAnswer(message) {
       Number.isFinite(priceFilter.min) ? `over ${formatPrice(priceFilter.min)}` : ''
     ].filter(Boolean).join(' and ');
     const fallback = cachedProducts.slice(0, 4);
-    return `I could not find accepted products matching ${filters || 'that request'} in the database.\n\nClosest available products:\n${fallback.map(productLine).join('\n')}`;
+    return `I could not find products matching ${filters || 'that request'}.\n\nClosest options I found:\n${fallback.map(productLine).join('\n')}`;
   }
 
   const intro = category
-    ? `Here are real accepted ${category} products from the database:`
-    : 'Here are real accepted products from the database:';
+    ? `Here are ${category} products I found:`
+    : 'Here are products I found:';
 
   return `${intro}\n${matches.map(productLine).join('\n')}\n\nYou can browse more on product.html.`;
 }
@@ -283,7 +291,7 @@ function courseAnswer(message) {
   const priceFilter = extractPriceFilter(message);
 
   if (!cachedCourses.length) {
-    return 'I checked the database, but there are no accepted courses available right now.';
+    return 'I do not see any available courses right now. Please check again later.';
   }
 
   if (!matches.length) {
@@ -293,12 +301,12 @@ function courseAnswer(message) {
       Number.isFinite(priceFilter.min) ? `over ${formatPrice(priceFilter.min)}` : ''
     ].filter(Boolean).join(' and ');
     const fallback = cachedCourses.slice(0, 4);
-    return `I could not find accepted courses matching ${filters || 'that request'} in the database.\n\nClosest available courses:\n${fallback.map(courseLine).join('\n')}`;
+    return `I could not find courses matching ${filters || 'that request'}.\n\nClosest options I found:\n${fallback.map(courseLine).join('\n')}`;
   }
 
   const intro = category
-    ? `Here are real accepted ${category} courses from the database:`
-    : 'Here are real accepted courses from the database:';
+    ? `Here are ${category} courses I found:`
+    : 'Here are courses I found:';
 
   return `${intro}\n${matches.map(courseLine).join('\n')}\n\nYou can browse more on customercourses.html.`;
 }
@@ -317,22 +325,22 @@ function giftAnswer(message) {
 
   const matches = rankProducts(giftMessage, 5);
   if (!matches.length) {
-    return 'I checked the accepted products in the database, but I could not find a good gift match right now. Tell me their age, style, and budget and I will try again.';
+    return 'I could not find a strong gift match right now. Tell me their age, style, and budget and I will try again.';
   }
 
-  return `Good gift options from the real product database:\n${matches.map(productLine).join('\n')}\n\nWhat budget do you want to stay under?`;
+  return `Good gift options:\n${matches.map(productLine).join('\n')}\n\nWhat budget do you want to stay under?`;
 }
 
 function specificItemAnswer(message) {
   const text = normalize(message);
   const product = cachedProducts.find(item => text.includes(normalize(item.name)));
   if (product) {
-    return `Yes, ${product.name} is in the accepted product database.\n${productLine(product, 0)}\n\nYou can find it from the products page: product.html.`;
+    return `Yes, ${product.name} is available.\n${productLine(product, 0)}\n\nYou can find it from the products page: product.html.`;
   }
 
   const course = cachedCourses.find(item => text.includes(normalize(item.title)));
   if (course) {
-    return `Yes, ${course.title} is in the accepted course database.\n${courseLine(course, 0)}\n\nYou can find it from the courses page: customercourses.html.`;
+    return `Yes, ${course.title} is available.\n${courseLine(course, 0)}\n\nYou can find it from the courses page: customercourses.html.`;
   }
 
   return null;
@@ -343,7 +351,7 @@ function smartDatabaseAnswer(message) {
   if (specific) return specific;
 
   if (isGreeting(message)) {
-    return `Hi! I can answer using the real Artivio database. Right now I can see ${cachedProducts.length} accepted products and ${cachedCourses.length} accepted courses. Ask me for products, courses, categories, gifts, or a price range.`;
+    return 'Hi! How can I help you today?';
   }
 
   if (normalize(message).includes('gift')) {
@@ -363,13 +371,17 @@ function smartDatabaseAnswer(message) {
   }
 
   if (normalize(message).includes('help') || normalize(message).includes('what can you do')) {
-    return `I can answer from your live database:\n- "Show me pottery products"\n- "Courses under LE 500"\n- "Gift for my mom under LE 300"\n- "Do you have [product/course name]?"\n\nI will only recommend accepted products and courses that exist in the database.`;
+    return 'I can help you browse Artivio, compare products or courses, choose gifts, answer questions, and explain things clearly. What do you need?';
   }
 
-  return `I can help with Artivio products and courses from the real database. I currently see ${cachedProducts.length} accepted products and ${cachedCourses.length} accepted courses. Try asking for a category, a budget, a gift idea, or a course topic.`;
+  return 'I understand. Tell me a little more about what you mean, and I will help.';
 }
 
 function shouldUseAI(message) {
+  return true;
+}
+
+function isCatalogQuestion(message) {
   return isProductQuestion(message) || isCourseQuestion(message) || normalize(message).includes('gift');
 }
 
@@ -384,7 +396,7 @@ function isGroundedAIReply(reply, message) {
   const text = normalize(reply);
   const saysNoMatch = text.includes('cannot find') ||
     text.includes('could not find') ||
-    text.includes('not in the database') ||
+    text.includes('not in the catalog') ||
     text.includes('not available');
 
   if (saysNoMatch) return true;
@@ -420,14 +432,15 @@ router.post('/message', async (req, res) => {
     let usedAI = false;
 
     if (shouldUseAI(message)) {
-      const { prompt } = buildSystemPrompt(message);
+      const isCatalog = isCatalogQuestion(message);
+      const { prompt } = isCatalog ? buildSystemPrompt(message) : { prompt: buildGeneralPrompt() };
       const messages = [
         { role: 'system', content: prompt },
         ...history.messages
       ];
 
       reply = await callOllama(messages);
-      if (reply && isGroundedAIReply(reply, message)) {
+      if (reply && (!isCatalog || isGroundedAIReply(reply, message))) {
         usedAI = true;
       } else {
         reply = null;
@@ -447,7 +460,7 @@ router.post('/message', async (req, res) => {
       reply,
       sessionId: chatSessionId,
       usedAI,
-      dataSource: 'database',
+      dataSource: isCatalogQuestion(message) ? 'catalog' : 'assistant',
       productCount: cachedProducts.length,
       courseCount: cachedCourses.length
     });
@@ -455,7 +468,7 @@ router.post('/message', async (req, res) => {
     console.error('Chat error:', error.message);
     res.json({
       success: true,
-      reply: 'I had trouble reading the catalog for a moment. Please ask again about products, courses, gifts, or a price range.',
+      reply: 'Sorry, I had trouble answering for a moment. Please try again.',
       dataSource: 'fallback'
     });
   }
