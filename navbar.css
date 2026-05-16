@@ -9,12 +9,39 @@
   --navbar-gap: 25px;
 }
 
+html[data-theme="dark"],
+body.dark-mode {
+  color-scheme: dark;
+  --primary: #d38a7d;
+  --primary-dark: #efb0a4;
+  --dark: #f4ddd7;
+  --bg: #14100f;
+  --card: #211817;
+  --border: #3a2a27;
+  --light-bg: #14100f;
+  --page-text: #f8ebe7;
+  --surface: #211817;
+  --surface-soft: #1a1312;
+  --muted-text: #d6c2bc;
+  --card-shadow: rgba(0, 0, 0, 0.45);
+  --navbar-bg: rgba(22, 16, 15, 0.96);
+  --navbar-border: #3a2a27;
+  --navbar-text: #f8ebe7;
+  --navbar-hover: #f0a194;
+}
+
+body.dark-mode {
+  background: var(--bg) !important;
+  color: var(--page-text) !important;
+}
+
 .navbar {
   background: var(--navbar-bg);
   border-bottom: 1px solid var(--navbar-border);
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(14px);
 }
 
 .container {
@@ -199,6 +226,132 @@
   color: #fff;
 }
 
+body.dark-mode .navbar,
+body.dark-mode .profile-dropdown,
+body.dark-mode .nav-links {
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .nav-toggle-group button.active,
+body.dark-mode .nav-toggle-group button:hover {
+  color: #2a1512;
+}
+
+body.dark-mode main,
+body.dark-mode section:not(.hero):not(.cta-section),
+body.dark-mode .container,
+body.dark-mode .content,
+body.dark-mode .main-content,
+body.dark-mode .dashboard,
+body.dark-mode .admin-content {
+  color: var(--page-text);
+}
+
+body.dark-mode .card,
+body.dark-mode .stat-card,
+body.dark-mode .product-card,
+body.dark-mode .course-card,
+body.dark-mode .purchase-card,
+body.dark-mode .order-card,
+body.dark-mode .settings-card,
+body.dark-mode .profile-card,
+body.dark-mode .form-container,
+body.dark-mode .login-container,
+body.dark-mode .signup-container,
+body.dark-mode .checkout-container,
+body.dark-mode .summary-card,
+body.dark-mode .modal-content,
+body.dark-mode .topbar,
+body.dark-mode table {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--page-text) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.dark-mode .tabs,
+body.dark-mode th,
+body.dark-mode thead,
+body.dark-mode .section,
+body.dark-mode .why,
+body.dark-mode .products,
+body.dark-mode .details,
+body.dark-mode .empty-state,
+body.dark-mode .summary-stats,
+body.dark-mode .progress-bg {
+  background: var(--surface-soft) !important;
+  color: var(--page-text) !important;
+  border-color: var(--border) !important;
+}
+
+body.dark-mode td,
+body.dark-mode th,
+body.dark-mode tr,
+body.dark-mode hr {
+  border-color: var(--border) !important;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode label,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode li {
+  color: inherit;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: #181211 !important;
+  border-color: var(--border) !important;
+  color: var(--page-text) !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #a99590 !important;
+}
+
+body.dark-mode .btn-outline,
+body.dark-mode button.btn-outline,
+body.dark-mode .action-btn {
+  background: #2a1c1a !important;
+  border-color: var(--border) !important;
+  color: var(--navbar-hover) !important;
+}
+
+body.dark-mode .btn,
+body.dark-mode button,
+body.dark-mode .signup-btn {
+  border-color: transparent;
+}
+
+body.dark-mode a {
+  color: var(--navbar-hover);
+}
+
+body.dark-mode .badge-paid,
+body.dark-mode .status-success {
+  background: #123524 !important;
+  color: #a9e8ba !important;
+}
+
+body.dark-mode .badge-pending,
+body.dark-mode .status-pending {
+  background: #3a2d12 !important;
+  color: #f6d98a !important;
+}
+
+body.dark-mode .badge-failed,
+body.dark-mode .status-failed,
+body.dark-mode .error {
+  background: #3f1717 !important;
+  color: #ffb0aa !important;
+}
+
 body[dir="rtl"] .profile-dropdown {
   right: auto;
   left: 0;
@@ -243,6 +396,11 @@ body[dir="rtl"] .profile-dropdown a {
     flex-direction: column;
     gap: 14px;
     z-index: 1000;
+  }
+
+  body[dir="rtl"] .nav-links {
+    right: auto;
+    left: 20px;
   }
 
   .nav-links.active {

@@ -9,6 +9,13 @@
       "nav.login": "Login",
       "nav.profile": "My Profile",
       "nav.purchases": "My Purchases",
+      "nav.dashboard": "Dashboard",
+      "nav.orders": "Orders",
+      "nav.users": "Users",
+      "nav.settings": "Settings",
+      "nav.analytics": "Analytics",
+      "nav.seller": "Seller",
+      "nav.trackOrder": "Track Order",
       "nav.logout": "Logout",
       "settings.appearance": "Appearance",
       "settings.light": "Light",
@@ -47,6 +54,13 @@
       "nav.login": "تسجيل الدخول",
       "nav.profile": "ملفي الشخصي",
       "nav.purchases": "مشترياتي",
+      "nav.dashboard": "لوحة التحكم",
+      "nav.orders": "الطلبات",
+      "nav.users": "المستخدمون",
+      "nav.settings": "الإعدادات",
+      "nav.analytics": "التحليلات",
+      "nav.seller": "البائع",
+      "nav.trackOrder": "تتبع الطلب",
       "nav.logout": "تسجيل الخروج",
       "settings.appearance": "المظهر",
       "settings.light": "فاتح",
@@ -79,13 +93,40 @@
     }
   };
 
-  // Helper to safely get from localStorage
+  const navKeyByHref = {
+    "index.html": "nav.home",
+    "product.html": "nav.products",
+    "customercourses.html": "nav.courses",
+    "course.html": "nav.courses",
+    "about.html": "nav.about",
+    "login.html": "nav.login",
+    "profile.html": "nav.profile",
+    "my-purchases.html": "nav.purchases",
+    "admindashboard.html": "nav.dashboard",
+    "admin-products.html": "nav.products",
+    "admin-courses.html": "nav.courses",
+    "admin-orders.html": "nav.orders",
+    "admin-users.html": "nav.users",
+    "admin-settings.html": "nav.settings",
+    "admin-analytics.html": "nav.analytics",
+    "seller.html": "nav.seller",
+    "track-order.html": "nav.trackOrder"
+  };
+
   function safeLocalStorageGet(key) {
     try {
       return localStorage.getItem(key);
     } catch (err) {
       console.warn("Local storage access blocked:", err);
       return null;
+    }
+  }
+
+  function safeLocalStorageSet(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (err) {
+      console.warn("Local storage write blocked:", err);
     }
   }
 
@@ -100,23 +141,15 @@
   }
 
   function getStoredToken() {
-    return safeLocalStorageGet('token');
-  }
-
-  function safeLocalStorageSet(key, value) {
-    try {
-      localStorage.setItem(key, value);
-    } catch (err) {
-      console.warn("Local storage write blocked:", err);
-    }
+    return safeLocalStorageGet("token");
   }
 
   function getLanguage() {
-    return safeLocalStorageGet('artivioLanguage') || 'en';
+    return safeLocalStorageGet("artivioLanguage") || "en";
   }
 
   function getTheme() {
-    return safeLocalStorageGet('artivioTheme') || 'light';
+    return safeLocalStorageGet("artivioTheme") || "light";
   }
 
   function t(key) {
@@ -124,63 +157,109 @@
     return translations[lang]?.[key] || translations.en[key] || key;
   }
 
-  function applyLanguage(lang) {
-    const currentLang = translations[lang] ? lang : 'en';
-    safeLocalStorageSet('artivioLanguage', currentLang);
-    document.documentElement.lang = currentLang;
-    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-    document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  function getHrefFileName(anchor) {
+    const rawHref = anchor.getAttribute("href");
+    if (!rawHref || rawHref === "#") return "";
+    return rawHref.split("?")[0].split("#")[0].split("/").pop();
+  }
 
-    document.querySelectorAll('[data-i18n]').forEach((element) => {
+  function setAnchorLabel(anchor, key) {
+    if (!key) return;
+    const text = t(key);
+    const labelledSpan = anchor.querySelector("[data-i18n], [data-auto-i18n]");
+
+    if (labelledSpan) {
+      labelledSpan.dataset.autoI18n = key;
+      labelledSpan.textContent = text;
+      return;
+    }
+
+    const hasIcon = anchor.querySelector("i, svg, img");
+    if (!hasIcon) {
+      anchor.dataset.autoI18n = key;
+      anchor.textContent = text;
+      return;
+    }
+
+    Array.from(anchor.childNodes).forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+        node.remove();
+      }
+    });
+
+    const span = document.createElement("span");
+    span.dataset.autoI18n = key;
+    span.textContent = text;
+    anchor.appendChild(span);
+  }
+
+  function translateKnownNavigationLinks() {
+    document.querySelectorAll(".nav-links a[href]").forEach((anchor) => {
+      if (anchor.id === "loginLink") return;
+      setAnchorLabel(anchor, navKeyByHref[getHrefFileName(anchor)]);
+    });
+  }
+
+  function applyLanguage(lang) {
+    const currentLang = translations[lang] ? lang : "en";
+    safeLocalStorageSet("artivioLanguage", currentLang);
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+    if (document.body) document.body.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+    document.querySelectorAll("[data-i18n]").forEach((element) => {
       element.textContent = t(element.dataset.i18n);
     });
 
-    document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
       element.placeholder = t(element.dataset.i18nPlaceholder);
     });
 
+    translateKnownNavigationLinks();
     updateSettingsControls();
-    window.dispatchEvent(new CustomEvent('artivio:languagechange', { detail: { language: currentLang } }));
+    window.dispatchEvent(new CustomEvent("artivio:languagechange", { detail: { language: currentLang } }));
   }
 
   function applyTheme(theme) {
-    const currentTheme = theme === 'dark' ? 'dark' : 'light';
-    safeLocalStorageSet('artivioTheme', currentTheme);
-    document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+    const currentTheme = theme === "dark" ? "dark" : "light";
+    safeLocalStorageSet("artivioTheme", currentTheme);
+    document.documentElement.dataset.theme = currentTheme;
+    if (document.body) document.body.classList.toggle("dark-mode", currentTheme === "dark");
     updateSettingsControls();
+    window.dispatchEvent(new CustomEvent("artivio:themechange", { detail: { theme: currentTheme } }));
   }
 
   function updateSettingsControls() {
     const lang = getLanguage();
     const theme = getTheme();
 
-    document.querySelectorAll('[data-theme-option]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.themeOption === theme);
+    document.querySelectorAll("[data-theme-option]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.themeOption === theme);
     });
 
-    document.querySelectorAll('[data-language-option]').forEach((button) => {
-      button.classList.toggle('active', button.dataset.languageOption === lang);
+    document.querySelectorAll("[data-language-option]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.languageOption === lang);
     });
 
-    document.querySelectorAll('[data-settings-label]').forEach((element) => {
+    document.querySelectorAll("[data-settings-label]").forEach((element) => {
       element.textContent = t(element.dataset.settingsLabel);
     });
   }
 
   function bindPreferenceControls(root = document) {
-    root.querySelectorAll('[data-theme-option]').forEach((button) => {
-      if (button.dataset.boundPreference === 'true') return;
-      button.dataset.boundPreference = 'true';
-      button.addEventListener('click', (event) => {
+    root.querySelectorAll("[data-theme-option]").forEach((button) => {
+      if (button.dataset.boundPreference === "true") return;
+      button.dataset.boundPreference = "true";
+      button.addEventListener("click", (event) => {
         event.preventDefault();
         applyTheme(button.dataset.themeOption);
       });
     });
 
-    root.querySelectorAll('[data-language-option]').forEach((button) => {
-      if (button.dataset.boundPreference === 'true') return;
-      button.dataset.boundPreference = 'true';
-      button.addEventListener('click', (event) => {
+    root.querySelectorAll("[data-language-option]").forEach((button) => {
+      if (button.dataset.boundPreference === "true") return;
+      button.dataset.boundPreference = "true";
+      button.addEventListener("click", (event) => {
         event.preventDefault();
         applyLanguage(button.dataset.languageOption);
         updateLoginLink();
@@ -188,131 +267,165 @@
     });
   }
 
+  function buildSettingsDropdown(id) {
+    const dropdown = document.createElement("div");
+    dropdown.id = id;
+    dropdown.className = "profile-dropdown brand-settings-dropdown";
+    dropdown.innerHTML = `
+      <div class="nav-settings">
+        <span class="nav-settings-title" data-settings-label="settings.appearance">${t("settings.appearance")}</span>
+        <div class="nav-toggle-group">
+          <button type="button" data-theme-option="light" data-i18n="settings.light">${t("settings.light")}</button>
+          <button type="button" data-theme-option="dark" data-i18n="settings.dark">${t("settings.dark")}</button>
+        </div>
+        <span class="nav-settings-title" data-settings-label="settings.language">${t("settings.language")}</span>
+        <div class="nav-toggle-group">
+          <button type="button" data-language-option="en">EN</button>
+          <button type="button" data-language-option="ar">AR</button>
+        </div>
+      </div>
+    `;
+    return dropdown;
+  }
+
   window.ArtivioI18n = { t, applyLanguage, applyTheme };
 
   function updateLoginLink() {
-    const loginLink = document.getElementById('loginLink');
+    const loginLink = document.getElementById("loginLink");
     if (!loginLink) return;
 
     const user = getStoredUser();
     const token = getStoredToken();
-    
+
     if (user && user.name && token) {
       loginLink.innerHTML = `<i data-lucide="user" class="icon-sm"></i> ${user.name} <i data-lucide="chevron-down" class="icon-xs"></i>`;
-      loginLink.href = '#';
-      loginLink.style.cursor = 'pointer';
-      loginLink.classList.add('profile-dropdown-trigger');
-      
-      const existingDropdown = document.getElementById('profileDropdown');
+      loginLink.href = "#";
+      loginLink.style.cursor = "pointer";
+      loginLink.classList.add("profile-dropdown-trigger");
+
+      const existingDropdown = document.getElementById("profileDropdown");
       if (existingDropdown) existingDropdown.remove();
-      
-      const dropdown = document.createElement('div');
-      dropdown.id = 'profileDropdown';
-      dropdown.className = 'profile-dropdown';
+
+      const dropdown = document.createElement("div");
+      dropdown.id = "profileDropdown";
+      dropdown.className = "profile-dropdown";
       dropdown.innerHTML = `
-        <a href="profile.html"><i data-lucide="user" class="icon-xs"></i> <span data-i18n="nav.profile">${t('nav.profile')}</span></a>
-        <a href="my-purchases.html"><i data-lucide="shopping-bag" class="icon-xs"></i> <span data-i18n="nav.purchases">${t('nav.purchases')}</span></a>
+        <a href="profile.html"><i data-lucide="user" class="icon-xs"></i> <span data-i18n="nav.profile">${t("nav.profile")}</span></a>
+        <a href="my-purchases.html"><i data-lucide="shopping-bag" class="icon-xs"></i> <span data-i18n="nav.purchases">${t("nav.purchases")}</span></a>
         <hr>
-        <div class="nav-settings">
-          <span class="nav-settings-title" data-settings-label="settings.appearance">${t('settings.appearance')}</span>
-          <div class="nav-toggle-group">
-            <button type="button" data-theme-option="light" data-i18n="settings.light">${t('settings.light')}</button>
-            <button type="button" data-theme-option="dark" data-i18n="settings.dark">${t('settings.dark')}</button>
-          </div>
-          <span class="nav-settings-title" data-settings-label="settings.language">${t('settings.language')}</span>
-          <div class="nav-toggle-group">
-            <button type="button" data-language-option="en">EN</button>
-            <button type="button" data-language-option="ar">AR</button>
-          </div>
-        </div>
+        ${buildSettingsDropdown("profileSettingsDropdown").innerHTML}
         <hr>
-        <a href="#" id="logoutBtnNav"><i data-lucide="log-out" class="icon-xs"></i> <span data-i18n="nav.logout">${t('nav.logout')}</span></a>
+        <a href="#" id="logoutBtnNav"><i data-lucide="log-out" class="icon-xs"></i> <span data-i18n="nav.logout">${t("nav.logout")}</span></a>
       `;
-      
-      const navLinks = document.getElementById('navLinks');
+
       const loginLi = loginLink.parentElement;
-      if (loginLi && !document.getElementById('profileDropdown')) {
-        loginLi.style.position = 'relative';
+      if (loginLi && !document.getElementById("profileDropdown")) {
+        loginLi.style.position = "relative";
         loginLi.appendChild(dropdown);
         bindPreferenceControls(dropdown);
         updateSettingsControls();
-        
-        loginLink.addEventListener('click', (e) => {
+
+        loginLink.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
-          dropdown.classList.toggle('show');
+          dropdown.classList.toggle("show");
         });
-        
-        document.addEventListener('click', function(e) {
+
+        document.addEventListener("click", function(e) {
           if (!loginLi.contains(e.target)) {
-            dropdown.classList.remove('show');
+            dropdown.classList.remove("show");
           }
         });
-        
-        document.getElementById('logoutBtnNav')?.addEventListener('click', (e) => {
+
+        document.getElementById("logoutBtnNav")?.addEventListener("click", (e) => {
           e.preventDefault();
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('cart');
-          localStorage.removeItem('justPurchased');
-          localStorage.removeItem('chatSessionId');
-          // Redirect to home page (index.html or home.html)
-          window.location.href = 'index.html';
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("cart");
+          localStorage.removeItem("justPurchased");
+          localStorage.removeItem("chatSessionId");
+          window.location.href = "index.html";
         });
       }
     } else {
-      loginLink.innerHTML = `<i data-lucide="user" class="icon-sm"></i> <span data-i18n="nav.login">${t('nav.login')}</span>`;
-      loginLink.href = 'login.html';
-      loginLink.style.cursor = 'pointer';
-      loginLink.classList.remove('profile-dropdown-trigger');
-      
-      const dropdown = document.getElementById('profileDropdown');
+      loginLink.innerHTML = `<i data-lucide="user" class="icon-sm"></i> <span data-i18n="nav.login">${t("nav.login")}</span>`;
+      loginLink.href = "login.html";
+      loginLink.style.cursor = "pointer";
+      loginLink.classList.remove("profile-dropdown-trigger");
+
+      const dropdown = document.getElementById("profileDropdown");
       if (dropdown) dropdown.remove();
     }
+
     initLucideIcons();
   }
 
   function initMobileMenu() {
-    const menuIcon = document.getElementById('menuIcon');
-    const navLinks = document.getElementById('navLinks');
+    const menuIcon = document.getElementById("menuIcon");
+    const navLinks = document.getElementById("navLinks");
     if (menuIcon && navLinks) {
       const newMenuIcon = menuIcon.cloneNode(true);
       menuIcon.parentNode.replaceChild(newMenuIcon, menuIcon);
-      
-      newMenuIcon.addEventListener('click', (e) => {
+
+      newMenuIcon.addEventListener("click", (e) => {
         e.stopPropagation();
-        const links = document.getElementById('navLinks');
-        if (links) links.classList.toggle('active');
+        const links = document.getElementById("navLinks");
+        if (links) links.classList.toggle("active");
       });
-      
-      document.addEventListener('click', (event) => {
-        const links = document.getElementById('navLinks');
-        const menu = document.getElementById('menuIcon');
-        if (links && links.classList.contains('active') &&
+
+      document.addEventListener("click", (event) => {
+        const links = document.getElementById("navLinks");
+        const menu = document.getElementById("menuIcon");
+        if (links && links.classList.contains("active") &&
             !links.contains(event.target) &&
             !menu?.contains(event.target)) {
-          links.classList.remove('active');
+          links.classList.remove("active");
         }
       });
     }
   }
 
   function initBrandSettingsMenu() {
-    const trigger = document.getElementById('brandSettingsToggle');
-    const dropdown = document.getElementById('brandSettingsDropdown');
-    if (!trigger || !dropdown) return;
+    const logo = document.querySelector(".nav-logo");
+    let trigger = document.getElementById("brandSettingsToggle");
+    let dropdown = document.getElementById("brandSettingsDropdown");
 
-    trigger.addEventListener('click', (event) => {
+    if (!trigger && logo) {
+      const brandText = logo.querySelector(".artivio");
+      trigger = document.createElement("button");
+      trigger.id = "brandSettingsToggle";
+      trigger.type = "button";
+      trigger.className = "artivio brand-settings-toggle";
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.textContent = brandText?.textContent?.trim() || "Artivio";
+
+      if (brandText) {
+        brandText.replaceWith(trigger);
+      } else {
+        logo.appendChild(trigger);
+      }
+    }
+
+    if (!dropdown && logo) {
+      dropdown = buildSettingsDropdown("brandSettingsDropdown");
+      logo.appendChild(dropdown);
+    }
+
+    if (!trigger || !dropdown || trigger.dataset.boundSettings === "true") return;
+    trigger.dataset.boundSettings = "true";
+    bindPreferenceControls(dropdown);
+
+    trigger.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      dropdown.classList.toggle('show');
-      trigger.setAttribute('aria-expanded', dropdown.classList.contains('show') ? 'true' : 'false');
+      dropdown.classList.toggle("show");
+      trigger.setAttribute("aria-expanded", dropdown.classList.contains("show") ? "true" : "false");
     });
 
-    document.addEventListener('click', (event) => {
+    document.addEventListener("click", (event) => {
       if (!dropdown.contains(event.target) && !trigger.contains(event.target)) {
-        dropdown.classList.remove('show');
-        trigger.setAttribute('aria-expanded', 'false');
+        dropdown.classList.remove("show");
+        trigger.setAttribute("aria-expanded", "false");
       }
     });
   }
@@ -323,8 +436,7 @@
     }
   }
 
-  // Initialize on DOM ready
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function() {
     applyTheme(getTheme());
     applyLanguage(getLanguage());
     initLucideIcons();
@@ -332,12 +444,18 @@
     initBrandSettingsMenu();
     updateLoginLink();
     bindPreferenceControls();
+    translateKnownNavigationLinks();
   });
 
-  // Listen for storage changes
-  window.addEventListener('storage', function(event) {
-    if (event.key === 'token' || event.key === 'user') {
+  window.addEventListener("storage", function(event) {
+    if (event.key === "token" || event.key === "user") {
       updateLoginLink();
+    }
+    if (event.key === "artivioTheme") {
+      applyTheme(getTheme());
+    }
+    if (event.key === "artivioLanguage") {
+      applyLanguage(getLanguage());
     }
   });
 })();

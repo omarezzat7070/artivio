@@ -35,36 +35,34 @@
     }
 
     body.dark-mode {
-      --primary: #b96b5f;
-      --dark: #f3ddd6;
-      --light-bg: #171111;
-      --page-text: #f6ece8;
-      --surface: #241817;
-      --surface-soft: #1d1413;
-      --card-shadow: rgba(0,0,0,0.35);
-      --muted-text: #d4c1bb;
-      --navbar-bg: #1f1514;
-      --navbar-border: #3a2926;
-      --navbar-text: #f6ece8;
+      --primary: #d38a7d;
+      --dark: #f4ddd7;
+      --light-bg: #14100f;
+      --page-text: #f8ebe7;
+      --surface: #211817;
+      --surface-soft: #1a1312;
+      --card-shadow: rgba(0,0,0,0.45);
+      --muted-text: #d6c2bc;
+      --navbar-bg: rgba(22, 16, 15, 0.96);
+      --navbar-border: #3a2a27;
+      --navbar-text: #f8ebe7;
       --navbar-hover: #f0a194;
     }
 
     .hero {
       width: 100%;
-      /* Keeps the hero readable while making the background image scale nicely */
-      min-height: clamp(420px, 85vh, 720px);
+      min-height: clamp(460px, 86svh, 760px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 80px 20px;
-
-      /* Responsive background image rules */
+      padding: clamp(88px, 12vh, 140px) 20px clamp(64px, 10vh, 110px);
       background-repeat: no-repeat;
-      background-position: center center;
+      background-position: center 52%;
       background-size: cover;
       background-attachment: scroll;
-
-      background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('./pottery.jpeg');
+      background-image:
+        linear-gradient(rgba(17, 9, 7, 0.5), rgba(17, 9, 7, 0.48)),
+        url('./pottery.jpeg');
     }
 
 
@@ -72,6 +70,8 @@
       text-align: center;
       color: #fff;
       max-width: 800px;
+      width: min(100%, 800px);
+      padding-inline: 12px;
     }
 
     .hero-content h1 {
@@ -80,7 +80,7 @@
     }
 
     .hero-content p {
-      font-size: 18px;
+      font-size: clamp(1rem, 2.5vw, 1.125rem);
       margin-bottom: 30px;
     }
 
@@ -276,9 +276,9 @@
     /* Large tablets */
 @media (max-width: 992px) {
   .hero {
-    min-height: 75vh;
-    padding: 20px;
-    background-position: center;
+    min-height: clamp(500px, 78svh, 700px);
+    padding: 92px 20px 64px;
+    background-position: center center;
   }
 
   .hero-content {
@@ -306,11 +306,9 @@
 /* Tablets + Mobiles */
 @media (max-width: 768px) {
   .hero {
-    /* Avoid overly tall hero that can crop text; still uses a responsive background */
-    min-height: clamp(520px, 100svh, 720px);
-    padding: 100px 20px 60px;
-
-    background-position: 50% 12%;
+    min-height: clamp(500px, 78svh, 680px);
+    padding: 92px 18px 58px;
+    background-position: center center;
     background-size: cover;
   }
 
@@ -382,10 +380,9 @@
 /* Small phones */
 @media (max-width: 480px) {
   .hero {
-    padding: 100px 15px 60px;
-
-    /* Slightly higher focal point on tiny screens so faces/details aren't cut */
-    background-position: 50% 10%;
+    min-height: 500px;
+    padding: 88px 15px 56px;
+    background-position: center center;
     background-size: cover;
   }
 
