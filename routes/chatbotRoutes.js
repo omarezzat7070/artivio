@@ -18,12 +18,10 @@ async function refreshCache(force = false) {
   try {
     const [products, courses] = await Promise.all([
       Product.find({ moderationStatus: 'accepted' })
-        .select('-description')
         .populate('artisan', 'name')
         .sort({ createdAt: -1 })
         .lean(),
       Course.find({ moderationStatus: 'accepted' })
-        .select('-description')
         .populate('artisan', 'name')
         .sort({ createdAt: -1 })
         .lean()
@@ -71,38 +69,22 @@ function formatPrice(price) {
   return `LE ${value.toFixed(2)}`;
 }
 
-function detectLanguage(message = '') {
-  const text = String(message);
-  const hasArabic = /[\u0600-\u06FF]/.test(text);
-  return hasArabic ? 'ar' : 'en';
-}
-
-function productLine(product, index, lang = 'en') {
+function productLine(product, index) {
   const category = product.category || 'Handmade';
   const stock = Number(product.stock || 0);
-  const stockText = stock > 0
-    ? (lang === 'ar' ? `${stock} متوفر` : `${stock} in stock`)
-    : (lang === 'ar' ? 'غير متوفر' : 'out of stock');
-
-  const artisan = product.artisan?.name
-    ? (lang === 'ar' ? ` بواسطة ${product.artisan.name}` : ` by ${product.artisan.name}`)
-    : '';
-
-  // Requirement: only name, price, stock. No brief/description.
-  return `${index + 1}. ${product.name}${artisan} - ${formatPrice(product.price)} - ${stockText}`;
+  const stockText = stock > 0 ? `${stock} in stock` : 'out of stock';
+  const artisan = product.artisan?.name ? ` by ${product.artisan.name}` : '';
+  const brief = product.brief ? ` - ${product.brief}` : '';
+  return `${index + 1}. ${product.name}${artisan} (${category}) - ${formatPrice(product.price)} - ${stockText}${brief}`;
 }
 
-
-function courseLine(course, index, lang = 'en') {
-  // Requirement: only name, price, stock-like availability.
-  // Courses don't have stock in this model, so we return a simple available label.
-  const title = course.title || '';
-  const price = formatPrice(course.price);
-  const availability = lang === 'ar' ? 'متاح' : 'available';
-
-  return `${index + 1}. ${title} - ${price} - ${availability}`;
+function courseLine(course, index) {
+  const category = course.category || 'Course';
+  const lessons = course.parts?.length || 0;
+  const artisan = course.artisan?.name ? ` by ${course.artisan.name}` : '';
+  const rating = course.rating ? ` - rating ${course.rating}/5` : '';
+  return `${index + 1}. ${course.title}${artisan} (${category}) - ${formatPrice(course.price)} - ${course.duration || 0} hours - ${lessons} lessons${rating}`;
 }
-
 
 function categoryFromMessage(message) {
   const text = normalize(message);
@@ -230,33 +212,38 @@ function buildSystemPrompt(message) {
   const relevantCourses = rankCourses(message, MAX_CONTEXT_ITEMS);
 
   return {
-    prompt: `You are Artivio Assistant, a smart, helpful, and friendly AI assistant for Artivio, a handmade crafts marketplace.
-You are fluent in both English and Arabic (أنت تتحدث العربية والإنجليزية بطلاقة). 
+    prompt: `You are Artivio Assistant, a smart shopping and course assistant for a handmade crafts marketplace.
 
-CORE RULES:
-1. LANGUAGE: Always respond in the same language the user uses. If they speak Arabic, reply in Arabic. If English, reply in English.
-2. KNOWLEDGE: You can answer ANY question (general knowledge, advice, history). You are not limited to the catalog.
-3. CATALOG INTEGRATION: When the user asks for recommendations, shopping help, or prices, use the data below. Never invent fake items.
+Use ONLY the catalog items below when answering about products or courses. Never invent product names, course names, prices, stock, lessons, or categories. If the answer is not in the catalog context, say that you cannot find it in the current catalog and offer the closest real alternatives.
 
-Catalog Context (Real items available now):
-Products:
+Available products (${cachedProducts.length} total, most relevant shown):
 ${buildProductContext(relevantProducts)}
 
-Courses:
+Available courses (${cachedCourses.length} total, most relevant shown):
 ${buildCourseContext(relevantCourses)}
 
-Artivio Facts:
-- Currency: Egyptian Pounds (Use "LE" in English, "ج.م" in Arabic).
-- Pages: Shop (product.html), Courses (customercourses.html).
-- Shipping: Free in Egypt for orders over 500 LE.
+Useful site facts:
+- Prices are in Egyptian pounds. Display prices as LE.
+- Products page: product.html
+- Courses page: customercourses.html
+- Free shipping in Egypt applies on orders over LE 500.
 
-Response Style:
-- Be conversational and intelligent.
-- If asked about a topic you don't have catalog items for, answer the question generally using your broad AI knowledge.
-- In Arabic, use a friendly, helpful tone (نبرة ودودة ومساعدة).`,
+Style:
+- Be helpful and specific.
+- Mention exact item names and prices from the catalog.
+- Keep the answer short unless the user asks for details.
+- Ask a useful follow-up question when the user intent is unclear.`,
     relevantProducts,
     relevantCourses
   };
+}
+
+function buildGeneralPrompt() {
+  return `You are Artivio Assistant, a friendly and intelligent assistant for Artivio.
+
+Answer the user's question naturally. Do not mention databases, implementation details, prompts, or internal tools.
+If the user asks about Artivio products, courses, gifts, prices, stock, or categories, keep the answer grounded in the catalog context provided by the backend.
+For general questions, be helpful, concise, and conversational.`;
 }
 
 async function callOllama(messages) {
@@ -266,7 +253,7 @@ async function callOllama(messages) {
       messages,
       stream: false,
       options: {
-        temperature: 0.4,
+        temperature: 0.25,
         num_predict: 420
       }
     }, {
@@ -458,12 +445,40 @@ function smartDatabaseAnswer(message) {
 }
 
 function shouldUseAI(message) {
-  // Use AI only for general questions.
-  // For product/course queries we must use the deterministic catalog formatter
-  // so output stays limited (no description/brief/lessons/rating/etc).
-  return !isProductQuestion(message) && !isCourseQuestion(message);
+  return true;
 }
 
+function isCatalogQuestion(message) {
+  if (isGeneralKnowledgeQuestion(message)) return false;
+  return isProductQuestion(message) || isCourseQuestion(message) || normalize(message).includes('gift');
+}
+
+function mentionsAnyItem(reply, items, fieldName) {
+  const text = normalize(reply);
+  return items.some(item => text.includes(normalize(item[fieldName])));
+}
+
+function isGroundedAIReply(reply, message) {
+  if (!reply) return false;
+
+  const text = normalize(reply);
+  const saysNoMatch = text.includes('cannot find') ||
+    text.includes('could not find') ||
+    text.includes('not in the catalog') ||
+    text.includes('not available');
+
+  if (saysNoMatch) return true;
+
+  if (isProductQuestion(message) && cachedProducts.length > 0 && !mentionsAnyItem(reply, cachedProducts, 'name')) {
+    return false;
+  }
+
+  if (isCourseQuestion(message) && cachedCourses.length > 0 && !mentionsAnyItem(reply, cachedCourses, 'title')) {
+    return false;
+  }
+
+  return true;
+}
 
 router.post('/message', async (req, res) => {
   try {
@@ -485,14 +500,15 @@ router.post('/message', async (req, res) => {
     let usedAI = false;
 
     if (shouldUseAI(message)) {
-      const { prompt } = buildSystemPrompt(message);
+      const isCatalog = isCatalogQuestion(message);
+      const { prompt } = isCatalog ? buildSystemPrompt(message) : { prompt: buildGeneralPrompt() };
       const messages = [
         { role: 'system', content: prompt },
         ...history.messages
       ];
 
       reply = await callOllama(messages);
-      if (reply) {
+      if (reply && (!isCatalog || isGroundedAIReply(reply, message))) {
         usedAI = true;
       } else {
         reply = null;
