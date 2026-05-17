@@ -20,10 +20,12 @@ async function refreshCache(force = false) {
       Product.find({ moderationStatus: 'accepted' })
         .populate('artisan', 'name')
         .sort({ createdAt: -1 })
+        .select('-description -brief') // ← no description fields from DB
         .lean(),
       Course.find({ moderationStatus: 'accepted' })
         .populate('artisan', 'name')
         .sort({ createdAt: -1 })
+        .select('-description') // ← no description fields from DB
         .lean()
     ]);
 
@@ -57,11 +59,16 @@ function normalize(text = '') {
 
 function words(text = '') {
   const stopWords = new Set([
+    // English
     'a', 'an', 'and', 'are', 'as', 'at', 'be', 'can', 'do', 'for', 'from',
     'have', 'i', 'in', 'is', 'it', 'me', 'my', 'of', 'on', 'or', 'please',
-    'show', 'tell', 'the', 'to', 'under', 'what', 'with', 'you', 'your'
+    'show', 'tell', 'the', 'to', 'under', 'what', 'with', 'you', 'your',
+    // Arabic common stop words
+    'في', 'من', 'إلى', 'على', 'عن', 'مع', 'هل', 'ما', 'هو', 'هي',
+    'أنا', 'أنت', 'نحن', 'هم', 'كان', 'يكون', 'لا', 'لم', 'لن',
+    'هذا', 'هذه', 'ذلك', 'تلك', 'التي', 'الذي', 'و', 'أو', 'ثم'
   ]);
-  return normalize(text).split(' ').filter(word => word.length > 2 && !stopWords.has(word));
+  return normalize(text).split(' ').filter(word => word.length > 1 && !stopWords.has(word));
 }
 
 function formatPrice(price) {
@@ -69,13 +76,13 @@ function formatPrice(price) {
   return `LE ${value.toFixed(2)}`;
 }
 
+// ── No description/brief in product display ──────────────────────────────────
 function productLine(product, index) {
   const category = product.category || 'Handmade';
   const stock = Number(product.stock || 0);
   const stockText = stock > 0 ? `${stock} in stock` : 'out of stock';
   const artisan = product.artisan?.name ? ` by ${product.artisan.name}` : '';
-  const brief = product.brief ? ` - ${product.brief}` : '';
-  return `${index + 1}. ${product.name}${artisan} (${category}) - ${formatPrice(product.price)} - ${stockText}${brief}`;
+  return `${index + 1}. ${product.name}${artisan} (${category}) - ${formatPrice(product.price)} - ${stockText}`;
 }
 
 function courseLine(course, index) {
@@ -86,26 +93,28 @@ function courseLine(course, index) {
   return `${index + 1}. ${course.title}${artisan} (${category}) - ${formatPrice(course.price)} - ${course.duration || 0} hours - ${lessons} lessons${rating}`;
 }
 
+// ── Arabic craft aliases ─────────────────────────────────────────────────────
 function categoryFromMessage(message) {
   const text = normalize(message);
   const categoryAliases = [
-    { category: 'Pottery', aliases: ['pottery', 'ceramic', 'clay', 'vase', 'mug', 'plate'] },
-    { category: 'Jewelry', aliases: ['jewelry', 'jewellery', 'necklace', 'bracelet', 'ring', 'earring'] },
-    { category: 'crochet', aliases: ['crochet', 'knit', 'knitted', 'yarn'] },
-    { category: 'Crochet', aliases: ['crochet', 'knit', 'knitted', 'yarn'] },
-    { category: 'Embroidery', aliases: ['embroidery', 'embroidered', 'textile', 'textiles', 'fabric'] },
-    { category: 'Woodwork', aliases: ['wood', 'woodwork', 'wooden', 'board'] }
+    { category: 'Pottery',    aliases: ['pottery', 'ceramic', 'clay', 'vase', 'mug', 'plate', 'فخار', 'خزف', 'طين', 'أكواب', 'صحون'] },
+    { category: 'Jewelry',    aliases: ['jewelry', 'jewellery', 'necklace', 'bracelet', 'ring', 'earring', 'مجوهرات', 'عقد', 'سوار', 'خاتم', 'حلق', 'اكسسوارات'] },
+    { category: 'Crochet',    aliases: ['crochet', 'knit', 'knitted', 'yarn', 'كروشيه', 'تريكو', 'خيوط'] },
+    { category: 'Embroidery', aliases: ['embroidery', 'embroidered', 'textile', 'textiles', 'fabric', 'تطريز', 'نسيج', 'قماش'] },
+    { category: 'Woodwork',   aliases: ['wood', 'woodwork', 'wooden', 'board', 'خشب', 'نجارة', 'خشبي'] }
   ];
 
-  return categoryAliases.find(group => group.aliases.some(alias => text.includes(alias)))?.category || null;
+  return categoryAliases.find(group =>
+    group.aliases.some(alias => text.includes(alias))
+  )?.category || null;
 }
 
 function extractPriceFilter(message) {
   const text = normalize(message);
-  const under = text.match(/\b(?:under|below|less than|max|maximum|up to)\s*(?:le|egp)?\s*(\d+)/);
+  const under = text.match(/\b(?:under|below|less than|max|maximum|up to|أقل من|تحت|بحد أقصى)\s*(?:le|egp|جنيه)?\s*(\d+)/);
   if (under) return { max: Number(under[1]) };
 
-  const over = text.match(/\b(?:over|above|more than|min|minimum)\s*(?:le|egp)?\s*(\d+)/);
+  const over = text.match(/\b(?:over|above|more than|min|minimum|أكثر من|فوق|بحد أدنى)\s*(?:le|egp|جنيه)?\s*(\d+)/);
   if (over) return { min: Number(over[1]) };
 
   const between = text.match(/\bbetween\s*(?:le|egp)?\s*(\d+)\s*(?:and|to|-)\s*(?:le|egp)?\s*(\d+)/);
@@ -123,12 +132,11 @@ function matchesPrice(item, filter) {
 
 function scoreItem(item, message, type) {
   const queryWords = words(message);
+  // Score on name/title/category/artisan only — no description
   const itemText = normalize([
     item.name,
     item.title,
     item.category,
-    item.brief,
-    item.description,
     item.artisan?.name,
     type
   ].filter(Boolean).join(' '));
@@ -156,7 +164,9 @@ function rankProducts(message, limit = 6) {
   const category = categoryFromMessage(message);
   return cachedProducts
     .filter(product => matchesPrice(product, priceFilter))
-    .filter(product => !category || normalize(product.category) === normalize(category) || normalize(product.name).includes(normalize(category)))
+    .filter(product => !category ||
+      normalize(product.category) === normalize(category) ||
+      normalize(product.name).includes(normalize(category)))
     .map(product => ({ product, score: scoreItem(product, message, 'product') }))
     .sort((a, b) => b.score - a.score || Number(b.product.stock || 0) - Number(a.product.stock || 0))
     .slice(0, limit)
@@ -168,35 +178,50 @@ function rankCourses(message, limit = 6) {
   const category = categoryFromMessage(message);
   return cachedCourses
     .filter(course => matchesPrice(course, priceFilter))
-    .filter(course => !category || normalize(course.category) === normalize(category) || normalize(course.title).includes(normalize(category)))
+    .filter(course => !category ||
+      normalize(course.category) === normalize(category) ||
+      normalize(course.title).includes(normalize(category)))
     .map(course => ({ course, score: scoreItem(course, message, 'course') }))
     .sort((a, b) => b.score - a.score || Number(b.course.rating || 0) - Number(a.course.rating || 0))
     .slice(0, limit)
     .map(item => item.course);
 }
 
+// ── Intent detection (English + Arabic) ─────────────────────────────────────
 function isCourseQuestion(message) {
   const text = normalize(message);
-  return /\b(course|courses|class|classes|lesson|lessons|learn|learning|study|teach|training)\b/.test(text);
+  return /\b(course|courses|class|classes|lesson|lessons|learn|learning|study|teach|training)\b/.test(text) ||
+    /كورس|دورة|دروس|تعلم|تعليم|كلاس|فيديو/.test(text);
 }
 
 function isProductQuestion(message) {
   const text = normalize(message);
-  return /\b(product|products|item|items|shop|buy|price|gift|gifts|stock|available|pottery|jewelry|jewellery|crochet|embroidery|wood|woodwork)\b/.test(text);
+  return /\b(product|products|item|items|shop|buy|price|gift|gifts|stock|available|pottery|jewelry|jewellery|crochet|embroidery|wood|woodwork)\b/.test(text) ||
+    /منتج|منتجات|اشتري|سعر|هدية|هدايا|متاح|فخار|مجوهرات|كروشيه|تطريز|خشب/.test(text);
 }
 
 function isGeneralKnowledgeQuestion(message) {
   const text = normalize(message);
-  const hasCatalogAction = /\b(show|list|browse|buy|shop|price|cost|stock|available|have|sell|recommend|gift|course|courses|class|learn)\b/.test(text);
-  const asksDefinition = /\b(what is|what are|define|explain|meaning of|how to|how do|why is|why are)\b/.test(text);
-  const mentionsCraftTopic = /\b(pottery|ceramic|crochet|embroidery|jewelry|jewellery|woodwork|wooden crafts|handmade)\b/.test(text);
+  const hasCatalogAction = /\b(show|list|browse|buy|shop|price|cost|stock|available|have|sell|recommend|gift|course|courses|class|learn)\b/.test(text) ||
+    /اعرض|اشتري|سعر|متاح|هدية|كورس|تعلم/.test(text);
+  const asksDefinition = /\b(what is|what are|define|explain|meaning of|how to|how do|why is|why are)\b/.test(text) ||
+    /ما هو|ما هي|ما معنى|كيف|لماذا|اشرح|وضح/.test(text);
+  const mentionsCraftTopic = /\b(pottery|ceramic|crochet|embroidery|jewelry|jewellery|woodwork|wooden crafts|handmade)\b/.test(text) ||
+    /فخار|خزف|كروشيه|تطريز|مجوهرات|خشب|يدوي/.test(text);
   return asksDefinition && mentionsCraftTopic && !hasCatalogAction;
 }
 
 function isGreeting(message) {
-  return /\b(hello|hi|hey|good morning|good afternoon|good evening|salam|مرحبا|اهلا)\b/i.test(message);
+  return /\b(hello|hi|hey|good morning|good afternoon|good evening)\b/i.test(message) ||
+    /سلام|مرحبا|اهلا|أهلاً|صباح الخير|مساء الخير|هاي|هلو/.test(message);
 }
 
+function detectLanguage(message) {
+  const arabicChars = (message.match(/[\u0600-\u06FF]/g) || []).length;
+  return arabicChars > message.length * 0.2 ? 'ar' : 'en';
+}
+
+// ── Context builders ─────────────────────────────────────────────────────────
 function buildProductContext(products) {
   if (!products.length) return 'No matching products are currently available in the catalog.';
   return products.map((product, index) => productLine(product, index)).join('\n');
@@ -210,11 +235,13 @@ function buildCourseContext(courses) {
 function buildSystemPrompt(message) {
   const relevantProducts = rankProducts(message, MAX_CONTEXT_ITEMS);
   const relevantCourses = rankCourses(message, MAX_CONTEXT_ITEMS);
+  const lang = detectLanguage(message);
 
-  return {
-    prompt: `You are Artivio Assistant, a smart shopping and course assistant for a handmade crafts marketplace.
+  const prompt = `You are Artivio Assistant, a smart and friendly assistant for a handmade crafts marketplace called Artivio.
 
-Use ONLY the catalog items below when answering about products or courses. Never invent product names, course names, prices, stock, lessons, or categories. If the answer is not in the catalog context, say that you cannot find it in the current catalog and offer the closest real alternatives.
+Language rule: Detect the language of the user's message and ALWAYS reply in the same language. If Arabic, respond fully in Arabic. If English, respond in English.
+
+Use ONLY the catalog items below when answering about products or courses. Never invent product names, course names, prices, stock, lessons, or categories. If the answer is not in the catalog context, say you cannot find it and suggest the closest real alternatives.
 
 Available products (${cachedProducts.length} total, most relevant shown):
 ${buildProductContext(relevantProducts)}
@@ -223,29 +250,34 @@ Available courses (${cachedCourses.length} total, most relevant shown):
 ${buildCourseContext(relevantCourses)}
 
 Useful site facts:
-- Prices are in Egyptian pounds. Display prices as LE.
+- Prices are in Egyptian pounds. Display as LE.
 - Products page: product.html
 - Courses page: customercourses.html
-- Free shipping in Egypt applies on orders over LE 500.
+- Free shipping in Egypt on orders over LE 500.
 
-Style:
-- Be helpful and specific.
+Guidelines:
+- Be helpful, warm, and specific.
 - Mention exact item names and prices from the catalog.
-- Keep the answer short unless the user asks for details.
-- Ask a useful follow-up question when the user intent is unclear.`,
-    relevantProducts,
-    relevantCourses
-  };
+- Give a complete, well-formed answer — do NOT cut off mid-sentence.
+- For general or open-ended questions not about the catalog, answer freely and helpfully.
+- Ask a useful follow-up question when user intent is unclear.`;
+
+  return { prompt, relevantProducts, relevantCourses };
 }
 
-function buildGeneralPrompt() {
-  return `You are Artivio Assistant, a friendly and intelligent assistant for Artivio.
+function buildGeneralPrompt(message) {
+  const lang = detectLanguage(message);
+  return `You are Artivio Assistant, a friendly and knowledgeable assistant for Artivio, a handmade crafts marketplace.
 
-Answer the user's question naturally. Do not mention databases, implementation details, prompts, or internal tools.
-If the user asks about Artivio products, courses, gifts, prices, stock, or categories, keep the answer grounded in the catalog context provided by the backend.
-For general questions, be helpful, concise, and conversational.`;
+Language rule: Detect the language of the user's message and ALWAYS reply in the same language. If Arabic, respond fully in Arabic. If English, respond in English.
+
+Answer the user's question naturally and completely. Do not mention databases, implementation details, prompts, or internal tools.
+For general knowledge questions, be helpful, informative, and conversational.
+For questions about Artivio products, courses, gifts, prices, or stock, say you can help if they specify what they are looking for.
+Give a complete answer — never cut off mid-sentence.`;
 }
 
+// ── Ollama call — no token cap so answers are never truncated ────────────────
 async function callOllama(messages) {
   try {
     const response = await axios.post('http://localhost:11434/api/chat', {
@@ -253,11 +285,11 @@ async function callOllama(messages) {
       messages,
       stream: false,
       options: {
-        temperature: 0.25,
-        num_predict: 420
+        temperature: 0.4,   // slightly higher → more natural answers
+        num_predict: -1     // -1 = unlimited, never cut off
       }
     }, {
-      timeout: 30000
+      timeout: 60000        // longer timeout for detailed answers
     });
 
     return response.data?.message?.content || null;
@@ -267,13 +299,17 @@ async function callOllama(messages) {
   }
 }
 
+// ── Fallback answers (used only when Ollama is offline) ──────────────────────
 function productAnswer(message) {
   const matches = rankProducts(message, 6);
   const category = categoryFromMessage(message);
   const priceFilter = extractPriceFilter(message);
+  const lang = detectLanguage(message);
 
   if (!cachedProducts.length) {
-    return 'I do not see any available products right now. Please check again later.';
+    return lang === 'ar'
+      ? 'لا توجد منتجات متاحة حالياً. يرجى المحاولة لاحقاً.'
+      : 'I do not see any available products right now. Please check again later.';
   }
 
   if (!matches.length) {
@@ -283,72 +319,85 @@ function productAnswer(message) {
       Number.isFinite(priceFilter.min) ? `over ${formatPrice(priceFilter.min)}` : ''
     ].filter(Boolean).join(' and ');
     const fallback = cachedProducts.slice(0, 4);
-    return `I could not find products matching ${filters || 'that request'}.\n\nClosest options I found:\n${fallback.map(productLine).join('\n')}`;
+    return lang === 'ar'
+      ? `لم أجد منتجات مطابقة. إليك بعض الخيارات المتاحة:\n${fallback.map(productLine).join('\n')}`
+      : `I could not find products matching ${filters || 'that request'}.\n\nClosest options:\n${fallback.map(productLine).join('\n')}`;
   }
 
-  const intro = category
-    ? `Here are ${category} products I found:`
-    : 'Here are products I found:';
+  const intro = lang === 'ar'
+    ? (category ? `إليك منتجات ${category}:` : 'إليك المنتجات المتاحة:')
+    : (category ? `Here are ${category} products:` : 'Here are products I found:');
 
-  return `${intro}\n${matches.map(productLine).join('\n')}\n\nYou can browse more on product.html.`;
+  return `${intro}\n${matches.map(productLine).join('\n')}\n\n${lang === 'ar' ? 'تصفح المزيد على product.html' : 'Browse more on product.html.'}`;
 }
 
 function courseAnswer(message) {
   const matches = rankCourses(message, 6);
   const category = categoryFromMessage(message);
   const priceFilter = extractPriceFilter(message);
+  const lang = detectLanguage(message);
 
   if (!cachedCourses.length) {
-    return 'I do not see any available courses right now. Please check again later.';
+    return lang === 'ar'
+      ? 'لا توجد دورات متاحة حالياً. يرجى المحاولة لاحقاً.'
+      : 'I do not see any available courses right now. Please check again later.';
   }
 
   if (!matches.length) {
-    const filters = [
-      category ? `category "${category}"` : '',
-      Number.isFinite(priceFilter.max) ? `under ${formatPrice(priceFilter.max)}` : '',
-      Number.isFinite(priceFilter.min) ? `over ${formatPrice(priceFilter.min)}` : ''
-    ].filter(Boolean).join(' and ');
     const fallback = cachedCourses.slice(0, 4);
-    return `I could not find courses matching ${filters || 'that request'}.\n\nClosest options I found:\n${fallback.map(courseLine).join('\n')}`;
+    return lang === 'ar'
+      ? `لم أجد دورات مطابقة. إليك بعض الخيارات:\n${fallback.map(courseLine).join('\n')}`
+      : `I could not find matching courses.\n\nClosest options:\n${fallback.map(courseLine).join('\n')}`;
   }
 
-  const intro = category
-    ? `Here are ${category} courses I found:`
-    : 'Here are courses I found:';
+  const intro = lang === 'ar'
+    ? (category ? `إليك دورات ${category}:` : 'إليك الدورات المتاحة:')
+    : (category ? `Here are ${category} courses:` : 'Here are courses I found:');
 
-  return `${intro}\n${matches.map(courseLine).join('\n')}\n\nYou can browse more on customercourses.html.`;
+  return `${intro}\n${matches.map(courseLine).join('\n')}\n\n${lang === 'ar' ? 'تصفح المزيد على customercourses.html' : 'Browse more on customercourses.html.'}`;
 }
 
 function giftAnswer(message) {
   const lower = normalize(message);
+  const lang = detectLanguage(message);
   let giftMessage = message;
 
-  if (lower.includes('dad') || lower.includes('father') || lower.includes('man') || lower.includes('husband')) {
+  if (/dad|father|man|husband|أب|والد|رجل|زوج/.test(lower)) {
     giftMessage += ' wood pottery practical mug board';
-  } else if (lower.includes('mom') || lower.includes('mother') || lower.includes('woman') || lower.includes('wife')) {
+  } else if (/mom|mother|woman|wife|أم|والدة|امرأة|زوجة/.test(lower)) {
     giftMessage += ' jewelry embroidery pottery crochet';
-  } else if (lower.includes('friend')) {
+  } else if (/friend|صديق|صاحب/.test(lower)) {
     giftMessage += ' jewelry pottery crochet';
   }
 
   const matches = rankProducts(giftMessage, 5);
   if (!matches.length) {
-    return 'I could not find a strong gift match right now. Tell me their age, style, and budget and I will try again.';
+    return lang === 'ar'
+      ? 'لم أجد هدية مناسبة الآن. أخبرني عن عمرهم وميزانيتك وذوقهم وسأساعدك.'
+      : 'I could not find a strong gift match. Tell me their age, style, and budget and I will try again.';
   }
 
-  return `Good gift options:\n${matches.map(productLine).join('\n')}\n\nWhat budget do you want to stay under?`;
+  return lang === 'ar'
+    ? `خيارات هدايا مناسبة:\n${matches.map(productLine).join('\n')}\n\nما هي الميزانية المناسبة لك؟`
+    : `Good gift options:\n${matches.map(productLine).join('\n')}\n\nWhat budget do you want to stay under?`;
 }
 
 function specificItemAnswer(message) {
   const text = normalize(message);
   const product = cachedProducts.find(item => text.includes(normalize(item.name)));
   if (product) {
-    return `Yes, ${product.name} is available.\n${productLine(product, 0)}\n\nYou can find it from the products page: product.html.`;
+    const lang = detectLanguage(message);
+    return lang === 'ar'
+      ? `نعم، ${product.name} متاح.\n${productLine(product, 0)}\n\nيمكنك إيجاده في: product.html`
+      : `Yes, ${product.name} is available.\n${productLine(product, 0)}\n\nFind it on product.html.`;
   }
 
   const course = cachedCourses.find(item => text.includes(normalize(item.title)));
   if (course) {
-    return `Yes, ${course.title} is available.\n${courseLine(course, 0)}\n\nYou can find it from the courses page: customercourses.html.`;
+    const lang = detectLanguage(message);
+    return lang === 'ar'
+      ? `نعم، ${course.title} متاح.\n${courseLine(course, 0)}\n\nيمكنك إيجاده في: customercourses.html`
+      : `Yes, ${course.title} is available.\n${courseLine(course, 0)}\n\nFind it on customercourses.html.`;
   }
 
   return null;
@@ -356,58 +405,26 @@ function specificItemAnswer(message) {
 
 function generalAnswer(message) {
   const text = normalize(message);
-  const original = String(message || '').trim();
+  const lang = detectLanguage(message);
 
   if (isGreeting(message)) {
-    return 'Hi! How can I help you today?';
+    return lang === 'ar'
+      ? 'مرحباً! كيف يمكنني مساعدتك اليوم؟'
+      : 'Hi! How can I help you today?';
   }
 
-  if (/\b(thanks|thank you|thx|appreciate it)\b/.test(text)) {
-    return 'You are welcome. Happy to help.';
+  if (/\b(thanks|thank you|thx|appreciate it)\b/.test(text) || /شكرا|شكراً|متشكر/.test(text)) {
+    return lang === 'ar' ? 'عفواً! سعيد بمساعدتك.' : 'You are welcome. Happy to help.';
   }
 
-  if (/\b(who are you|what are you)\b/.test(text)) {
-    return 'I am Artivio Assistant. I can help with general questions, craft ideas, and anything related to Artivio products or courses.';
+  if (/\b(who are you|what are you)\b/.test(text) || /من أنت|ما أنت/.test(text)) {
+    return lang === 'ar'
+      ? 'أنا Artivio Assistant. أساعدك في أسئلتك العامة وكل ما يتعلق بمنتجات ودورات Artivio.'
+      : 'I am Artivio Assistant. I can help with general questions, craft ideas, and anything related to Artivio products or courses.';
   }
 
-  const craftTopics = {
-    pottery: 'Pottery is the craft of shaping clay into objects like mugs, bowls, vases, and plates, then drying and firing them so they become hard and durable.',
-    ceramic: 'Ceramics are objects made from clay or similar materials that are hardened by heat. Pottery is one common type of ceramic work.',
-    crochet: 'Crochet is a textile craft that uses one hook to make fabric from yarn. It is often used for bags, clothing, toys, blankets, and decorative pieces.',
-    embroidery: 'Embroidery is decorating fabric with stitched patterns, lettering, or images using thread.',
-    jewelry: 'Jewelry is wearable decoration, such as necklaces, bracelets, rings, and earrings. Handmade jewelry often focuses on unique materials and personal style.',
-    woodwork: 'Woodwork is the craft of shaping, joining, and finishing wood to make useful or decorative objects.'
-  };
-
-  for (const [topic, answer] of Object.entries(craftTopics)) {
-    if (text.includes(`what is ${topic}`) || text.includes(`what are ${topic}`) || text === topic) {
-      return answer;
-    }
-  }
-
-  const howToMatch = text.match(/\bhow (?:do|can|to) (?:i |you |we )?(.+)/);
-  if (howToMatch) {
-    const task = howToMatch[1].replace(/\?$/, '').trim();
-    return `A good way to ${task} is to start with the goal, break it into small steps, gather the tools or information you need, then test one step at a time. If you tell me the exact result you want, I can make the steps more specific.`;
-  }
-
-  const whyMatch = text.match(/\bwhy (?:is|are|do|does|should|can) (.+)/);
-  if (whyMatch) {
-    const subject = whyMatch[1].replace(/\?$/, '').trim();
-    return `Usually, ${subject} comes down to the reason behind the process, the materials involved, or the goal you are trying to reach. If you share the context, I can explain it more clearly.`;
-  }
-
-  const compareMatch = text.match(/\b(?:compare|difference between|which is better)\b(.+)?/);
-  if (compareMatch) {
-    return 'The best comparison depends on what matters most: price, quality, difficulty, durability, time, or style. Tell me the two options and what you care about most, and I will compare them clearly.';
-  }
-
-  if (text.includes('idea') || text.includes('ideas')) {
-    return 'Sure. A good idea should match your goal, budget, and the person or situation you are designing for. Give me the theme or purpose and I can suggest several options.';
-  }
-
-  if (original.endsWith('?')) {
-    return 'Yes, I can help with that. Give me the main detail or context, and I will answer directly.';
+  if (lang === 'ar') {
+    return 'أخبرني بما تريد أن تعرفه أو تفعله، وسأساعدك بأفضل إجابة.';
   }
 
   return 'Tell me what you want to do, learn, compare, or choose, and I will help you with a clear answer.';
@@ -421,7 +438,7 @@ function smartDatabaseAnswer(message) {
     return generalAnswer(message);
   }
 
-  if (normalize(message).includes('gift')) {
+  if (/gift|هدية|هدايا/.test(normalize(message))) {
     return giftAnswer(message);
   }
 
@@ -437,20 +454,20 @@ function smartDatabaseAnswer(message) {
     return `${productAnswer(message)}\n\n${courseAnswer(message)}`;
   }
 
-  if (normalize(message).includes('help') || normalize(message).includes('what can you do')) {
-    return 'I can help you browse Artivio, compare products or courses, choose gifts, answer questions, and explain things clearly. What do you need?';
+  if (/help|مساعدة|ساعدني|ما تقدر|what can you/.test(normalize(message))) {
+    const lang = detectLanguage(message);
+    return lang === 'ar'
+      ? 'يمكنني مساعدتك في تصفح Artivio، مقارنة المنتجات والدورات، اختيار الهدايا، والإجابة على أسئلتك. ماذا تحتاج؟'
+      : 'I can help you browse Artivio, compare products or courses, choose gifts, answer questions, and explain things clearly. What do you need?';
   }
 
   return generalAnswer(message);
 }
 
-function shouldUseAI(message) {
-  return true;
-}
-
 function isCatalogQuestion(message) {
   if (isGeneralKnowledgeQuestion(message)) return false;
-  return isProductQuestion(message) || isCourseQuestion(message) || normalize(message).includes('gift');
+  return isProductQuestion(message) || isCourseQuestion(message) ||
+    /gift|هدية|هدايا/.test(normalize(message));
 }
 
 function mentionsAnyItem(reply, items, fieldName) {
@@ -461,11 +478,16 @@ function mentionsAnyItem(reply, items, fieldName) {
 function isGroundedAIReply(reply, message) {
   if (!reply) return false;
 
+  // For non-catalog questions, always accept the AI reply
+  if (!isCatalogQuestion(message)) return true;
+
   const text = normalize(reply);
   const saysNoMatch = text.includes('cannot find') ||
     text.includes('could not find') ||
     text.includes('not in the catalog') ||
-    text.includes('not available');
+    text.includes('not available') ||
+    text.includes('لا يوجد') ||
+    text.includes('لم أجد');
 
   if (saysNoMatch) return true;
 
@@ -480,6 +502,7 @@ function isGroundedAIReply(reply, message) {
   return true;
 }
 
+// ── Main route ───────────────────────────────────────────────────────────────
 router.post('/message', async (req, res) => {
   try {
     const { message, sessionId } = req.body;
@@ -494,27 +517,28 @@ router.post('/message', async (req, res) => {
     let history = conversationHistory.get(chatSessionId) || { messages: [], timestamp: Date.now() };
 
     history.messages.push({ role: 'user', content: message });
-    history.messages = history.messages.slice(-8);
+    history.messages = history.messages.slice(-10); // keep last 10 turns for context
 
     let reply = null;
     let usedAI = false;
 
-    if (shouldUseAI(message)) {
-      const isCatalog = isCatalogQuestion(message);
-      const { prompt } = isCatalog ? buildSystemPrompt(message) : { prompt: buildGeneralPrompt() };
-      const messages = [
-        { role: 'system', content: prompt },
-        ...history.messages
-      ];
+    const isCatalog = isCatalogQuestion(message);
+    const { prompt } = isCatalog ? buildSystemPrompt(message) : { prompt: buildGeneralPrompt(message) };
 
-      reply = await callOllama(messages);
-      if (reply && (!isCatalog || isGroundedAIReply(reply, message))) {
-        usedAI = true;
-      } else {
-        reply = null;
-      }
+    const ollamaMessages = [
+      { role: 'system', content: prompt },
+      ...history.messages
+    ];
+
+    reply = await callOllama(ollamaMessages);
+
+    if (reply && isGroundedAIReply(reply, message)) {
+      usedAI = true;
+    } else {
+      reply = null;
     }
 
+    // Fallback to deterministic answer if Ollama is offline or ungrounded
     if (!reply) {
       reply = smartDatabaseAnswer(message);
     }
@@ -528,7 +552,7 @@ router.post('/message', async (req, res) => {
       reply,
       sessionId: chatSessionId,
       usedAI,
-      dataSource: isCatalogQuestion(message) ? 'catalog' : 'assistant',
+      dataSource: isCatalog ? 'catalog' : 'assistant',
       productCount: cachedProducts.length,
       courseCount: cachedCourses.length
     });
@@ -542,6 +566,7 @@ router.post('/message', async (req, res) => {
   }
 });
 
+// ── History routes ───────────────────────────────────────────────────────────
 router.get('/history/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
