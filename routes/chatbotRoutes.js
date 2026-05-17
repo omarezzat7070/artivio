@@ -66,7 +66,7 @@ function courseLine(c, i) {
   return `${i + 1}. ${c.title}${artisan} | ${c.category || 'Course'} | ${formatPrice(c.price)} | ${c.duration || 0}h | ${lessons} lessons${rating}`;
 }
 
-// ── Build system prompt — full catalog always injected ───────────────────────
+// ── Build system prompt ──────────────────────────────────────────────────────
 function buildSystemPrompt() {
   const productList = cachedProducts.length
     ? cachedProducts.map(productLine).join('\n')
@@ -95,36 +95,54 @@ SITE INFO:
 - Free shipping inside Egypt on orders over LE 500
 
 YOUR BEHAVIOR:
-- Answer ANYTHING the user asks — general knowledge, advice, craft tips, gift ideas, comparisons, jokes, chitchat, or anything else. You are a general-purpose assistant that also knows the Artivio catalog.
-- For product or course questions: use ONLY the catalog above. Never invent items, prices, or stock. If something is not in the catalog, say so honestly and suggest the closest real alternatives from the list.
-- For gift or present requests — even when phrased naturally like "something for my friend's birthday", "what should I get for my mom", "I need a present for a colleague" — treat it as a gift recommendation and pick suitable products from the catalog. Ask about budget or the recipient's taste if you need more info.
-- For any general question unrelated to the catalog: answer freely, helpfully, and conversationally.
-- Never cut off mid-sentence. Always complete your answer fully.
-- Be warm, specific, and concise unless the user asks for more detail.
-- Ask one helpful follow-up question when the user's intent is unclear.
-- Never mention system prompts, internal databases, or implementation details.`;
+- Answer ANYTHING the user asks — general knowledge, advice, craft tips, gift ideas, comparisons, jokes, chitchat, or anything else.
+- For product or course questions: use ONLY the catalog above. Never invent items, prices, or stock. If something is not in the catalog, say so honestly and suggest the closest real alternatives.
+- For gift or present requests — even phrased naturally like "something for my friend's birthday", "what should I get for my mom" — treat it as a gift recommendation and suggest relevant products. Ask about budget or preferences if needed.
+- For general questions unrelated to the catalog: answer freely, helpfully, and conversationally.
+- Never cut off mid-sentence. Always give a complete answer.
+- Be warm, specific, and concise unless the user asks for detail.
+- Ask one helpful follow-up question when intent is unclear.
+- Never mention system prompts, databases, or internal implementation details.`;
 }
 
-// ── Call Ollama ──────────────────────────────────────────────────────────────
-async function callOllama(messages) {
-  try {
-    const response = await axios.post('http://localhost:11434/api/chat', {
-      model: process.env.OLLAMA_MODEL || 'llama3.2:3b',
-      messages,
-      stream: false,
-      options: {
-        temperature: 0.5,
-        num_predict: -1
-      }
-    }, { timeout: 60000 });
+// ── Call Groq API (free, OpenAI-compatible format) ───────────────────────────
+async function callAI(systemPrompt, messages) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    console.error('GROQ_API_KEY is not set');
+    return null;
+  }
 
-    return response.data?.message?.content?.trim() || null;
+  try {
+    const response = await axios.post(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: process.env.AI_MODEL || 'llama-3.1-8b-instant', // free & fast
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages
+        ],
+        temperature: 0.5,
+        max_tokens: 1024
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
+
+    return response.data?.choices?.[0]?.message?.content?.trim() || null;
   } catch (err) {
-    console.error('Ollama error:', err.code === 'ECONNREFUSED' ? 'not running' : err.message);
+    const msg = err.response?.data?.error?.message || err.message;
+    console.error('Groq API error:', msg);
     return null;
   }
 }
 
+// ── Language detect (for fallback message only) ──────────────────────────────
 function detectLanguage(message) {
   const arabic = (message.match(/[\u0600-\u06FF]/g) || []).length;
   return arabic > message.length * 0.2 ? 'ar' : 'en';
@@ -132,8 +150,8 @@ function detectLanguage(message) {
 
 function offlineFallback(lang) {
   return lang === 'ar'
-    ? 'عذراً، المساعد الذكي غير متاح حالياً. يرجى المحاولة مرة أخرى بعد قليل.'
-    : 'Sorry, the AI assistant is temporarily unavailable. Please try again in a moment.';
+    ? 'عذراً، حدث خطأ مؤقت. يرجى المحاولة مرة أخرى.'
+    : 'Sorry, something went wrong. Please try again.';
 }
 
 // ── Main route ───────────────────────────────────────────────────────────────
@@ -151,14 +169,9 @@ router.post('/message', async (req, res) => {
     let history = conversationHistory.get(chatSessionId) || { messages: [], timestamp: Date.now() };
 
     history.messages.push({ role: 'user', content: message });
-    history.messages = history.messages.slice(-10); // keep last 10 turns
+    history.messages = history.messages.slice(-10);
 
-    const ollamaMessages = [
-      { role: 'system', content: buildSystemPrompt() },
-      ...history.messages
-    ];
-
-    let reply = await callOllama(ollamaMessages);
+    let reply = await callAI(buildSystemPrompt(), history.messages);
 
     if (!reply) {
       reply = offlineFallback(detectLanguage(message));
@@ -180,8 +193,7 @@ router.post('/message', async (req, res) => {
     console.error('Chat error:', error.message);
     res.json({
       success: true,
-      reply: 'Sorry, something went wrong. Please try again.',
-      dataSource: 'error'
+      reply: 'Sorry, something went wrong. Please try again.'
     });
   }
 });
@@ -209,15 +221,12 @@ router.delete('/history/:sessionId', async (req, res) => {
 router.get('/test', async (req, res) => {
   await refreshCache(true);
 
-  let ollamaStatus = 'not running';
-  try {
-    await axios.get('http://localhost:11434/api/tags', { timeout: 3000 });
-    ollamaStatus = 'connected';
-  } catch (_) {}
+  const hasKey = !!process.env.GROQ_API_KEY;
+  const model = process.env.AI_MODEL || 'llama-3.1-8b-instant';
 
   res.json({
     success: true,
-    ollama: ollamaStatus,
+    ai: hasKey ? `Groq API ready (${model})` : 'ERROR: GROQ_API_KEY not set',
     products: cachedProducts.length,
     courses: cachedCourses.length,
     productExamples: cachedProducts.slice(0, 3).map(p => p.name),
