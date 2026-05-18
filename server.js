@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const connectDB = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
-app.set('trust proxy', 1);
 // Optional security packages - with graceful fallback
 let helmet, mongoSanitize, rateLimit;
 
@@ -36,6 +35,7 @@ try {
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security middleware
 if (helmet && typeof helmet === 'function') {
