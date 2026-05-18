@@ -7,6 +7,17 @@ const Order = require("../models/order");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
+// ─── Nodemailer transporter ───────────────────────────────────────────────────
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 // Configure multer for avatar upload
 const storage = multer.diskStorage({
@@ -160,38 +171,124 @@ router.post("/change-password", protect, asyncHandler(async (req, res) => {
   });
 }));
 
+// ─── STEP 1: Send OTP to email ────────────────────────────────────────────────
+// POST /api/users/forgot-password
+// Body: { email }
 router.post("/forgot-password", asyncHandler(async (req, res) => {
-  const { name, email, newPassword } = req.body;
-  
-  if (!name || !email || !newPassword) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide name, email and new password"
-    });
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, error: "Please provide your email" });
   }
-  
-  if (newPassword.length < 6) {
-    return res.status(400).json({
-      success: false,
-      error: "New password must be at least 6 characters"
-    });
-  }
-  
-  const user = await User.findOne({ name, email });
+
+  const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+  // Always return success so we don't reveal if an email exists
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      error: "User not found with provided name and email"
+    return res.status(200).json({
+      success: true,
+      message: "If that email is registered, an OTP has been sent.",
     });
   }
-  
-  user.password = newPassword;
-  await user.save();
-  
+
+  // Generate a 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Hash & store with 15-minute expiry
+  user.resetPasswordToken  = crypto.createHash("sha256").update(otp).digest("hex");
+  user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+  await user.save({ validateBeforeSave: false });
+
+  // Send email
+  const mailOptions = {
+    from: `"Artivio Support" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: "Your Password Reset Code – Artivio",
+    html: `
+      <div style="font-family:Segoe UI,sans-serif;max-width:480px;margin:auto;padding:30px;border:1px solid #e5e7eb;border-radius:12px;">
+        <h2 style="color:#6C2929;margin-bottom:8px;">Reset Your Password</h2>
+        <p style="color:#555;margin-bottom:20px;">Use the code below to reset your Artivio account password. It expires in <strong>15 minutes</strong>.</p>
+        <div style="background:#fdf6ee;border:2px dashed #6C2929;border-radius:10px;padding:20px;text-align:center;margin-bottom:20px;">
+          <span style="font-size:36px;font-weight:700;letter-spacing:10px;color:#6C2929;">${otp}</span>
+        </div>
+        <p style="color:#888;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    user.resetPasswordToken  = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+    console.error("Email send error:", err.message);
+    return res.status(500).json({ success: false, error: "Could not send email. Please try again." });
+  }
+
   res.status(200).json({
     success: true,
-    message: "Password reset successfully"
+    message: "If that email is registered, an OTP has been sent.",
   });
+}));
+
+// ─── STEP 2: Verify OTP ───────────────────────────────────────────────────────
+// POST /api/users/verify-otp
+// Body: { email, otp }
+router.post("/verify-otp", asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ success: false, error: "Email and OTP are required" });
+  }
+
+  const hashedOtp = crypto.createHash("sha256").update(otp.trim()).digest("hex");
+
+  const user = await User.findOne({
+    email: email.toLowerCase().trim(),
+    resetPasswordToken:  hashedOtp,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ success: false, error: "Invalid or expired OTP" });
+  }
+
+  res.status(200).json({ success: true, message: "OTP verified" });
+}));
+
+// ─── STEP 3: Reset Password ───────────────────────────────────────────────────
+// POST /api/users/reset-password
+// Body: { email, otp, newPassword }
+router.post("/reset-password", asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ success: false, error: "Email, OTP and new password are required" });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ success: false, error: "Password must be at least 6 characters" });
+  }
+
+  const hashedOtp = crypto.createHash("sha256").update(otp.trim()).digest("hex");
+
+  const user = await User.findOne({
+    email: email.toLowerCase().trim(),
+    resetPasswordToken:  hashedOtp,
+    resetPasswordExpire: { $gt: Date.now() },
+  }).select("+password");
+
+  if (!user) {
+    return res.status(400).json({ success: false, error: "Invalid or expired OTP. Please request a new one." });
+  }
+
+  user.password            = newPassword;
+  user.resetPasswordToken  = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  res.status(200).json({ success: true, message: "Password reset successfully. You can now sign in." });
 }));
 
 // ============= ORDERS ROUTE =============

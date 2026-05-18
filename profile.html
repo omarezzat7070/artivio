@@ -23,10 +23,7 @@
       font-family: "Segoe UI", sans-serif;
     }
 
-    body {
-      background: var(--bg);
-      color: #333;
-    }
+    body { background: var(--bg); color: #333; }
 
     .container {
       max-width: 800px;
@@ -66,23 +63,13 @@
       position: relative;
     }
 
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .avatar i {
-      font-size: 50px;
-      color: white;
-    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar i   { font-size: 50px; color: white; }
 
     .avatar-overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.5);
       border-radius: 50%;
       display: flex;
@@ -92,24 +79,11 @@
       transition: opacity 0.3s;
       cursor: pointer;
     }
+    .avatar-container:hover .avatar-overlay { opacity: 1; }
+    .avatar-overlay i { font-size: 30px; color: white; }
 
-    .avatar-container:hover .avatar-overlay {
-      opacity: 1;
-    }
-
-    .avatar-overlay i {
-      font-size: 30px;
-      color: white;
-    }
-
-    .profile-header h2 {
-      color: var(--primary);
-      margin-bottom: 5px;
-    }
-
-    .profile-header p {
-      color: #666;
-    }
+    .profile-header h2 { color: var(--primary); margin-bottom: 5px; }
+    .profile-header p  { color: #666; }
 
     .info-section {
       margin-bottom: 30px;
@@ -136,10 +110,7 @@
       color: #666;
     }
 
-    .info-value {
-      flex: 1;
-      color: #333;
-    }
+    .info-value { flex: 1; color: #333; }
 
     .edit-btn, .save-btn {
       background: var(--primary);
@@ -151,10 +122,7 @@
       font-weight: 500;
       margin-top: 10px;
     }
-
-    .edit-btn:hover, .save-btn:hover {
-      background: #5a2222;
-    }
+    .edit-btn:hover, .save-btn:hover { background: #5a2222; }
 
     .cancel-btn {
       background: #e5e7eb;
@@ -166,12 +134,8 @@
       font-weight: 500;
       margin-left: 10px;
     }
+    .cancel-btn:hover { background: #d1d5db; }
 
-    .cancel-btn:hover {
-      background: #d1d5db;
-    }
-
-    /* Same style for both buttons */
     .action-btn {
       background: var(--primary);
       color: white;
@@ -183,26 +147,12 @@
       margin-top: 10px;
       margin-right: 10px;
     }
+    .action-btn:hover { background: #5a2222; }
 
-    .action-btn:hover {
-      background: #5a2222;
-    }
-
-    .edit-field {
-      display: none;
-    }
-
-    .edit-field.active {
-      display: block;
-    }
-
-    .view-field {
-      display: block;
-    }
-
-    .view-field.hidden {
-      display: none;
-    }
+    .edit-field         { display: none; }
+    .edit-field.active  { display: block; }
+    .view-field         { display: block; }
+    .view-field.hidden  { display: none; }
 
     input, select {
       padding: 8px 12px;
@@ -218,18 +168,8 @@
       margin-bottom: 20px;
       display: none;
     }
-
-    .message.success {
-      background: #d1fae5;
-      color: #065f46;
-      display: block;
-    }
-
-    .message.error {
-      background: #fee2e2;
-      color: #991b1b;
-      display: block;
-    }
+    .message.success { background: #d1fae5; color: #065f46; display: block; }
+    .message.error   { background: #fee2e2; color: #991b1b; display: block; }
 
     .upload-box {
       border: 2px dashed var(--primary);
@@ -240,28 +180,65 @@
       background: #f9f9f9;
       margin-top: 10px;
     }
+    .upload-box i { font-size: 30px; color: var(--primary); margin-bottom: 10px; }
 
-    .upload-box i {
-      font-size: 30px;
-      color: var(--primary);
-      margin-bottom: 10px;
+    /* ── OTP styles ── */
+    .otp-row {
+      display: flex;
+      gap: 8px;
+      margin: 8px 0 16px;
     }
+    .otp-row input {
+      width: 40px;
+      height: 48px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+      max-width: unset;
+      padding: 0;
+      transition: border-color .2s;
+    }
+    .otp-row input:focus { border-color: var(--primary); }
+
+    .resend-row {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .resend-row button {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .resend-row button:disabled { color: #aaa; cursor: default; }
+
+    .fp-step        { display: none; }
+    .fp-step.active { display: block; }
+
+    .step-dots-p {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .step-dot-p {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ddd;
+      transition: background .3s;
+    }
+    .step-dot-p.active { background: var(--primary); }
 
     @media (max-width: 600px) {
-      .container {
-        margin: 20px auto;
-        padding: 15px;
-      }
-      .profile-card {
-        padding: 20px;
-      }
-      .info-row {
-        flex-direction: column;
-      }
-      .info-label {
-        width: 100%;
-        margin-bottom: 5px;
-      }
+      .container { margin: 20px auto; padding: 15px; }
+      .profile-card { padding: 20px; }
+      .info-row { flex-direction: column; }
+      .info-label { width: 100%; margin-bottom: 5px; }
     }
   </style>
 </head>
@@ -291,6 +268,8 @@
 
 <div class="container">
   <div class="profile-card">
+
+    <!-- Avatar -->
     <div class="profile-header">
       <div class="avatar-container" onclick="document.getElementById('avatarInput').click()">
         <div class="avatar" id="avatarPreview">
@@ -300,18 +279,17 @@
           <i class="fa-solid fa-camera"></i>
         </div>
       </div>
-      <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
+      <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this)">
       <h2 id="displayName">Loading...</h2>
       <p id="displayEmail">Loading...</p>
     </div>
 
     <div id="message" class="message"></div>
 
-    <!-- Profile Information Section -->
+    <!-- Personal Information -->
     <div class="info-section" id="profileInfo">
       <h3>Personal Information</h3>
-      
-      <!-- Full Name -->
+
       <div class="info-row">
         <div class="info-label">Full Name:</div>
         <div class="view-field" id="viewName">-</div>
@@ -320,7 +298,6 @@
         </div>
       </div>
 
-      <!-- Email -->
       <div class="info-row">
         <div class="info-label">Email:</div>
         <div class="view-field" id="viewEmail">-</div>
@@ -329,7 +306,6 @@
         </div>
       </div>
 
-      <!-- Phone -->
       <div class="info-row">
         <div class="info-label">Phone:</div>
         <div class="view-field" id="viewPhone">-</div>
@@ -338,7 +314,6 @@
         </div>
       </div>
 
-      <!-- Gender -->
       <div class="info-row">
         <div class="info-label">Gender:</div>
         <div class="view-field" id="viewGender">-</div>
@@ -350,77 +325,124 @@
         </div>
       </div>
 
-      <!-- Account Type -->
       <div class="info-row">
         <div class="info-label">Account Type:</div>
         <div class="info-value" id="viewRole">-</div>
       </div>
 
-      <!-- Member Since -->
       <div class="info-row">
         <div class="info-label">Member Since:</div>
         <div class="info-value" id="viewJoined">-</div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="info-row" id="actionButtons">
         <button class="edit-btn" onclick="enableEditMode()">Edit Profile</button>
-        <button class="save-btn" id="saveBtn" onclick="saveProfile()" style="display: none;">Save Changes</button>
-        <button class="cancel-btn" id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancel</button>
+        <button class="save-btn" id="saveBtn" onclick="saveProfile()" style="display:none;">Save Changes</button>
+        <button class="cancel-btn" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
       </div>
     </div>
 
-    <!-- Password Management Section -->
+    <!-- Password Management -->
     <div class="info-section">
       <h3>Password Management</h3>
       <div class="info-row">
         <button class="action-btn" onclick="showChangePassword()">Change Password</button>
         <button class="action-btn" onclick="showForgotPassword()">Forgot Password?</button>
       </div>
-      
-      <!-- Change Password Form -->
-      <div id="changePasswordSection" style="display: none; margin-top: 15px;">
+
+      <!-- Change Password -->
+      <div id="changePasswordSection" style="display:none;margin-top:15px;">
         <div class="info-row">
           <label for="currentPassword" class="info-label">Current Password:</label>
-          <input type="password" id="currentPassword" style="width: 100%; max-width: 300px;">
+          <input type="password" id="currentPassword" style="width:100%;max-width:300px;">
         </div>
         <div class="info-row">
           <label for="newPassword" class="info-label">New Password:</label>
-          <input type="password" id="newPassword" style="width: 100%; max-width: 300px;">
+          <input type="password" id="newPassword" style="width:100%;max-width:300px;">
         </div>
         <div class="info-row">
           <label for="confirmPassword" class="info-label">Confirm Password:</label>
-          <input type="password" id="confirmPassword" style="width: 100%; max-width: 300px;">
+          <input type="password" id="confirmPassword" style="width:100%;max-width:300px;">
         </div>
         <button class="save-btn" onclick="changePassword()">Update Password</button>
         <button class="cancel-btn" onclick="hideChangePassword()">Cancel</button>
       </div>
 
-      <!-- Forgot Password Form -->
-      <div id="forgotPasswordSection" style="display: none; margin-top: 15px;">
-        <div class="info-row">
-          <div class="info-label">Full Name:</div>
-          <input type="text" id="forgotName" placeholder="Enter your full name" style="width: 100%; max-width: 300px;">
+      <!-- Forgot Password – 3-step OTP -->
+      <div id="forgotPasswordSection" style="display:none;margin-top:15px;">
+
+        <div class="step-dots-p">
+          <div class="step-dot-p active" id="pdot1"></div>
+          <div class="step-dot-p"        id="pdot2"></div>
+          <div class="step-dot-p"        id="pdot3"></div>
         </div>
-        <div class="info-row">
-          <div class="info-label">Email:</div>
-          <input type="email" id="forgotEmail" placeholder="Enter your email" style="width: 100%; max-width: 300px;">
+
+        <!-- Step 1: email -->
+        <div class="fp-step active" id="pfpStep1">
+          <p style="color:#555;font-size:13px;margin-bottom:12px;">
+            Enter your account email and we'll send you a 6-digit reset code.
+          </p>
+          <div class="info-row">
+            <div class="info-label">Email:</div>
+            <input type="email" id="pfpEmail" placeholder="your@email.com"
+                   style="width:100%;max-width:300px;">
+          </div>
+          <button class="save-btn"   onclick="pfpSendOtp()">Send Code</button>
+          <button class="cancel-btn" onclick="hideForgotPassword()">Cancel</button>
+          <p id="pfpMsg1" style="font-size:13px;margin-top:8px;" role="status"></p>
         </div>
-        <div class="info-row">
-          <div class="info-label">New Password:</div>
-          <input type="password" id="forgotNewPassword" placeholder="Enter new password (min 6 characters)" style="width: 100%; max-width: 300px;">
+
+        <!-- Step 2: OTP -->
+        <div class="fp-step" id="pfpStep2">
+          <p style="color:#555;font-size:13px;margin-bottom:12px;">
+            Enter the 6-digit code sent to <strong id="pfpEmailDisplay"></strong>.
+          </p>
+          <div class="otp-row" id="pfpOtpRow">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          </div>
+          <div class="resend-row">
+            <span id="pfpResendTimer">Resend in <strong id="pfpTimerCount">60</strong>s</span>
+            <button id="pfpResendBtn" style="display:none;" onclick="pfpResend()">Resend Code</button>
+          </div>
+          <button class="save-btn"   onclick="pfpVerifyOtp()">Verify Code</button>
+          <button class="cancel-btn" onclick="pfpGoTo(1)">Back</button>
+          <p id="pfpMsg2" style="font-size:13px;margin-top:8px;" role="status"></p>
         </div>
-        <button class="save-btn" onclick="resetForgottenPassword()">Reset Password</button>
-        <button class="cancel-btn" onclick="hideForgotPassword()">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
+
+        <!-- Step 3: new password -->
+        <div class="fp-step" id="pfpStep3">
+          <p style="color:#555;font-size:13px;margin-bottom:12px;">
+            Choose a new password for your account.
+          </p>
+          <div class="info-row">
+            <label class="info-label">New Password:</label>
+            <input type="password" id="pfpNewPass" placeholder="Min 6 characters"
+                   style="width:100%;max-width:300px;">
+          </div>
+          <div class="info-row">
+            <label class="info-label">Confirm:</label>
+            <input type="password" id="pfpConfirmPass" placeholder="Repeat new password"
+                   style="width:100%;max-width:300px;">
+          </div>
+          <button class="save-btn" onclick="pfpResetPassword()">Reset Password</button>
+          <p id="pfpMsg3" style="font-size:13px;margin-top:8px;" role="status"></p>
+        </div>
+
+      </div><!-- /forgotPasswordSection -->
+    </div><!-- /info-section -->
+
+  </div><!-- /profile-card -->
+</div><!-- /container -->
 
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
   let userData = null;
-  let editMode = false;
+  let editMode  = false;
 
   function getToken() {
     try { return localStorage.getItem('token'); } catch(e) { return null; }
@@ -429,29 +451,22 @@
   function showMessage(message, type) {
     const msgDiv = document.getElementById('message');
     msgDiv.textContent = message;
-    msgDiv.className = `message ${type}`;
+    msgDiv.className   = `message ${type}`;
     msgDiv.style.display = 'block';
-    setTimeout(() => {
-      msgDiv.style.display = 'none';
-    }, 3000);
+    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
   }
 
+  // ── Load & display profile ───────────────────────────────────────────────
   async function loadProfile() {
     const token = getToken();
-    if (!token) {
-      window.location.href = 'login.html';
-      return;
-    }
-    
+    if (!token) { window.location.href = 'login.html'; return; }
+
     try {
-      const res = await fetch(`${API_BASE}/api/users/me`, {
+      const res  = await fetch(`${API_BASE}/api/users/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.success) {
-        userData = data.data;
-        displayProfile();
-      }
+      if (data.success) { userData = data.data; displayProfile(); }
     } catch (err) {
       console.error('Error loading profile:', err);
       showMessage('Error loading profile', 'error');
@@ -460,181 +475,139 @@
 
   function displayProfile() {
     if (!userData) return;
-    
-    document.getElementById('displayName').textContent = userData.name;
+    document.getElementById('displayName').textContent  = userData.name;
     document.getElementById('displayEmail').textContent = userData.email;
-    document.getElementById('viewName').textContent = userData.name;
-    document.getElementById('viewEmail').textContent = userData.email;
-    document.getElementById('viewPhone').textContent = userData.phone || 'Not provided';
-    document.getElementById('viewGender').textContent = userData.gender === 'male' ? 'Male' : (userData.gender === 'female' ? 'Female' : 'Not specified');
-    document.getElementById('viewRole').textContent = userData.role || 'Customer';
-    document.getElementById('viewJoined').textContent = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'Recently';
-    
-    // Set edit field values
-    document.getElementById('editName').value = userData.name || '';
-    document.getElementById('editEmail').value = userData.email || '';
-    document.getElementById('editPhone').value = userData.phone || '';
+    document.getElementById('viewName').textContent     = userData.name;
+    document.getElementById('viewEmail').textContent    = userData.email;
+    document.getElementById('viewPhone').textContent    = userData.phone || 'Not provided';
+    document.getElementById('viewGender').textContent   = userData.gender === 'male' ? 'Male' : (userData.gender === 'female' ? 'Female' : 'Not specified');
+    document.getElementById('viewRole').textContent     = userData.role || 'Customer';
+    document.getElementById('viewJoined').textContent   = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'Recently';
+
+    document.getElementById('editName').value   = userData.name   || '';
+    document.getElementById('editEmail').value  = userData.email  || '';
+    document.getElementById('editPhone').value  = userData.phone  || '';
     document.getElementById('editGender').value = userData.gender || 'male';
-    
-    // Load avatar if exists
+
     if (userData.profileImage) {
-      const avatarDiv = document.querySelector('.avatar');
-      avatarDiv.innerHTML = `<img src="${API_BASE}/uploads/${userData.profileImage}" alt="Profile">`;
+      document.querySelector('.avatar').innerHTML =
+        `<img src="${API_BASE}/uploads/${userData.profileImage}" alt="Profile">`;
     }
   }
 
+  // ── Avatar upload ────────────────────────────────────────────────────────
   async function uploadAvatar(input) {
     if (!input.files || !input.files[0]) return;
-    
-    const file = input.files[0];
     const formData = new FormData();
-    formData.append('profileImage', file);
-    
-    const token = getToken();
-    
+    formData.append('profileImage', input.files[0]);
+
     try {
-      const res = await fetch(`${API_BASE}/api/users/upload-avatar`, {
+      const res  = await fetch(`${API_BASE}/api/users/upload-avatar`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${getToken()}` },
         body: formData
       });
       const data = await res.json();
       if (data.success) {
         showMessage('Profile picture updated!', 'success');
-        const avatarDiv = document.querySelector('.avatar');
-        avatarDiv.innerHTML = `<img src="${API_BASE}/uploads/${data.data.profileImage}" alt="Profile">`;
+        document.querySelector('.avatar').innerHTML =
+          `<img src="${API_BASE}/uploads/${data.data.profileImage}" alt="Profile">`;
         userData.profileImage = data.data.profileImage;
       } else {
         showMessage(data.error || 'Upload failed', 'error');
       }
-    } catch (err) {
-      showMessage('Network error', 'error');
-    }
+    } catch { showMessage('Network error', 'error'); }
   }
 
+  // ── Edit mode ────────────────────────────────────────────────────────────
   function enableEditMode() {
     editMode = true;
     document.querySelectorAll('.view-field').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.edit-field').forEach(el => el.classList.add('active'));
-    document.getElementById('saveBtn').style.display = 'inline-block';
+    document.getElementById('saveBtn').style.display   = 'inline-block';
     document.getElementById('cancelBtn').style.display = 'inline-block';
-    document.querySelector('.edit-btn').style.display = 'none';
+    document.querySelector('.edit-btn').style.display  = 'none';
   }
 
   function cancelEdit() {
     editMode = false;
     document.querySelectorAll('.view-field').forEach(el => el.classList.remove('hidden'));
     document.querySelectorAll('.edit-field').forEach(el => el.classList.remove('active'));
-    document.getElementById('saveBtn').style.display = 'none';
+    document.getElementById('saveBtn').style.display   = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
-    document.querySelector('.edit-btn').style.display = 'inline-block';
-    
-    // Reset values
-    document.getElementById('editName').value = userData.name || '';
-    document.getElementById('editEmail').value = userData.email || '';
-    document.getElementById('editPhone').value = userData.phone || '';
+    document.querySelector('.edit-btn').style.display  = 'inline-block';
+    document.getElementById('editName').value   = userData.name   || '';
+    document.getElementById('editEmail').value  = userData.email  || '';
+    document.getElementById('editPhone').value  = userData.phone  || '';
     document.getElementById('editGender').value = userData.gender || 'male';
   }
 
   async function saveProfile() {
-    const name = document.getElementById('editName').value.trim();
-    const email = document.getElementById('editEmail').value.trim();
-    const phone = document.getElementById('editPhone').value.trim();
+    const name   = document.getElementById('editName').value.trim();
+    const email  = document.getElementById('editEmail').value.trim();
+    const phone  = document.getElementById('editPhone').value.trim();
     const gender = document.getElementById('editGender').value;
-    
-    if (!name || !email) {
-      showMessage('Name and email are required', 'error');
-      return;
-    }
-    
-    const token = getToken();
-    
+
+    if (!name || !email) { showMessage('Name and email are required', 'error'); return; }
+
     try {
-      const res = await fetch(`${API_BASE}/api/users/update`, {
+      const res  = await fetch(`${API_BASE}/api/users/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${getToken()}`
         },
         body: JSON.stringify({ name, email, phone, gender })
       });
-      
       const data = await res.json();
       if (data.success) {
         userData = data.data;
         displayProfile();
         cancelEdit();
         showMessage('Profile updated successfully!', 'success');
-        
-        // Update stored user data
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        storedUser.name = name;
+        storedUser.name  = name;
         storedUser.email = email;
         localStorage.setItem('user', JSON.stringify(storedUser));
       } else {
         showMessage(data.error || 'Update failed', 'error');
       }
-    } catch (err) {
-      showMessage('Network error', 'error');
-    }
+    } catch { showMessage('Network error', 'error'); }
   }
 
+  // ── Change password ──────────────────────────────────────────────────────
   function showChangePassword() {
-    document.getElementById('changePasswordSection').style.display = 'block';
-    document.getElementById('forgotPasswordSection').style.display = 'none';
+    document.getElementById('changePasswordSection').style.display  = 'block';
+    document.getElementById('forgotPasswordSection').style.display  = 'none';
   }
 
   function hideChangePassword() {
     document.getElementById('changePasswordSection').style.display = 'none';
     document.getElementById('currentPassword').value = '';
-    document.getElementById('newPassword').value = '';
+    document.getElementById('newPassword').value     = '';
     document.getElementById('confirmPassword').value = '';
-  }
-
-  function showForgotPassword() {
-    document.getElementById('forgotPasswordSection').style.display = 'block';
-    document.getElementById('changePasswordSection').style.display = 'none';
-  }
-
-  function hideForgotPassword() {
-    document.getElementById('forgotPasswordSection').style.display = 'none';
-    document.getElementById('forgotName').value = '';
-    document.getElementById('forgotEmail').value = '';
-    document.getElementById('forgotNewPassword').value = '';
   }
 
   async function changePassword() {
     const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
+    const newPassword     = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    
+
     if (!currentPassword || !newPassword || !confirmPassword) {
-      showMessage('All password fields are required', 'error');
-      return;
+      showMessage('All password fields are required', 'error'); return;
     }
-    
-    if (newPassword.length < 6) {
-      showMessage('New password must be at least 6 characters', 'error');
-      return;
-    }
-    
-    if (newPassword !== confirmPassword) {
-      showMessage('New passwords do not match', 'error');
-      return;
-    }
-    
-    const token = getToken();
-    
+    if (newPassword.length < 6) { showMessage('New password must be at least 6 characters', 'error'); return; }
+    if (newPassword !== confirmPassword) { showMessage('New passwords do not match', 'error'); return; }
+
     try {
-      const res = await fetch(`${API_BASE}/api/users/change-password`, {
+      const res  = await fetch(`${API_BASE}/api/users/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${getToken()}`
         },
         body: JSON.stringify({ currentPassword, newPassword })
       });
-      
       const data = await res.json();
       if (res.ok) {
         showMessage('Password changed successfully!', 'success');
@@ -642,52 +615,200 @@
       } else {
         showMessage(data.error || 'Failed to change password', 'error');
       }
-    } catch (err) {
-      showMessage('Network error', 'error');
+    } catch { showMessage('Network error', 'error'); }
+  }
+
+  // ── Forgot password – OTP flow ────────────────────────────────────────────
+  let pfpEmail = "";
+  let pfpOtp   = "";
+  let pfpTimerInterval = null;
+
+  function showForgotPassword() {
+    document.getElementById('forgotPasswordSection').style.display  = 'block';
+    document.getElementById('changePasswordSection').style.display  = 'none';
+    if (userData && userData.email) {
+      document.getElementById('pfpEmail').value = userData.email;
     }
   }
 
-  async function resetForgottenPassword() {
-    const name = document.getElementById('forgotName').value.trim();
-    const email = document.getElementById('forgotEmail').value.trim();
-    const newPassword = document.getElementById('forgotNewPassword').value;
-    
-    if (!name || !email || !newPassword) {
-      showMessage('All fields are required', 'error');
-      return;
-    }
-    
-    if (newPassword.length < 6) {
-      showMessage('Password must be at least 6 characters', 'error');
-      return;
-    }
-    
+  function hideForgotPassword() {
+    document.getElementById('forgotPasswordSection').style.display = 'none';
+    pfpReset();
+  }
+
+  function pfpReset() {
+    pfpEmail = ""; pfpOtp = "";
+    pfpGoTo(1);
+    document.getElementById('pfpEmail').value       = '';
+    document.getElementById('pfpNewPass').value     = '';
+    document.getElementById('pfpConfirmPass').value = '';
+    pfpClearOtp();
+    ['pfpMsg1','pfpMsg2','pfpMsg3'].forEach(id => {
+      const el = document.getElementById(id);
+      el.textContent = ''; el.style.color = '';
+    });
+    clearInterval(pfpTimerInterval);
+  }
+
+  function pfpGoTo(step) {
+    [1,2,3].forEach(n => {
+      document.getElementById(`pfpStep${n}`).classList.toggle('active', n === step);
+      document.getElementById(`pdot${n}`).classList.toggle('active', n <= step);
+    });
+  }
+
+  function pfpSetMsg(id, text, color) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.style.color  = color;
+  }
+
+  // OTP auto-advance
+  (function () {
+    const row = document.getElementById('pfpOtpRow');
+    if (!row) return;
+    const inputs = Array.from(row.querySelectorAll('input'));
+    inputs.forEach((inp, i) => {
+      inp.addEventListener('input', () => {
+        inp.value = inp.value.replace(/\D/g, '').slice(-1);
+        if (inp.value && i < inputs.length - 1) inputs[i+1].focus();
+      });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus();
+      });
+      inp.addEventListener('paste', e => {
+        e.preventDefault();
+        const digits = e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);
+        digits.split('').forEach((d,idx) => { if (inputs[idx]) inputs[idx].value = d; });
+        if (inputs[digits.length]) inputs[digits.length].focus();
+      });
+    });
+  })();
+
+  function pfpGetOtp() {
+    return Array.from(document.querySelectorAll('#pfpOtpRow input')).map(i => i.value).join('');
+  }
+  function pfpClearOtp() {
+    document.querySelectorAll('#pfpOtpRow input').forEach(i => i.value = '');
+  }
+
+  function pfpStartTimer(seconds) {
+    clearInterval(pfpTimerInterval);
+    const timerEl   = document.getElementById('pfpResendTimer');
+    const countEl   = document.getElementById('pfpTimerCount');
+    const resendBtn = document.getElementById('pfpResendBtn');
+    timerEl.style.display   = 'inline';
+    resendBtn.style.display  = 'none';
+    let remaining = seconds;
+    countEl.textContent = remaining;
+    pfpTimerInterval = setInterval(() => {
+      remaining--;
+      countEl.textContent = remaining;
+      if (remaining <= 0) {
+        clearInterval(pfpTimerInterval);
+        timerEl.style.display  = 'none';
+        resendBtn.style.display = 'inline';
+      }
+    }, 1000);
+  }
+
+  async function pfpSendOtp() {
+    const email = document.getElementById('pfpEmail').value.trim();
+    if (!email) { pfpSetMsg('pfpMsg1', 'Please enter your email', 'red'); return; }
+    pfpSetMsg('pfpMsg1', '', '');
+
     try {
-      const res = await fetch(`${API_BASE}/api/users/forgot-password`, {
+      const res    = await fetch(`${API_BASE}/api/users/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, newPassword })
+        body: JSON.stringify({ email })
       });
-      
-      const data = await res.json();
-      if (res.ok) {
-        showMessage('Password reset successfully! Please login with your new password.', 'success');
-        hideForgotPassword();
-        setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 2000);
+      const result = await res.json();
+      if (!result.success) {
+        pfpSetMsg('pfpMsg1', result.error || 'Something went wrong', 'red');
       } else {
-        showMessage(data.error || 'Failed to reset password', 'error');
+        pfpEmail = email;
+        document.getElementById('pfpEmailDisplay').textContent = email;
+        pfpClearOtp();
+        pfpGoTo(2);
+        pfpStartTimer(60);
+        document.querySelector('#pfpOtpRow input').focus();
       }
-    } catch (err) {
-      showMessage('Network error', 'error');
-    }
+    } catch { pfpSetMsg('pfpMsg1', 'Network error.', 'red'); }
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
+  async function pfpResend() {
+    pfpSetMsg('pfpMsg2', '', '');
+    try {
+      const res    = await fetch(`${API_BASE}/api/users/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pfpEmail })
+      });
+      const result = await res.json();
+      if (!result.success) {
+        pfpSetMsg('pfpMsg2', result.error || 'Could not resend', 'red');
+      } else {
+        pfpClearOtp();
+        pfpStartTimer(60);
+        pfpSetMsg('pfpMsg2', 'New code sent!', 'green');
+        document.querySelector('#pfpOtpRow input').focus();
+      }
+    } catch { pfpSetMsg('pfpMsg2', 'Network error.', 'red'); }
+  }
+
+  async function pfpVerifyOtp() {
+    const otp = pfpGetOtp();
+    if (otp.length < 6) { pfpSetMsg('pfpMsg2', 'Enter all 6 digits', 'red'); return; }
+    pfpSetMsg('pfpMsg2', '', '');
+
+    try {
+      const res    = await fetch(`${API_BASE}/api/users/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pfpEmail, otp })
+      });
+      const result = await res.json();
+      if (!result.success) {
+        pfpSetMsg('pfpMsg2', result.error || 'Invalid code', 'red');
+      } else {
+        pfpOtp = otp;
+        clearInterval(pfpTimerInterval);
+        pfpGoTo(3);
+        document.getElementById('pfpNewPass').focus();
+      }
+    } catch { pfpSetMsg('pfpMsg2', 'Network error.', 'red'); }
+  }
+
+  async function pfpResetPassword() {
+    const newPassword     = document.getElementById('pfpNewPass').value;
+    const confirmPassword = document.getElementById('pfpConfirmPass').value;
+
+    if (!newPassword || !confirmPassword) { pfpSetMsg('pfpMsg3', 'Both fields are required', 'red'); return; }
+    if (newPassword.length < 6)           { pfpSetMsg('pfpMsg3', 'Min 6 characters', 'red'); return; }
+    if (newPassword !== confirmPassword)   { pfpSetMsg('pfpMsg3', 'Passwords do not match', 'red'); return; }
+
+    try {
+      const res    = await fetch(`${API_BASE}/api/users/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pfpEmail, otp: pfpOtp, newPassword })
+      });
+      const result = await res.json();
+      if (!result.success) {
+        pfpSetMsg('pfpMsg3', result.error || 'Reset failed. Please start over.', 'red');
+      } else {
+        showMessage('Password reset successfully! Please log in again.', 'success');
+        hideForgotPassword();
+        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+      }
+    } catch { pfpSetMsg('pfpMsg3', 'Network error.', 'red'); }
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function () {
     if (window.lucide) lucide.createIcons();
     loadProfile();
-    
     const menuIcon = document.getElementById('menuIcon');
     const navLinks = document.getElementById('navLinks');
     if (menuIcon && navLinks) {
@@ -699,7 +820,3 @@
 <script src="navbar.js"></script>
 </body>
 </html>
-
-
-
-
