@@ -295,8 +295,14 @@ body {
       <label for="email">Email</label>
       <div class="input-box">
         <i class="fa-regular fa-envelope"></i>
-        <input type="email" id="email" name="email" autocomplete="email" placeholder="your@email.com" required>
-      </div>
+<input 
+  type="email" 
+  id="email" 
+  name="email"
+  pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+  placeholder="your@email.com" 
+  required
+>      </div>
 
       <label for="password">Password</label>
       <div class="input-box">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Artivio · Create Account</title>
+  <title>Artivio ï¿½ Create Account</title>
 
   <link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
   <script src="assets/lucide.min.js"></script>
@@ -336,28 +336,34 @@
       <label for="email">Email</label>
       <div class="input-box">
         <i class="fa-regular fa-envelope"></i>
-        <input type="email" id="email" name="email" autocomplete="email" placeholder="your@email.com" required>
-      </div>
+<input 
+  type="email" 
+  id="email" 
+  name="email"
+  pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+  placeholder="your@email.com" 
+  required
+>      </div>
 
       <label for="password">Password</label>
       <div class="input-box">
         <i class="fa-solid fa-lock"></i>
-        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="••••••••" required>
+        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" required>
       </div>
 
       <!-- Password requirements visual feedback -->
       <div class="password-requirements" id="passwordRequirements">
         <div class="requirement-item" id="req-length">
-          <i class="fa-regular fa-circle"></i> 8–64 characters
+          <i class="fa-regular fa-circle"></i> 8ï¿½64 characters
         </div>
         <div class="requirement-item" id="req-uppercase">
-          <i class="fa-regular fa-circle"></i> At least one uppercase letter (A–Z)
+          <i class="fa-regular fa-circle"></i> At least one uppercase letter (Aï¿½Z)
         </div>
         <div class="requirement-item" id="req-lowercase">
-          <i class="fa-regular fa-circle"></i> At least one lowercase letter (a–z)
+          <i class="fa-regular fa-circle"></i> At least one lowercase letter (aï¿½z)
         </div>
         <div class="requirement-item" id="req-number">
-          <i class="fa-regular fa-circle"></i> At least one number (0–9)
+          <i class="fa-regular fa-circle"></i> At least one number (0ï¿½9)
         </div>
         <div class="requirement-item" id="req-special">
           <i class="fa-regular fa-circle"></i> One special character (! @ # $ % ^ & * _ -)
@@ -367,7 +373,7 @@
       <label for="confirmPassword">Confirm Password</label>
       <div class="input-box">
         <i class="fa-solid fa-lock"></i>
-        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••" required>
+        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" required>
       </div>
       
       <label for="phone">Phone Number</label>
