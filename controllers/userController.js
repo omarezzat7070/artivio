@@ -3,26 +3,14 @@ const Order = require("../models/order");
 const asyncHandler = require("../middleware/asyncHandler");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const sgMail = require('@sendgrid/mail');
 const path = require("path");
 const fs = require("fs");
 
-// Transporter for emails (Consider moving to a dedicated config file later)
-const transporter = nodemailer.createTransport({
-  service: "SendGrid",
-  auth: {
-    user: "apikey",
-    pass: process.env.SENDGRID_API_KEY
-  }
-});
-
-transporter.verify((error) => {
-  if (error) {
-    console.error("❌ Email transporter error:", error.message);
-  } else {
-    console.log("✅ Email transporter ready");
-  }
-});
+// Initialize SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
 // Helper function to normalize phone number to +20XXXXXXXXXX format
 function normalizePhone(phone) {
@@ -438,7 +426,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(mailOptions);
     res.status(200).json({ success: true, message: "If that email is registered, a reset link has been sent." });
   } catch (err) {
     user.resetPasswordToken = undefined;

@@ -370,69 +370,20 @@
 
       <!-- Forgot Password – 3-step OTP -->
       <div id="forgotPasswordSection" style="display:none;margin-top:15px;">
-
-        <div class="step-dots-p">
-          <div class="step-dot-p active" id="pdot1"></div>
-          <div class="step-dot-p"        id="pdot2"></div>
-          <div class="step-dot-p"        id="pdot3"></div>
-        </div>
-
         <!-- Step 1: email -->
         <div class="fp-step active" id="pfpStep1">
           <p style="color:#555;font-size:13px;margin-bottom:12px;">
-            Enter your account email and we'll send you a 6-digit reset code.
+            Enter your account email and we'll send you a secure link to reset your password.
           </p>
           <div class="info-row">
             <div class="info-label">Email:</div>
             <input type="email" id="pfpEmail" placeholder="your@email.com"
                    style="width:100%;max-width:300px;">
           </div>
-          <button class="save-btn"   onclick="pfpSendOtp()">Send Code</button>
+          <button class="save-btn" id="pfpSendBtn" onclick="pfpSendResetLink()">Send Reset Link</button>
           <button class="cancel-btn" onclick="hideForgotPassword()">Cancel</button>
           <p id="pfpMsg1" style="font-size:13px;margin-top:8px;" role="status"></p>
         </div>
-
-        <!-- Step 2: OTP -->
-        <div class="fp-step" id="pfpStep2">
-          <p style="color:#555;font-size:13px;margin-bottom:12px;">
-            Enter the 6-digit code sent to <strong id="pfpEmailDisplay"></strong>.
-          </p>
-          <div class="otp-row" id="pfpOtpRow">
-            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-          </div>
-          <div class="resend-row">
-            <span id="pfpResendTimer">Resend in <strong id="pfpTimerCount">60</strong>s</span>
-            <button id="pfpResendBtn" style="display:none;" onclick="pfpResend()">Resend Code</button>
-          </div>
-          <button class="save-btn"   onclick="pfpVerifyOtp()">Verify Code</button>
-          <button class="cancel-btn" onclick="pfpGoTo(1)">Back</button>
-          <p id="pfpMsg2" style="font-size:13px;margin-top:8px;" role="status"></p>
-        </div>
-
-        <!-- Step 3: new password -->
-        <div class="fp-step" id="pfpStep3">
-          <p style="color:#555;font-size:13px;margin-bottom:12px;">
-            Choose a new password for your account.
-          </p>
-          <div class="info-row">
-            <label class="info-label">New Password:</label>
-            <input type="password" id="pfpNewPass" placeholder="Min 6 characters"
-                   style="width:100%;max-width:300px;">
-          </div>
-          <div class="info-row">
-            <label class="info-label">Confirm:</label>
-            <input type="password" id="pfpConfirmPass" placeholder="Repeat new password"
-                   style="width:100%;max-width:300px;">
-          </div>
-          <button class="save-btn" onclick="pfpResetPassword()">Reset Password</button>
-          <p id="pfpMsg3" style="font-size:13px;margin-top:8px;" role="status"></p>
-        </div>
-
       </div><!-- /forgotPasswordSection -->
     </div><!-- /info-section -->
 
