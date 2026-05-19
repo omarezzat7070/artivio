@@ -337,7 +337,7 @@ body {
       <!-- STEP 1: Enter email -->
       <div id="fpStep1">
         <h3>Reset Password</h3>
-        <p class="step-hint">Enter your account email and we'll send you a 6-digit code.</p>
+        <p class="step-hint">Enter your email and we'll send you a secure link to reset your password.</p>
 
         <label for="fpEmail">Email</label>
         <div class="input-box">
@@ -345,56 +345,10 @@ body {
           <input type="email" id="fpEmail" placeholder="your@email.com" required>
         </div>
 
-        <button type="button" class="login-btn" id="sendOtpBtn">Send Code</button>
+        <button type="button" class="login-btn" id="sendOtpBtn">Send Reset Link</button>
         <button type="button" class="secondary-btn" id="hideForgotBtn">Back to Login</button>
         <p class="signup-text" id="fpMsg1" role="status" aria-live="polite"></p>
       </div>
-
-      <!-- STEP 2: Enter OTP -->
-      <div id="fpStep2" style="display:none;">
-        <h3>Enter Code</h3>
-        <p class="step-hint">We sent a 6-digit code to <strong id="fpEmailDisplay"></strong>. Enter it below.</p>
-
-        <div class="otp-row" id="otpRow">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
-        </div>
-
-        <div class="resend-row">
-          <span id="resendTimer">Resend code in <strong id="timerCount">60</strong>s</span>
-          <button type="button" id="resendBtn" style="display:none;" onclick="resendOtp()">Resend Code</button>
-        </div>
-
-        <button type="button" class="login-btn" id="verifyOtpBtn">Verify Code</button>
-        <button type="button" class="secondary-btn" onclick="fpGoTo(1)">Back</button>
-        <p class="signup-text" id="fpMsg2" role="status" aria-live="polite"></p>
-      </div>
-
-      <!-- STEP 3: New password -->
-      <div id="fpStep3" style="display:none;">
-        <h3>New Password</h3>
-        <p class="step-hint">Almost there! Choose a new password for your account.</p>
-
-        <label for="fpNewPass">New Password</label>
-        <div class="input-box">
-          <i class="fa-solid fa-lock"></i>
-          <input type="password" id="fpNewPass" placeholder="At least 6 characters" required>
-        </div>
-
-        <label for="fpConfirmPass">Confirm Password</label>
-        <div class="input-box">
-          <i class="fa-solid fa-lock"></i>
-          <input type="password" id="fpConfirmPass" placeholder="Repeat your new password" required>
-        </div>
-
-        <button type="button" class="login-btn" id="resetPassBtn">Reset Password</button>
-        <p class="signup-text" id="fpMsg3" role="status" aria-live="polite"></p>
-      </div>
-
     </div><!-- /forgot-panel -->
 
   </div>
@@ -562,11 +516,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ── STEP 1: Send Reset Link ───────────────────────────────────────────
-  const sendResetLinkBtn = document.getElementById("sendResetLinkBtn");
+  const sendResetLinkBtn = document.getElementById("sendOtpBtn"); // Fixed ID mismatch
   if (sendResetLinkBtn) {
     sendResetLinkBtn.addEventListener("click", async () => {
       const emailInput = document.getElementById("fpEmail");
-      if (!emailInput) return;
+      if (!emailInput || !emailInput.value) { setMsg("fpMsg1", "Please enter your email", "red"); return; }
       
       const email = emailInput.value.trim();
       if (!email) { 
@@ -574,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return; 
       }
 
-      const btn = document.getElementById("sendResetLinkBtn");
+      const btn = document.getElementById("sendOtpBtn");
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Sending...";
@@ -590,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (result.success) {
           fpEmail = email;
-          setMsg("fpMsg1", "If registered, a reset link has been sent to your email.", "green");
+          setMsg("fpMsg1", "A reset link has been sent to your email. Please check your inbox.", "green");
         } else {
           setMsg("fpMsg1", result.error || "Something went wrong", "red");
         }
@@ -599,11 +553,14 @@ document.addEventListener('DOMContentLoaded', function () {
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = "Send Reset Link";
+          btn.textContent = "Send Code";
         }
       }
     });
   }
+  
+  // NOTE: Steps 2 (OTP) and 3 (New Pass) in this file are currently 
+  // unreachable because the backend uses a link-based reset.
 
   // ── STEP 2: Reset password (on reset-password page) ───────────────────
   const resetPassBtn = document.getElementById("resetPassBtn");

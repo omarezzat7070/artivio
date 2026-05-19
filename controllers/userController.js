@@ -1,8 +1,28 @@
 const User = require("../models/User");
+const Order = require("../models/order");
 const asyncHandler = require("../middleware/asyncHandler");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const path = require("path");
 const fs = require("fs");
+
+// Transporter for emails (Consider moving to a dedicated config file later)
+const transporter = nodemailer.createTransport({
+  service: "SendGrid",
+  auth: {
+    user: "apikey",
+    pass: process.env.SENDGRID_API_KEY
+  }
+});
+
+transporter.verify((error) => {
+  if (error) {
+    console.error("❌ Email transporter error:", error.message);
+  } else {
+    console.log("✅ Email transporter ready");
+  }
+});
 
 // Helper function to normalize phone number to +20XXXXXXXXXX format
 function normalizePhone(phone) {
@@ -35,7 +55,6 @@ function normalizePhone(phone) {
   return '+20' + cleaned;
 }
 
-
 // Phone regex for validation
 const phoneRegex = /^\+20[0-9]{10}$/;
 
@@ -45,72 +64,12 @@ const phoneRegex = /^\+20[0-9]{10}$/;
 exports.register = asyncHandler(async (req, res) => {
   const { name, email, password, phone, gender, role, termsAccepted } = req.body;
 
-  // Check if user exists
   const userExists = await User.findOne({ email });
-  if (userExists) {
-    return res.status(400).json({
-      success: false,
-      error: "User already exists"
-    });
-  }
-
-  // Validate Terms & Conditions acceptance
-  if (termsAccepted !== true) {
-    return res.status(400).json({
-      success: false,
-      error: "You must agree to the Terms & Conditions to create an account"
-    });
-  }
+  if (userExists) return res.status(400).json({ success: false, error: "User already exists" });
 
   // Normalize phone number if provided
   let normalizedPhone = '';
-  if (phone) {
-    normalizedPhone = normalizePhone(phone);
-    if (!normalizedPhone || !phoneRegex.test(normalizedPhone)) {
-      return res.status(400).json({
-        success: false,
-        error: "Please enter a valid Egyptian phone number (e.g., +20 100 123 4567 or 01001234567)"
-      });
-    }
-  }
-
-  // Validate gender
-  if (!gender || (gender !== 'male' && gender !== 'female')) {
-    return res.status(400).json({
-      success: false,
-      error: "Please select a valid gender"
-    });
-  }
-
-  // Validate email format
-  const emailRegex = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({
-      success: false,
-      error: "Please enter a valid email address"
-    });
-  }
-
-  // Validate password length and strength
-  if (!password || password.length < 6) {
-    return res.status(400).json({
-      success: false,
-      error: "Password must be at least 6 characters"
-    });
-  }
-
-  // Password strength validation (at least: uppercase, lowercase, number, special char)
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasLowercase = /[a-z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
-  const hasSpecial = /[!@#$%^&*_-]/.test(password);
-  
-  if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
-    return res.status(400).json({
-      success: false,
-      error: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*_-)"
-    });
-  }
+  if (phone) normalizedPhone = normalizePhone(phone);
 
   // Restrict allowed roles for public registration
   let allowedRole = "customer";
@@ -131,14 +90,7 @@ exports.register = asyncHandler(async (req, res) => {
   });
 
   // Create token
-  const token = jwt.sign(
-    {
-      id: user._id,
-      role: user.role
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: '30d' }
-  );
+  const token = user.getSignedJwtToken();
 
   // Set secure cookie
   res.cookie("token", token, {
@@ -195,11 +147,7 @@ exports.login = asyncHandler(async (req, res) => {
     });
   }
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: '30d' }
-  );
+  const token = user.getSignedJwtToken();
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -271,11 +219,7 @@ exports.adminRegister = asyncHandler(async (req, res) => {
     role: "admin"
   });
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: '30d' }
-  );
+  const token = user.getSignedJwtToken();
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -467,37 +411,83 @@ exports.changePassword = asyncHandler(async (req, res) => {
 // @route   POST /api/users/forgot-password
 // @access  Public
 exports.forgotPassword = asyncHandler(async (req, res) => {
-  const { name, email, newPassword } = req.body;
-  
-  if (!name || !email || !newPassword) {
-    return res.status(400).json({
-      success: false,
-      error: "Please provide name, email and new password"
-    });
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, error: "Please provide your email" });
   }
-  
-  if (newPassword.length < 6) {
+
+  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  if (!user) {
+    return res.status(200).json({ success: true, message: "If that email is registered, a reset link has been sent." });
+  }
+
+  const resetToken = user.getResetPasswordToken();
+  await user.save({ validateBeforeSave: false });
+
+  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/reset-password.html?token=${resetToken}`;
+
+  const mailOptions = {
+    from: `"Artivio Support" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: "Password Reset Link",
+    html: `
+      <h2>Password Reset Request</h2>
+      <p>Click the link below to reset your password. This link expires in 15 minutes.</p>
+      <a href="${resetUrl}">${resetUrl}</a>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ success: true, message: "If that email is registered, a reset link has been sent." });
+  } catch (err) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+    res.status(500).json({ success: false, error: "Could not send email" });
+  }
+});
+
+// @desc    Reset password
+// @route   POST /api/users/reset-password/:token
+// @access  Public
+exports.resetPassword = asyncHandler(async (req, res) => {
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) {
     return res.status(400).json({
       success: false,
       error: "New password must be at least 6 characters"
     });
   }
-  
-  const user = await User.findOne({ name, email });
+
+  const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() }
+  }).select("+password");
+
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      error: "User not found with provided name and email"
-    });
+    return res.status(400).json({ success: false, error: "Invalid or expired token" });
   }
-  
+
   user.password = newPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
   await user.save();
   
   res.status(200).json({
     success: true,
-    message: "Password reset successfully"
+    message: "Password changed successfully"
   });
+});
+
+// @desc    Get user's own orders
+// @route   GET /api/users/my-orders
+// @access  Private
+exports.getMyOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
+  res.status(200).json({ success: true, data: orders });
 });
 
 // @desc    Get all users (Admin only)

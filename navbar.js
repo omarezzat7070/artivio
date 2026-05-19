@@ -530,14 +530,24 @@
           }
         });
 
-        document.getElementById("logoutBtnNav")?.addEventListener("click", (e) => {
+        document.getElementById("logoutBtnNav")?.addEventListener("click", async (e) => {
           e.preventDefault();
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          localStorage.removeItem("cart");
-          localStorage.removeItem("justPurchased");
-          localStorage.removeItem("chatSessionId");
-          window.location.href = "index.html";
+          try {
+            // Notify backend to clear the HTTP-only cookie
+            await fetch(`${window.API_BASE || ''}/api/users/logout`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${getStoredToken()}` }
+            });
+          } catch (err) {
+            console.warn("Logout API call failed, proceeding with local cleanup:", err);
+          } finally {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            localStorage.removeItem("cart");
+            localStorage.removeItem("justPurchased");
+            localStorage.removeItem("chatSessionId");
+            window.location.href = "index.html";
+          }
         });
       }
     } else {
