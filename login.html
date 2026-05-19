@@ -494,236 +494,123 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ── Forgot password panel toggle ─────────────────────────────────────
-  const forgotPanel = document.getElementById("forgotPanel");
+ const forgotPanel = document.getElementById("forgotPanel");
 
-  document.getElementById("showForgotBtn").addEventListener("click", () => {
-    forgotPanel.classList.add("active");
-    document.getElementById("fpEmail").value = emailInput.value.trim();
-  });
+// Show/hide forgot password panel
+document.getElementById("showForgotBtn").addEventListener("click", () => {
+  forgotPanel.classList.add("active");
+  document.getElementById("fpEmail").value = emailInput.value.trim();
+});
 
-  document.getElementById("hideForgotBtn").addEventListener("click", () => {
-    forgotPanel.classList.remove("active");
-    fpReset();
-  });
+document.getElementById("hideForgotBtn").addEventListener("click", () => {
+  forgotPanel.classList.remove("active");
+  fpReset();
+});
 
-  // ── Forgot password state ─────────────────────────────────────────────
-  let fpEmail = "";
-  let fpOtp   = "";
-  let timerInterval = null;
+// ── Forgot password state ─────────────────────────────────────────────
+let fpEmail = "";
 
-  function fpReset() {
-    fpEmail = ""; fpOtp = "";
-    fpGoTo(1);
-    document.getElementById("fpEmail").value = "";
-    document.getElementById("fpNewPass").value = "";
-    document.getElementById("fpConfirmPass").value = "";
-    clearOtpInputs();
-    setMsg("fpMsg1", "", "");
-    setMsg("fpMsg2", "", "");
-    setMsg("fpMsg3", "", "");
-    clearInterval(timerInterval);
+function fpReset() {
+  fpEmail = "";
+  document.getElementById("fpEmail").value = "";
+  document.getElementById("fpNewPass").value = "";
+  document.getElementById("fpConfirmPass").value = "";
+  setMsg("fpMsg1", "", "");
+  setMsg("fpMsg3", "", "");
+}
+
+function setMsg(id, text, color) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.style.color = color;
+}
+
+// ── STEP 1: Send Reset Link ───────────────────────────────────────────
+document.getElementById("sendResetLinkBtn").addEventListener("click", async () => {
+  const email = document.getElementById("fpEmail").value.trim();
+  if (!email) { setMsg("fpMsg1", "Please enter your email", "red"); return; }
+
+  const btn = document.getElementById("sendResetLinkBtn");
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+
+  try {
+    const res = await fetch(`${window.API_BASE}/api/users/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      fpEmail = email;
+      setMsg("fpMsg1", "If registered, a reset link has been sent to your email.", "green");
+    } else {
+      setMsg("fpMsg1", result.error || "Something went wrong", "red");
+    }
+  } catch {
+    setMsg("fpMsg1", "Network error. Please try again.", "red");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Send Reset Link";
+  }
+});
+
+// ── STEP 2: Reset password (on reset-password page) ───────────────────
+document.getElementById("resetPassBtn").addEventListener("click", async () => {
+  const newPassword = document.getElementById("fpNewPass").value;
+  const confirmPassword = document.getElementById("fpConfirmPass").value;
+
+  if (!newPassword || !confirmPassword) {
+    setMsg("fpMsg3", "Both fields are required", "red");
+    return;
+  }
+  if (newPassword.length < 6) {
+    setMsg("fpMsg3", "Password must be at least 6 characters", "red");
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    setMsg("fpMsg3", "Passwords do not match", "red");
+    return;
   }
 
-  window.fpGoTo = function (step) {
-    [1, 2, 3].forEach(n => {
-      document.getElementById(`fpStep${n}`).style.display = n === step ? "block" : "none";
-      document.getElementById(`dot${n}`).classList.toggle("active", n <= step);
+  const btn = document.getElementById("resetPassBtn");
+  btn.disabled = true;
+  btn.textContent = "Resetting...";
+
+  const token = window.location.pathname.split("/").pop(); // get token from URL
+  try {
+    const res = await fetch(`${window.API_BASE}/api/users/reset-password/${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newPassword })
     });
-  };
+    const result = await res.json();
 
-  function setMsg(id, text, color) {
-    const el = document.getElementById(id);
-    el.textContent = text;
-    el.style.color  = color;
-  }
-
-  // ── OTP box auto-advance ──────────────────────────────────────────────
-  const otpRow = document.getElementById("otpRow");
-  const otpInputs = Array.from(otpRow.querySelectorAll("input"));
-
-  otpInputs.forEach((input, i) => {
-    input.addEventListener("input", () => {
-      input.value = input.value.replace(/\D/g, "").slice(-1);
-      if (input.value && i < otpInputs.length - 1) otpInputs[i + 1].focus();
-    });
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Backspace" && !input.value && i > 0) otpInputs[i - 1].focus();
-    });
-    input.addEventListener("paste", (e) => {
-      e.preventDefault();
-      const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-      digits.split("").forEach((d, idx) => { if (otpInputs[idx]) otpInputs[idx].value = d; });
-      if (otpInputs[digits.length]) otpInputs[digits.length].focus();
-    });
-  });
-
-  function clearOtpInputs() { otpInputs.forEach(i => i.value = ""); }
-
-  function getOtpValue() { return otpInputs.map(i => i.value).join(""); }
-
-  // ── Countdown timer ───────────────────────────────────────────────────
-  function startTimer(seconds) {
-    clearInterval(timerInterval);
-    const timerCount = document.getElementById("timerCount");
-    const resendTimer = document.getElementById("resendTimer");
-    const resendBtn   = document.getElementById("resendBtn");
-    resendTimer.style.display = "inline";
-    resendBtn.style.display   = "none";
-
-    let remaining = seconds;
-    timerCount.textContent = remaining;
-
-    timerInterval = setInterval(() => {
-      remaining--;
-      timerCount.textContent = remaining;
-      if (remaining <= 0) {
-        clearInterval(timerInterval);
-        resendTimer.style.display = "none";
-        resendBtn.style.display   = "inline";
-      }
-    }, 1000);
-  }
-
-  // ── STEP 1: Send OTP ─────────────────────────────────────────────────
-  document.getElementById("sendOtpBtn").addEventListener("click", async () => {
-    const email = document.getElementById("fpEmail").value.trim();
-    if (!email) { setMsg("fpMsg1", "Please enter your email", "red"); return; }
-
-    const btn = document.getElementById("sendOtpBtn");
-    btn.disabled = true;
-    btn.textContent = "Sending...";
-    setMsg("fpMsg1", "", "");
-
-    try {
-      const res    = await fetch(`${window.API_BASE}/api/users/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-      const result = await res.json();
-
-      if (!result.success) {
-        setMsg("fpMsg1", result.error || "Something went wrong", "red");
-      } else {
-        fpEmail = email;
-        document.getElementById("fpEmailDisplay").textContent = email;
-        clearOtpInputs();
-        fpGoTo(2);
-        startTimer(60);
-        otpInputs[0].focus();
-      }
-    } catch {
-      setMsg("fpMsg1", "Network error. Please try again.", "red");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Send Code";
-    }
-  });
-
-  // ── Resend OTP ────────────────────────────────────────────────────────
-  window.resendOtp = async function () {
-    const resendBtn = document.getElementById("resendBtn");
-    resendBtn.disabled = true;
-    setMsg("fpMsg2", "", "");
-
-    try {
-      const res = await fetch(`${window.API_BASE}/api/users/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: fpEmail })
-      });
-      const result = await res.json();
-
-      if (!result.success) {
-        setMsg("fpMsg2", result.error || "Could not resend. Try again.", "red");
-      } else {
-        clearOtpInputs();
-        otpInputs[0].focus();
-        startTimer(60);
-        setMsg("fpMsg2", "A new code has been sent!", "green");
-      }
-    } catch {
-      setMsg("fpMsg2", "Network error.", "red");
-    } finally {
-      resendBtn.disabled = false;
-    }
-  };
-
-  // ── STEP 2: Verify OTP ────────────────────────────────────────────────
-  document.getElementById("verifyOtpBtn").addEventListener("click", async () => {
-    const otp = getOtpValue();
-    if (otp.length < 6) { setMsg("fpMsg2", "Please enter all 6 digits", "red"); return; }
-
-    const btn = document.getElementById("verifyOtpBtn");
-    btn.disabled = true;
-    btn.textContent = "Verifying...";
-    setMsg("fpMsg2", "", "");
-
-    try {
-      const res    = await fetch(`${window.API_BASE}/api/users/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: fpEmail, otp })
-      });
-      const result = await res.json();
-
-      if (!result.success) {
-        setMsg("fpMsg2", result.error || "Invalid code", "red");
-      } else {
-        fpOtp = otp;
-        clearInterval(timerInterval);
-        fpGoTo(3);
-        document.getElementById("fpNewPass").focus();
-      }
-    } catch {
-      setMsg("fpMsg2", "Network error.", "red");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Verify Code";
-    }
-  });
-
-  // ── STEP 3: Reset password ────────────────────────────────────────────
-  document.getElementById("resetPassBtn").addEventListener("click", async () => {
-    const newPassword     = document.getElementById("fpNewPass").value;
-    const confirmPassword = document.getElementById("fpConfirmPass").value;
-
-    if (!newPassword || !confirmPassword) { setMsg("fpMsg3", "Both fields are required", "red"); return; }
-    if (newPassword.length < 6)           { setMsg("fpMsg3", "Password must be at least 6 characters", "red"); return; }
-    if (newPassword !== confirmPassword)   { setMsg("fpMsg3", "Passwords do not match", "red"); return; }
-
-    const btn = document.getElementById("resetPassBtn");
-    btn.disabled = true;
-    btn.textContent = "Resetting...";
-    setMsg("fpMsg3", "", "");
-
-    try {
-      const res    = await fetch(`${window.API_BASE}/api/users/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: fpEmail, otp: fpOtp, newPassword })
-      });
-      const result = await res.json();
-
-      if (!result.success) {
-        setMsg("fpMsg3", result.error || "Reset failed. Please start over.", "red");
-        btn.disabled = false;
-        btn.textContent = "Reset Password";
-      } else {
-        setMsg("fpMsg3", "Password reset! Redirecting to login…", "green");
-        setTimeout(() => {
-          forgotPanel.classList.remove("active");
-          fpReset();
-          passwordInput.focus();
-        }, 1500);
-      }
-    } catch {
-      setMsg("fpMsg3", "Network error.", "red");
+    if (result.success) {
+      setMsg("fpMsg3", "Password reset successfully! Redirecting…", "green");
+      setTimeout(() => window.location.href = "login.html", 2000);
+    } else {
+      setMsg("fpMsg3", result.error || "Reset failed.", "red");
       btn.disabled = false;
       btn.textContent = "Reset Password";
     }
-  });
+  } catch {
+    setMsg("fpMsg3", "Network error.", "red");
+    btn.disabled = false;
+    btn.textContent = "Reset Password";
+  }
+});
 
+// ── Init ──────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.lucide) lucide.createIcons();
+  loadProfile();
+  const menuIcon = document.getElementById("menuIcon");
+  const navLinks = document.getElementById("navLinks");
+  if (menuIcon && navLinks) {
+    menuIcon.addEventListener("click", () => navLinks.classList.toggle("active"));
+  }
 });
 </script>
 

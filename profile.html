@@ -712,30 +712,27 @@
     }, 1000);
   }
 
-  async function pfpSendOtp() {
-    const email = document.getElementById('pfpEmail').value.trim();
-    if (!email) { pfpSetMsg('pfpMsg1', 'Please enter your email', 'red'); return; }
-    pfpSetMsg('pfpMsg1', '', '');
+ async function sendResetLink() {
+  const email = document.getElementById('pfpEmail').value.trim();
+  if (!email) { pfpSetMsg('pfpMsg1', 'Please enter your email', 'red'); return; }
 
-    try {
-      const res    = await fetch(`${API_BASE}/api/users/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const result = await res.json();
-      if (!result.success) {
-        pfpSetMsg('pfpMsg1', result.error || 'Something went wrong', 'red');
-      } else {
-        pfpEmail = email;
-        document.getElementById('pfpEmailDisplay').textContent = email;
-        pfpClearOtp();
-        pfpGoTo(2);
-        pfpStartTimer(60);
-        document.querySelector('#pfpOtpRow input').focus();
-      }
-    } catch { pfpSetMsg('pfpMsg1', 'Network error.', 'red'); }
+  try {
+    const res = await fetch(`${API_BASE}/api/users/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const result = await res.json();
+    if (result.success) {
+      pfpSetMsg('pfpMsg1', 'If registered, a reset link has been sent to your email.', 'green');
+    } else {
+      pfpSetMsg('pfpMsg1', result.error || 'Something went wrong', 'red');
+    }
+  } catch {
+    pfpSetMsg('pfpMsg1', 'Network error.', 'red');
   }
+}
+
 
   async function pfpResend() {
     pfpSetMsg('pfpMsg2', '', '');
@@ -780,30 +777,33 @@
     } catch { pfpSetMsg('pfpMsg2', 'Network error.', 'red'); }
   }
 
-  async function pfpResetPassword() {
-    const newPassword     = document.getElementById('pfpNewPass').value;
-    const confirmPassword = document.getElementById('pfpConfirmPass').value;
+  async function resetPassword() {
+  const newPassword = document.getElementById('pfpNewPass').value;
+  const confirmPassword = document.getElementById('pfpConfirmPass').value;
 
-    if (!newPassword || !confirmPassword) { pfpSetMsg('pfpMsg3', 'Both fields are required', 'red'); return; }
-    if (newPassword.length < 6)           { pfpSetMsg('pfpMsg3', 'Min 6 characters', 'red'); return; }
-    if (newPassword !== confirmPassword)   { pfpSetMsg('pfpMsg3', 'Passwords do not match', 'red'); return; }
+  if (!newPassword || !confirmPassword) { pfpSetMsg('pfpMsg3', 'Both fields are required', 'red'); return; }
+  if (newPassword.length < 6) { pfpSetMsg('pfpMsg3', 'Min 6 characters', 'red'); return; }
+  if (newPassword !== confirmPassword) { pfpSetMsg('pfpMsg3', 'Passwords do not match', 'red'); return; }
 
-    try {
-      const res    = await fetch(`${API_BASE}/api/users/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: pfpEmail, otp: pfpOtp, newPassword })
-      });
-      const result = await res.json();
-      if (!result.success) {
-        pfpSetMsg('pfpMsg3', result.error || 'Reset failed. Please start over.', 'red');
-      } else {
-        showMessage('Password reset successfully! Please log in again.', 'success');
-        hideForgotPassword();
-        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
-      }
-    } catch { pfpSetMsg('pfpMsg3', 'Network error.', 'red'); }
+  const token = window.location.pathname.split("/").pop(); // token from URL
+  try {
+    const res = await fetch(`${API_BASE}/api/users/reset-password/${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPassword })
+    });
+    const result = await res.json();
+    if (result.success) {
+      pfpSetMsg('fpMsg3', 'Password reset successfully! Redirecting…', 'green');
+      setTimeout(() => window.location.href = 'login.html', 2000);
+    } else {
+      pfpSetMsg('fpMsg3', result.error || 'Reset failed.', 'red');
+    }
+  } catch {
+    pfpSetMsg('fpMsg3', 'Network error.', 'red');
   }
+}
+
 
   // ── Init ─────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function () {
