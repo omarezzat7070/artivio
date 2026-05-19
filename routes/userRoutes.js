@@ -45,21 +45,20 @@ router.post("/forgot-password", asyncHandler(async (req, res) => {
   }
 
   const user = await User.findOne({ email: email.toLowerCase().trim() });
-
-  // Always return success so we don’t reveal if email exists
   if (!user) {
     return res.status(200).json({ success: true, message: "If that email is registered, a reset link has been sent." });
   }
 
-  // Use model helper to generate token
+  // Generate reset token
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  // Build reset URL (replace with your frontend domain)
+  // Build reset URL
   const resetUrl = `https://yourfrontend.com/reset-password/${resetToken}`;
 
+  // Define mail options here
   const mailOptions = {
-    from: `"Support" <${process.env.EMAIL_USER}>`,
+    from: `"Support" <${process.env.EMAIL_USER}>`, // your verified sender email in SendGrid
     to: user.email,
     subject: "Password Reset Link",
     html: `
