@@ -368,22 +368,21 @@
         <button class="cancel-btn" onclick="hideChangePassword()">Cancel</button>
       </div>
 
-      <!-- Forgot Password – 3-step OTP -->
-      <div id="forgotPasswordSection" style="display:none;margin-top:15px;">
-        <!-- Step 1: email -->
-        <div class="fp-step active" id="pfpStep1">
-          <p style="color:#555;font-size:13px;margin-bottom:12px;">
-            Enter your account email and we'll send you a secure link to reset your password.
-          </p>
-          <div class="info-row">
-            <div class="info-label">Email:</div>
-            <input type="email" id="pfpEmail" placeholder="your@email.com"
-                   style="width:100%;max-width:300px;">
-          </div>
-          <button class="save-btn" id="pfpSendBtn" onclick="pfpSendResetLink()">Send Reset Link</button>
-          <button class="cancel-btn" onclick="hideForgotPassword()">Cancel</button>
-          <p id="pfpMsg1" style="font-size:13px;margin-top:8px;" role="status"></p>
-        </div>
+     <!-- Forgot Password Section -->
+<div id="forgotPasswordSection" style="display:none;margin-top:15px;">
+  <div class="fp-step active">
+    <p style="color:#555;font-size:13px;margin-bottom:12px;">
+      Enter your email address and we'll send you a link to reset your password.
+    </p>
+    <div class="info-row">
+      <div class="info-label">Email:</div>
+      <input type="email" id="pfpEmail" placeholder="your@email.com" style="width:100%;max-width:300px;">
+    </div>
+    <button class="save-btn" id="pfpSendBtn" onclick="pfpSendResetLink()">Send Reset Link</button>
+    <button class="cancel-btn" onclick="hideForgotPassword()">Cancel</button>
+    <p id="pfpMsg1" style="font-size:13px;margin-top:8px;"></p>
+  </div>
+</div>
       </div><!-- /forgotPasswordSection -->
     </div><!-- /info-section -->
 
@@ -393,7 +392,7 @@
 <script>
   const API_BASE = window.API_BASE || window.location.origin;
   let userData = null;
-  let editMode  = false;
+  let editMode = false;
 
   function getToken() {
     try { return localStorage.getItem('token'); } catch(e) { return null; }
@@ -402,7 +401,7 @@
   function showMessage(message, type) {
     const msgDiv = document.getElementById('message');
     msgDiv.textContent = message;
-    msgDiv.className   = `message ${type}`;
+    msgDiv.className = `message ${type}`;
     msgDiv.style.display = 'block';
     setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
   }
@@ -413,11 +412,14 @@
     if (!token) { window.location.href = 'login.html'; return; }
 
     try {
-      const res  = await fetch(`${API_BASE}/api/users/me`, {
+      const res = await fetch(`${API_BASE}/api/users/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.success) { userData = data.data; displayProfile(); }
+      if (data.success) { 
+        userData = data.data; 
+        displayProfile(); 
+      }
     } catch (err) {
       console.error('Error loading profile:', err);
       showMessage('Error loading profile', 'error');
@@ -426,23 +428,22 @@
 
   function displayProfile() {
     if (!userData) return;
-    document.getElementById('displayName').textContent  = userData.name;
+    document.getElementById('displayName').textContent = userData.name;
     document.getElementById('displayEmail').textContent = userData.email;
-    document.getElementById('viewName').textContent     = userData.name;
-    document.getElementById('viewEmail').textContent    = userData.email;
-    document.getElementById('viewPhone').textContent    = userData.phone || 'Not provided';
-    document.getElementById('viewGender').textContent   = userData.gender === 'male' ? 'Male' : (userData.gender === 'female' ? 'Female' : 'Not specified');
-    document.getElementById('viewRole').textContent     = userData.role || 'Customer';
-    document.getElementById('viewJoined').textContent   = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'Recently';
+    document.getElementById('viewName').textContent = userData.name;
+    document.getElementById('viewEmail').textContent = userData.email;
+    document.getElementById('viewPhone').textContent = userData.phone || 'Not provided';
+    document.getElementById('viewGender').textContent = userData.gender === 'male' ? 'Male' : (userData.gender === 'female' ? 'Female' : 'Not specified');
+    document.getElementById('viewRole').textContent = userData.role || 'Customer';
+    document.getElementById('viewJoined').textContent = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'Recently';
 
-    document.getElementById('editName').value   = userData.name   || '';
-    document.getElementById('editEmail').value  = userData.email  || '';
-    document.getElementById('editPhone').value  = userData.phone  || '';
+    document.getElementById('editName').value = userData.name || '';
+    document.getElementById('editEmail').value = userData.email || '';
+    document.getElementById('editPhone').value = userData.phone || '';
     document.getElementById('editGender').value = userData.gender || 'male';
 
     if (userData.profileImage) {
-      document.querySelector('.avatar').innerHTML =
-        `<img src="${API_BASE}/uploads/${userData.profileImage}" alt="Profile">`;
+      document.querySelector('.avatar').innerHTML = `<img src="${API_BASE}/uploads/${userData.profileImage}" alt="Profile">`;
     }
   }
 
@@ -453,7 +454,7 @@
     formData.append('profileImage', input.files[0]);
 
     try {
-      const res  = await fetch(`${API_BASE}/api/users/upload-avatar`, {
+      const res = await fetch(`${API_BASE}/api/users/upload-avatar`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}` },
         body: formData
@@ -461,8 +462,7 @@
       const data = await res.json();
       if (data.success) {
         showMessage('Profile picture updated!', 'success');
-        document.querySelector('.avatar').innerHTML =
-          `<img src="${API_BASE}/uploads/${data.data.profileImage}" alt="Profile">`;
+        document.querySelector('.avatar').innerHTML = `<img src="${API_BASE}/uploads/${data.data.profileImage}" alt="Profile">`;
         userData.profileImage = data.data.profileImage;
       } else {
         showMessage(data.error || 'Upload failed', 'error');
@@ -475,34 +475,34 @@
     editMode = true;
     document.querySelectorAll('.view-field').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.edit-field').forEach(el => el.classList.add('active'));
-    document.getElementById('saveBtn').style.display   = 'inline-block';
+    document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('cancelBtn').style.display = 'inline-block';
-    document.querySelector('.edit-btn').style.display  = 'none';
+    document.querySelector('.edit-btn').style.display = 'none';
   }
 
   function cancelEdit() {
     editMode = false;
     document.querySelectorAll('.view-field').forEach(el => el.classList.remove('hidden'));
     document.querySelectorAll('.edit-field').forEach(el => el.classList.remove('active'));
-    document.getElementById('saveBtn').style.display   = 'none';
+    document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
-    document.querySelector('.edit-btn').style.display  = 'inline-block';
-    document.getElementById('editName').value   = userData.name   || '';
-    document.getElementById('editEmail').value  = userData.email  || '';
-    document.getElementById('editPhone').value  = userData.phone  || '';
+    document.querySelector('.edit-btn').style.display = 'inline-block';
+    document.getElementById('editName').value = userData.name || '';
+    document.getElementById('editEmail').value = userData.email || '';
+    document.getElementById('editPhone').value = userData.phone || '';
     document.getElementById('editGender').value = userData.gender || 'male';
   }
 
   async function saveProfile() {
-    const name   = document.getElementById('editName').value.trim();
-    const email  = document.getElementById('editEmail').value.trim();
-    const phone  = document.getElementById('editPhone').value.trim();
+    const name = document.getElementById('editName').value.trim();
+    const email = document.getElementById('editEmail').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
     const gender = document.getElementById('editGender').value;
 
     if (!name || !email) { showMessage('Name and email are required', 'error'); return; }
 
     try {
-      const res  = await fetch(`${API_BASE}/api/users/update`, {
+      const res = await fetch(`${API_BASE}/api/users/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -517,7 +517,7 @@
         cancelEdit();
         showMessage('Profile updated successfully!', 'success');
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        storedUser.name  = name;
+        storedUser.name = name;
         storedUser.email = email;
         localStorage.setItem('user', JSON.stringify(storedUser));
       } else {
@@ -528,30 +528,37 @@
 
   // ── Change password ──────────────────────────────────────────────────────
   function showChangePassword() {
-    document.getElementById('changePasswordSection').style.display  = 'block';
-    document.getElementById('forgotPasswordSection').style.display  = 'none';
+    document.getElementById('changePasswordSection').style.display = 'block';
+    document.getElementById('forgotPasswordSection').style.display = 'none';
   }
 
   function hideChangePassword() {
     document.getElementById('changePasswordSection').style.display = 'none';
     document.getElementById('currentPassword').value = '';
-    document.getElementById('newPassword').value     = '';
+    document.getElementById('newPassword').value = '';
     document.getElementById('confirmPassword').value = '';
   }
 
   async function changePassword() {
     const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword     = document.getElementById('newPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      showMessage('All password fields are required', 'error'); return;
+      showMessage('All password fields are required', 'error'); 
+      return;
     }
-    if (newPassword.length < 6) { showMessage('New password must be at least 6 characters', 'error'); return; }
-    if (newPassword !== confirmPassword) { showMessage('New passwords do not match', 'error'); return; }
+    if (newPassword.length < 6) { 
+      showMessage('New password must be at least 6 characters', 'error'); 
+      return; 
+    }
+    if (newPassword !== confirmPassword) { 
+      showMessage('New passwords do not match', 'error'); 
+      return; 
+    }
 
     try {
-      const res  = await fetch(`${API_BASE}/api/users/change-password`, {
+      const res = await fetch(`${API_BASE}/api/users/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -569,192 +576,70 @@
     } catch { showMessage('Network error', 'error'); }
   }
 
-  // ── Forgot password – OTP flow ────────────────────────────────────────────
-  let pfpEmail = "";
-  let pfpOtp   = "";
-  let pfpTimerInterval = null;
-
+  // ── Forgot password (Link-based flow) ────────────────────────────────────
   function showForgotPassword() {
-    document.getElementById('forgotPasswordSection').style.display  = 'block';
-    document.getElementById('changePasswordSection').style.display  = 'none';
+    document.getElementById('forgotPasswordSection').style.display = 'block';
+    document.getElementById('changePasswordSection').style.display = 'none';
     if (userData && userData.email) {
       document.getElementById('pfpEmail').value = userData.email;
+    }
+    // Clear any previous messages
+    const msgDiv = document.getElementById('pfpMsg1');
+    if (msgDiv) msgDiv.textContent = '';
+  }
+
+  async function pfpSendResetLink() {
+    const email = document.getElementById('pfpEmail').value.trim();
+    const msgDiv = document.getElementById('pfpMsg1');
+    
+    if (!email) {
+      msgDiv.textContent = 'Please enter your email';
+      msgDiv.style.color = 'red';
+      return;
+    }
+
+    const sendBtn = document.getElementById('pfpSendBtn');
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+
+    try {
+      const response = await fetch(`${API_BASE}/api/users/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        msgDiv.textContent = 'If an account exists with this email, a reset link has been sent. Please check your inbox.';
+        msgDiv.style.color = 'green';
+        
+        // Close the panel after 4 seconds
+        setTimeout(() => {
+          document.getElementById('forgotPasswordSection').style.display = 'none';
+          document.getElementById('pfpEmail').value = '';
+          msgDiv.textContent = '';
+        }, 4000);
+      } else {
+        msgDiv.textContent = result.error || 'Something went wrong';
+        msgDiv.style.color = 'red';
+      }
+    } catch (err) {
+      msgDiv.textContent = 'Network error. Please try again.';
+      msgDiv.style.color = 'red';
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send Reset Link';
     }
   }
 
   function hideForgotPassword() {
     document.getElementById('forgotPasswordSection').style.display = 'none';
-    pfpReset();
+    document.getElementById('pfpEmail').value = '';
+    const msgDiv = document.getElementById('pfpMsg1');
+    if (msgDiv) msgDiv.textContent = '';
   }
-
-  function pfpReset() {
-    pfpEmail = ""; pfpOtp = "";
-    pfpGoTo(1);
-    document.getElementById('pfpEmail').value       = '';
-    document.getElementById('pfpNewPass').value     = '';
-    document.getElementById('pfpConfirmPass').value = '';
-    pfpClearOtp();
-    ['pfpMsg1','pfpMsg2','pfpMsg3'].forEach(id => {
-      const el = document.getElementById(id);
-      el.textContent = ''; el.style.color = '';
-    });
-    clearInterval(pfpTimerInterval);
-  }
-
-  function pfpGoTo(step) {
-    [1,2,3].forEach(n => {
-      document.getElementById(`pfpStep${n}`).classList.toggle('active', n === step);
-      document.getElementById(`pdot${n}`).classList.toggle('active', n <= step);
-    });
-  }
-
-  function pfpSetMsg(id, text, color) {
-    const el = document.getElementById(id);
-    el.textContent = text;
-    el.style.color  = color;
-  }
-
-  // OTP auto-advance
-  (function () {
-    const row = document.getElementById('pfpOtpRow');
-    if (!row) return;
-    const inputs = Array.from(row.querySelectorAll('input'));
-    inputs.forEach((inp, i) => {
-      inp.addEventListener('input', () => {
-        inp.value = inp.value.replace(/\D/g, '').slice(-1);
-        if (inp.value && i < inputs.length - 1) inputs[i+1].focus();
-      });
-      inp.addEventListener('keydown', e => {
-        if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus();
-      });
-      inp.addEventListener('paste', e => {
-        e.preventDefault();
-        const digits = e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);
-        digits.split('').forEach((d,idx) => { if (inputs[idx]) inputs[idx].value = d; });
-        if (inputs[digits.length]) inputs[digits.length].focus();
-      });
-    });
-  })();
-
-  function pfpGetOtp() {
-    return Array.from(document.querySelectorAll('#pfpOtpRow input')).map(i => i.value).join('');
-  }
-  function pfpClearOtp() {
-    document.querySelectorAll('#pfpOtpRow input').forEach(i => i.value = '');
-  }
-
-  function pfpStartTimer(seconds) {
-    clearInterval(pfpTimerInterval);
-    const timerEl   = document.getElementById('pfpResendTimer');
-    const countEl   = document.getElementById('pfpTimerCount');
-    const resendBtn = document.getElementById('pfpResendBtn');
-    timerEl.style.display   = 'inline';
-    resendBtn.style.display  = 'none';
-    let remaining = seconds;
-    countEl.textContent = remaining;
-    pfpTimerInterval = setInterval(() => {
-      remaining--;
-      countEl.textContent = remaining;
-      if (remaining <= 0) {
-        clearInterval(pfpTimerInterval);
-        timerEl.style.display  = 'none';
-        resendBtn.style.display = 'inline';
-      }
-    }, 1000);
-  }
-
- async function sendResetLink() {
-  const email = document.getElementById('pfpEmail').value.trim();
-  if (!email) { pfpSetMsg('pfpMsg1', 'Please enter your email', 'red'); return; }
-
-  try {
-    const res = await fetch(`${API_BASE}/api/users/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    const result = await res.json();
-    if (result.success) {
-      pfpSetMsg('pfpMsg1', 'If registered, a reset link has been sent to your email.', 'green');
-    } else {
-      pfpSetMsg('pfpMsg1', result.error || 'Something went wrong', 'red');
-    }
-  } catch {
-    pfpSetMsg('pfpMsg1', 'Network error.', 'red');
-  }
-}
-
-
-  async function pfpResend() {
-    pfpSetMsg('pfpMsg2', '', '');
-    try {
-      const res    = await fetch(`${API_BASE}/api/users/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: pfpEmail })
-      });
-      const result = await res.json();
-      if (!result.success) {
-        pfpSetMsg('pfpMsg2', result.error || 'Could not resend', 'red');
-      } else {
-        pfpClearOtp();
-        pfpStartTimer(60);
-        pfpSetMsg('pfpMsg2', 'New code sent!', 'green');
-        document.querySelector('#pfpOtpRow input').focus();
-      }
-    } catch { pfpSetMsg('pfpMsg2', 'Network error.', 'red'); }
-  }
-
-  async function pfpVerifyOtp() {
-    const otp = pfpGetOtp();
-    if (otp.length < 6) { pfpSetMsg('pfpMsg2', 'Enter all 6 digits', 'red'); return; }
-    pfpSetMsg('pfpMsg2', '', '');
-
-    try {
-      const res    = await fetch(`${API_BASE}/api/users/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: pfpEmail, otp })
-      });
-      const result = await res.json();
-      if (!result.success) {
-        pfpSetMsg('pfpMsg2', result.error || 'Invalid code', 'red');
-      } else {
-        pfpOtp = otp;
-        clearInterval(pfpTimerInterval);
-        pfpGoTo(3);
-        document.getElementById('pfpNewPass').focus();
-      }
-    } catch { pfpSetMsg('pfpMsg2', 'Network error.', 'red'); }
-  }
-
-  async function resetPassword() {
-  const newPassword = document.getElementById('pfpNewPass').value;
-  const confirmPassword = document.getElementById('pfpConfirmPass').value;
-
-  if (!newPassword || !confirmPassword) { pfpSetMsg('pfpMsg3', 'Both fields are required', 'red'); return; }
-  if (newPassword.length < 6) { pfpSetMsg('pfpMsg3', 'Min 6 characters', 'red'); return; }
-  if (newPassword !== confirmPassword) { pfpSetMsg('pfpMsg3', 'Passwords do not match', 'red'); return; }
-
-  const token = window.location.pathname.split("/").pop(); // token from URL
-  try {
-    const res = await fetch(`${API_BASE}/api/users/reset-password/${token}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ newPassword })
-    });
-    const result = await res.json();
-    if (result.success) {
-      pfpSetMsg('fpMsg3', 'Password reset successfully! Redirecting…', 'green');
-      setTimeout(() => window.location.href = 'login.html', 2000);
-    } else {
-      pfpSetMsg('fpMsg3', result.error || 'Reset failed.', 'red');
-    }
-  } catch {
-    pfpSetMsg('fpMsg3', 'Network error.', 'red');
-  }
-}
-
 
   // ── Init ─────────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function () {

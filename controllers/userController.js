@@ -3,14 +3,26 @@ const Order = require("../models/order");
 const asyncHandler = require("../middleware/asyncHandler");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const sgMail = require('@sendgrid/mail');
+const nodemailer = require("nodemailer");
 const path = require("path");
 const fs = require("fs");
 
-// Initialize SendGrid
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+// Create email transporter using SendGrid SMTP
+const transporter = nodemailer.createTransport({
+  service: "SendGrid",
+  auth: {
+    user: "apikey",
+    pass: process.env.SENDGRID_API_KEY
+  }
+});
+
+transporter.verify((error) => {
+  if (error) {
+    console.error("❌ Email transporter error:", error.message);
+  } else {
+    console.log("✅ Email transporter ready");
+  }
+});
 
 // Helper function to normalize phone number to +20XXXXXXXXXX format
 function normalizePhone(phone) {
@@ -46,6 +58,32 @@ function normalizePhone(phone) {
 // Phone regex for validation
 const phoneRegex = /^\+20[0-9]{10}$/;
 
+// Helper to send token response and set cookie
+const sendTokenResponse = (user, statusCode, res) => {
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: "Lax",
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  };
+
+  res.status(statusCode).cookie("token", token, options).json({
+    success: true,
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      gender: user.gender,
+      role: user.role,
+      profileImage: user.profileImage
+    }
+  });
+};
+
 // @desc    Register user (customers & artisans only)
 // @route   POST /api/users/register
 // @access  Public
@@ -77,33 +115,7 @@ exports.register = asyncHandler(async (req, res) => {
     termsAcceptedAt: new Date()
   });
 
-  // Create token
-  const token = user.getSignedJwtToken();
-
-  // Set secure cookie
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: "Lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000
-  });
-
-  res.status(201).json({
-    success: true,
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      gender: user.gender,
-      role: user.role,
-      profileImage: user.profileImage,
-      termsAccepted: user.termsAccepted,
-      termsAcceptedAt: user.termsAcceptedAt,
-      createdAt: user.createdAt
-    }
-  });
+  sendTokenResponse(user, 201, res);
 });
 
 // @desc    Login user
@@ -135,28 +147,7 @@ exports.login = asyncHandler(async (req, res) => {
     });
   }
 
-  const token = user.getSignedJwtToken();
-
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: "Lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000
-  });
-
-  res.status(200).json({
-    success: true,
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      gender: user.gender,
-      role: user.role,
-      profileImage: user.profileImage
-    }
-  });
+  sendTokenResponse(user, 200, res);
 });
 
 // @desc    Register admin
@@ -207,28 +198,7 @@ exports.adminRegister = asyncHandler(async (req, res) => {
     role: "admin"
   });
 
-  const token = user.getSignedJwtToken();
-
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: "Lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000
-  });
-
-  res.status(201).json({
-    success: true,
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      gender: user.gender,
-      role: user.role,
-      profileImage: user.profileImage
-    }
-  });
+  sendTokenResponse(user, 201, res);
 });
 
 // @desc    Get current logged in user
@@ -426,7 +396,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
   };
 
   try {
-    await sgMail.send(mailOptions);
+    await transporter.sendMail(mailOptions);
     res.status(200).json({ success: true, message: "If that email is registered, a reset link has been sent." });
   } catch (err) {
     user.resetPasswordToken = undefined;
