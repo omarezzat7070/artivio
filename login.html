@@ -415,21 +415,23 @@ document.addEventListener('DOMContentLoaded', function () {
   const loginBtn    = document.getElementById("loginBtn");
   let selectedRole  = "customer";
 
-  customerBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    customerBtn.classList.add("active");
-    artisanBtn.classList.remove("active");
-    loginBtn.textContent = "Sign In as Customer";
-    selectedRole = "customer";
-  });
+  if (customerBtn && artisanBtn && loginBtn) {
+    customerBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      customerBtn.classList.add("active");
+      artisanBtn.classList.remove("active");
+      loginBtn.textContent = "Sign In as Customer";
+      selectedRole = "customer";
+    });
 
-  artisanBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    artisanBtn.classList.add("active");
-    customerBtn.classList.remove("active");
-    loginBtn.textContent = "Sign In as Artisan";
-    selectedRole = "artisan";
-  });
+    artisanBtn.addEventListener("click", (e) => {
+      e.preventDefault();   
+      artisanBtn.classList.add("active");
+      customerBtn.classList.remove("active");
+      loginBtn.textContent = "Sign In as Artisan";
+      selectedRole = "artisan";
+    });
+  }
 
   // ── Login form ───────────────────────────────────────────────────────
   const loginForm    = document.getElementById("loginForm");
@@ -437,180 +439,247 @@ document.addEventListener('DOMContentLoaded', function () {
   const emailInput   = document.getElementById("email");
   const passwordInput = document.getElementById("password");
 
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    loginMessage.textContent = "";
-    loginBtn.disabled = true;
-    loginBtn.textContent = "Signing in...";
-
-    try {
-      const response = await fetch(`${window.API_BASE}/api/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailInput.value.trim(), password: passwordInput.value })
-      });
-
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        loginMessage.style.color = "red";
-        loginMessage.textContent = result.error || "Login failed";
-        loginBtn.disabled = false;
-        loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
-        return;
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (loginMessage) loginMessage.textContent = "";
+      if (loginBtn) {
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Signing in...";
       }
 
-      if (selectedRole === "artisan" && !["artisan", "seller"].includes(result.user.role)) {
-        loginMessage.style.color = "red";
-        loginMessage.textContent = "Please switch to Customer login for this account";
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Sign In as Artisan";
-        return;
+      try {
+        const response = await fetch(`${window.API_BASE}/api/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: emailInput.value.trim(), password: passwordInput.value })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          if (loginMessage) {
+            loginMessage.style.color = "red";
+            loginMessage.textContent = result.error || "Login failed";
+          }
+          if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
+          }
+          return;
+        }
+
+        if (selectedRole === "artisan" && !["artisan", "seller"].includes(result.user.role)) {
+          if (loginMessage) {
+            loginMessage.style.color = "red";
+            loginMessage.textContent = "Please switch to Customer login for this account";
+          }
+          if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Sign In as Artisan";
+          }
+          return;
+        }
+        if (selectedRole === "customer" && result.user.role !== "customer") {
+          if (loginMessage) {
+            loginMessage.style.color = "red";
+            loginMessage.textContent = "Please switch to Artisan login for this account";
+          }
+          if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Sign In as Customer";
+          }
+          return;
+        }
+
+        localStorage.setItem("token", result.token);
+        localStorage.setItem("user", JSON.stringify(result.user));
+        if (loginMessage) {
+          loginMessage.style.color = "green";
+          loginMessage.textContent = "Login successful. Redirecting...";
+        }
+
+        setTimeout(() => {
+          if (result.user.role === "admin") window.location.href = "admindashboard.html";
+          else if (["artisan", "seller"].includes(result.user.role)) window.location.href = "seller.html";
+          else window.location.href = "index.html";
+        }, 700);
+
+      } catch (err) {
+        if (loginMessage) {
+          loginMessage.style.color = "red";
+          loginMessage.textContent = "Network error. Please try again.";
+        }
+        if (loginBtn) {
+          loginBtn.disabled = false;
+          loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
+        }
       }
-      if (selectedRole === "customer" && result.user.role !== "customer") {
-        loginMessage.style.color = "red";
-        loginMessage.textContent = "Please switch to Artisan login for this account";
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Sign In as Customer";
-        return;
-      }
-
-      localStorage.setItem("token", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
-      loginMessage.style.color = "green";
-      loginMessage.textContent = "Login successful. Redirecting...";
-
-      setTimeout(() => {
-        if (result.user.role === "admin") window.location.href = "admindashboard.html";
-        else if (["artisan", "seller"].includes(result.user.role)) window.location.href = "seller.html";
-        else window.location.href = "index.html";
-      }, 700);
-
-    } catch (err) {
-      loginMessage.style.color = "red";
-      loginMessage.textContent = "Network error. Please try again.";
-      loginBtn.disabled = false;
-      loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
-    }
-  });
+    });
+  }
 
   // ── Forgot password panel toggle ─────────────────────────────────────
- const forgotPanel = document.getElementById("forgotPanel");
+  const forgotPanel = document.getElementById("forgotPanel");
+  const showForgotBtn = document.getElementById("showForgotBtn");
+  const hideForgotBtn = document.getElementById("hideForgotBtn");
 
-// Show/hide forgot password panel
-document.getElementById("showForgotBtn").addEventListener("click", () => {
-  forgotPanel.classList.add("active");
-  document.getElementById("fpEmail").value = emailInput.value.trim();
-});
-
-document.getElementById("hideForgotBtn").addEventListener("click", () => {
-  forgotPanel.classList.remove("active");
-  fpReset();
-});
-
-// ── Forgot password state ─────────────────────────────────────────────
-let fpEmail = "";
-
-function fpReset() {
-  fpEmail = "";
-  document.getElementById("fpEmail").value = "";
-  document.getElementById("fpNewPass").value = "";
-  document.getElementById("fpConfirmPass").value = "";
-  setMsg("fpMsg1", "", "");
-  setMsg("fpMsg3", "", "");
-}
-
-function setMsg(id, text, color) {
-  const el = document.getElementById(id);
-  el.textContent = text;
-  el.style.color = color;
-}
-
-// ── STEP 1: Send Reset Link ───────────────────────────────────────────
-document.getElementById("sendResetLinkBtn").addEventListener("click", async () => {
-  const email = document.getElementById("fpEmail").value.trim();
-  if (!email) { setMsg("fpMsg1", "Please enter your email", "red"); return; }
-
-  const btn = document.getElementById("sendResetLinkBtn");
-  btn.disabled = true;
-  btn.textContent = "Sending...";
-
-  try {
-    const res = await fetch(`${window.API_BASE}/api/users/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
+  if (showForgotBtn && forgotPanel && emailInput) {
+    showForgotBtn.addEventListener("click", () => {
+      forgotPanel.classList.add("active");
+      const fpEmail = document.getElementById("fpEmail");
+      if (fpEmail) fpEmail.value = emailInput.value.trim();
     });
-    const result = await res.json();
-
-    if (result.success) {
-      fpEmail = email;
-      setMsg("fpMsg1", "If registered, a reset link has been sent to your email.", "green");
-    } else {
-      setMsg("fpMsg1", result.error || "Something went wrong", "red");
-    }
-  } catch {
-    setMsg("fpMsg1", "Network error. Please try again.", "red");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Send Reset Link";
-  }
-});
-
-// ── STEP 2: Reset password (on reset-password page) ───────────────────
-document.getElementById("resetPassBtn").addEventListener("click", async () => {
-  const newPassword = document.getElementById("fpNewPass").value;
-  const confirmPassword = document.getElementById("fpConfirmPass").value;
-
-  if (!newPassword || !confirmPassword) {
-    setMsg("fpMsg3", "Both fields are required", "red");
-    return;
-  }
-  if (newPassword.length < 6) {
-    setMsg("fpMsg3", "Password must be at least 6 characters", "red");
-    return;
-  }
-  if (newPassword !== confirmPassword) {
-    setMsg("fpMsg3", "Passwords do not match", "red");
-    return;
   }
 
-  const btn = document.getElementById("resetPassBtn");
-  btn.disabled = true;
-  btn.textContent = "Resetting...";
-
-  const token = window.location.pathname.split("/").pop(); // get token from URL
-  try {
-    const res = await fetch(`${window.API_BASE}/api/users/reset-password/${token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newPassword })
+  if (hideForgotBtn && forgotPanel) {
+    hideForgotBtn.addEventListener("click", () => {
+      forgotPanel.classList.remove("active");
+      fpReset();
     });
-    const result = await res.json();
+  }
 
-    if (result.success) {
-      setMsg("fpMsg3", "Password reset successfully! Redirecting…", "green");
-      setTimeout(() => window.location.href = "login.html", 2000);
-    } else {
-      setMsg("fpMsg3", result.error || "Reset failed.", "red");
-      btn.disabled = false;
-      btn.textContent = "Reset Password";
+  // ── Forgot password state ─────────────────────────────────────────────
+  let fpEmail = "";
+
+  function fpReset() {
+    fpEmail = "";
+    const fpEmailInput = document.getElementById("fpEmail");
+    const fpNewPass = document.getElementById("fpNewPass");
+    const fpConfirmPass = document.getElementById("fpConfirmPass");
+    
+    if (fpEmailInput) fpEmailInput.value = "";
+    if (fpNewPass) fpNewPass.value = "";
+    if (fpConfirmPass) fpConfirmPass.value = "";
+    setMsg("fpMsg1", "", "");
+    setMsg("fpMsg3", "", "");
+  }
+
+  function setMsg(id, text, color) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = text;
+      el.style.color = color;
     }
-  } catch {
-    setMsg("fpMsg3", "Network error.", "red");
-    btn.disabled = false;
-    btn.textContent = "Reset Password";
   }
-});
 
-// ── Init ──────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", function () {
-  if (window.lucide) lucide.createIcons();
-  loadProfile();
-  const menuIcon = document.getElementById("menuIcon");
-  const navLinks = document.getElementById("navLinks");
-  if (menuIcon && navLinks) {
-    menuIcon.addEventListener("click", () => navLinks.classList.toggle("active"));
+  // ── STEP 1: Send Reset Link ───────────────────────────────────────────
+  const sendResetLinkBtn = document.getElementById("sendResetLinkBtn");
+  if (sendResetLinkBtn) {
+    sendResetLinkBtn.addEventListener("click", async () => {
+      const emailInput = document.getElementById("fpEmail");
+      if (!emailInput) return;
+      
+      const email = emailInput.value.trim();
+      if (!email) { 
+        setMsg("fpMsg1", "Please enter your email", "red"); 
+        return; 
+      }
+
+      const btn = document.getElementById("sendResetLinkBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Sending...";
+      }
+
+      try {
+        const res = await fetch(`${window.API_BASE}/api/users/forgot-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          fpEmail = email;
+          setMsg("fpMsg1", "If registered, a reset link has been sent to your email.", "green");
+        } else {
+          setMsg("fpMsg1", result.error || "Something went wrong", "red");
+        }
+      } catch {
+        setMsg("fpMsg1", "Network error. Please try again.", "red");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Send Reset Link";
+        }
+      }
+    });
   }
+
+  // ── STEP 2: Reset password (on reset-password page) ───────────────────
+  const resetPassBtn = document.getElementById("resetPassBtn");
+  if (resetPassBtn) {
+    resetPassBtn.addEventListener("click", async () => {
+      const newPasswordInput = document.getElementById("fpNewPass");
+      const confirmPasswordInput = document.getElementById("fpConfirmPass");
+      
+      if (!newPasswordInput || !confirmPasswordInput) return;
+      
+      const newPassword = newPasswordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+
+      if (!newPassword || !confirmPassword) {
+        setMsg("fpMsg3", "Both fields are required", "red");
+        return;
+      }
+      if (newPassword.length < 6) {
+        setMsg("fpMsg3", "Password must be at least 6 characters", "red");
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setMsg("fpMsg3", "Passwords do not match", "red");
+        return;
+      }
+
+      const btn = document.getElementById("resetPassBtn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Resetting...";
+      }
+
+      const token = window.location.pathname.split("/").pop();
+      try {
+        const res = await fetch(`${window.API_BASE}/api/users/reset-password/${token}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newPassword })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          setMsg("fpMsg3", "Password reset successfully! Redirecting…", "green");
+          setTimeout(() => window.location.href = "login.html", 2000);
+        } else {
+          setMsg("fpMsg3", result.error || "Reset failed.", "red");
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Reset Password";
+          }
+        }
+      } catch {
+        setMsg("fpMsg3", "Network error.", "red");
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Reset Password";
+        }
+      }
+    });
+  }
+
+  // ── Load profile if on profile page ───────────────────────────────────
+  function loadProfile() {
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        const userNameElement = document.getElementById("userName");
+        if (userNameElement) userNameElement.textContent = userData.name || userData.email;
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+      }
+    }
+  }
+  
+    loadProfile();
 });
 </script>
 
