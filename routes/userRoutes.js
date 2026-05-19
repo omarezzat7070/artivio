@@ -18,9 +18,12 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    // Force IPv4
+    family: 4
   }
 });
+
 
 transporter.verify((error, success) => {
   if (error) {
