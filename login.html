@@ -7,219 +7,210 @@
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://omarezzat7070.github.io/artivio/assets/fontawesome/css/all.min.css">
+
   <script src="assets/lucide.min.js"></script>
 
+  <!-- ===== INTERNAL CSS ===== -->
   <style>
     :root {
-      --primary: #6C2929;
-      --dark: #3d1616;
-      --light-bg: #fdf6ee;
-    }
+  --primary: #6C2929;
+  --dark: #3d1616;
+  --light-bg: #fdf6ee;
+}
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Segoe UI", sans-serif;
-    }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
 
-    body {
-      background: var(--light-bg);
-      color: #333;
-    }
+body {
+  background: var(--light-bg);
+  color: #333;
+}
 
-    .login-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: calc(100vh - 80px);
-    }
+/* ===== Login Section ===== */
+.login-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+}
 
-    .login-container {
-      background: #fff;
-      width: 100%;
-      max-width: 420px;
-      padding: 35px;
-      border-radius: 14px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-      text-align: center;
-    }
+.login-container {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  padding: 35px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  text-align: center;
+}
 
-    .login-container h1 {
-      color: #8b4000;
-      margin-bottom: 8px;
-    }
+.login-container h1 {
+  color: #8b4000;
+  margin-bottom: 8px;
+}
 
-    .subtitle {
-      color: #666;
-      margin-bottom: 25px;
-      font-size: 14px;
-    }
+.subtitle {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
 
-    .role-toggle {
-      display: flex;
-      background: #f1f1f1;
-      border-radius: 30px;
-      margin-bottom: 25px;
-      padding: 4px;
-    }
+/* Toggle */
+.role-toggle {
+  display: flex;
+  background: #f1f1f1;
+  border-radius: 30px;
+  margin-bottom: 25px;
+  padding: 4px;
+}
 
-    .role-toggle button {
-      flex: 1;
-      border: none;
-      padding: 10px;
-      background: transparent;
-      border-radius: 30px;
-      cursor: pointer;
-      font-weight: 600;
-    }
+.role-toggle button {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  background: transparent;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+}
 
-    .role-toggle .active {
-      background: #fff;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    }
+.role-toggle .active {
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
 
-    .login-form {
-      text-align: left;
-    }
+/* Form */
+.login-form {
+  text-align: left;
+}
 
-    .login-form label {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 5px;
-      display: block;
-    }
+.login-form label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: block;
+}
 
-    .input-box {
-      display: flex;
-      align-items: center;
-      background: #f4f4f4;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 18px;
-    }
+.input-box {
+  display: flex;
+  align-items: center;
+  background: #f4f4f4;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
 
-    .input-box i {
-      margin-right: 10px;
-      color: #999;
-    }
+.input-box i {
+  margin-right: 10px;
+  color: #999;
+}
 
-    .input-box input {
-      border: none;
-      background: transparent;
-      outline: none;
-      width: 100%;
-    }
+.input-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+}
 
-    .login-btn {
-      width: 100%;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+/* Button */
+.login-btn {
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
 
-    .login-btn:hover { background: var(--dark); }
-    .login-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+.login-btn:hover {
+  background: var(--primary);
+}
 
-    .signup-text {
-      text-align: center;
-      margin-top: 18px;
-      font-size: 14px;
-    }
+/* Signup */
+.signup-text {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 14px;
+}
 
-    .signup-text a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-    }
+.signup-text a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.forgot-row {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
 
-    .forgot-row {
-      text-align: right;
-      margin-top: -10px;
-      margin-bottom: 12px;
-    }
+.forgot-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
 
-    .forgot-btn {
-      background: none;
-      border: none;
-      color: var(--primary);
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-    }
+.forgot-panel {
+  display: none;
+  text-align: left;
+  background: #faf6f5;
+  border: 1px solid #ead9d4;
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 20px;
+}
 
-    .forgot-panel {
-      display: none;
-      text-align: left;
-      background: #faf6f5;
-      border: 1px solid #ead9d4;
-      border-radius: 12px;
-      padding: 18px;
-      margin-top: 20px;
-    }
+.forgot-panel.active {
+  display: block;
+}
 
-    .forgot-panel.active { display: block; }
+.forgot-panel h3 {
+  color: var(--primary);
+  margin-bottom: 6px;
+}
 
-    .forgot-panel h3 {
-      color: var(--primary);
-      margin-bottom: 6px;
-    }
+.forgot-panel p {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
 
-    .forgot-panel .step-hint {
-      color: #666;
-      font-size: 13px;
-      margin-bottom: 14px;
-      line-height: 1.5;
-    }
-
-    .secondary-btn {
-      width: 100%;
-      background: #e5e7eb;
-      color: #333;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .secondary-btn:hover { background: #d1d5db; }
-
-    .message-success {
-      color: #065f46;
-      background: #d1fae5;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 10px;
-      font-size: 13px;
-    }
-
-    .message-error {
-      color: #991b1b;
-      background: #fee2e2;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 10px;
-      font-size: 13px;
-    }
+.secondary-btn {
+  width: 100%;
+  background: #e5e7eb;
+  color: #333;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
   </style>
   <link rel="stylesheet" href="navbar.css">
 </head>
 <body>
 <script src="config.js"></script>
+<script>const API_BASE = window.API_BASE || window.location.origin;</script>
 
+<!-- ===== Navbar ===== -->
 <header class="navbar">
   <div class="container nav-content">
     <div class="nav-logo">
-      <a href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
+      <a  href="index.html"><img src="no background 1.png" alt="Artivio Logo"></a>
       <span class="artivio">Artivio</span>
     </div>
+
     <nav>
       <ul class="nav-links" id="navLinks">
         <li><a href="index.html">Home</a></li>
@@ -235,83 +226,133 @@
   </div>
 </header>
 
+<!-- ===== Login Section ===== -->
 <section class="login-section">
   <div class="login-container">
+
     <h1>Welcome Back</h1>
     <p class="subtitle">Sign in to your account</p>
 
+    <!-- Toggle -->
     <div class="role-toggle">
       <button class="active" id="customerBtn">Customer</button>
       <button id="artisanBtn">Artisan</button>
     </div>
 
+    <!-- Form -->
     <form class="login-form" id="loginForm">
-      <label for="email">Email</label>
-      <div class="input-box">
-        <i class="fa-regular fa-envelope"></i>
-        <input type="email" id="email" name="email" placeholder="your@email.com" required>
-      </div>
+  <label for="email">Email</label>
+  <div class="input-box">
+    <i class="fa-regular fa-envelope"></i>
+    <input type="email" id="email" name="email" autocomplete="email" placeholder="your@email.com" required>
+  </div>
 
-      <label for="password">Password</label>
-      <div class="input-box">
-        <i class="fa-solid fa-lock"></i>
-        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
-      </div>
+  <label for="password">Password</label>
+  <div class="input-box">
+    <i class="fa-solid fa-lock"></i>
+    <input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+  </div>
 
-      <div class="forgot-row">
-        <button type="button" class="forgot-btn" id="showForgotBtn">Forgot password?</button>
-      </div>
+  <div class="forgot-row">
+    <button type="button" class="forgot-btn" id="showForgotBtn">Forgot password?</button>
+  </div>
 
-      <button type="submit" class="login-btn" id="loginBtn">Sign In as Customer</button>
-      <p id="loginMessage" style="text-align: center; margin-top: 12px; font-size: 13px;"></p>
+      <button type="submit" class="login-btn" id="loginBtn">
+        Sign In as Customer
+      </button>
+
+      <p class="signup-text" id="loginMessage" role="status" aria-live="polite"></p>
 
       <p class="signup-text">
         Don't have an account?
         <a href="sign-up.html">Sign up</a>
       </p>
     </form>
-
-    <!-- Forgot Password Panel -->
     <div class="forgot-panel" id="forgotPanel">
       <h3>Reset Password</h3>
-      <p class="step-hint">Enter your email address and we'll send you a link to reset your password.</p>
+      <p>Enter the same full name and email on your account, then choose a new password.</p>
 
-      <label for="fpEmail">Email</label>
-      <div class="input-box">
-        <i class="fa-regular fa-envelope"></i>
-        <input type="email" id="fpEmail" placeholder="your@email.com" required>
-      </div>
+      <form id="forgotPasswordForm">
+        <label for="forgotName">Full Name</label>
+        <div class="input-box">
+          <i class="fa-regular fa-user"></i>
+          <input type="text" id="forgotName" placeholder="Your full name" required>
+        </div>
 
-      <button type="button" class="login-btn" id="sendResetLinkBtn">Send Reset Link</button>
-      <button type="button" class="secondary-btn" id="hideForgotBtn">Back to Login</button>
-      <div id="fpMessage"></div>
+        <label for="forgotEmail">Email</label>
+        <div class="input-box">
+          <i class="fa-regular fa-envelope"></i>
+          <input type="email" id="forgotEmail" placeholder="your@email.com" required>
+        </div>
+
+        <label for="forgotNewPassword">New Password</label>
+        <div class="input-box">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="forgotNewPassword" placeholder="At least 6 characters" required>
+        </div>
+
+        <button type="submit" class="login-btn" id="resetPasswordBtn">Reset Password</button>
+        <button type="button" class="secondary-btn" id="hideForgotBtn">Back to Login</button>
+        <p class="signup-text" id="forgotMessage" role="status" aria-live="polite"></p>
+      </form>
     </div>
   </div>
 </section>
 
+<!-- ===== INTERNAL JS ===== -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function(){
   if (window.lucide) lucide.createIcons();
-
   const menuIcon = document.getElementById('menuIcon');
   const navLinks = document.getElementById('navLinks');
   if (menuIcon && navLinks) menuIcon.addEventListener('click', () => navLinks.classList.toggle('active'));
 
-  // Role toggle
   const customerBtn = document.getElementById("customerBtn");
   const artisanBtn = document.getElementById("artisanBtn");
   const loginBtn = document.getElementById("loginBtn");
+  const loginForm = document.getElementById("loginForm");
+  const loginMessage = document.getElementById("loginMessage");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const showForgotBtn = document.getElementById("showForgotBtn");
+  const hideForgotBtn = document.getElementById("hideForgotBtn");
+  const forgotPanel = document.getElementById("forgotPanel");
+  const forgotPasswordForm = document.getElementById("forgotPasswordForm");
+  const forgotMessage = document.getElementById("forgotMessage");
+  const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+  const forgotName = document.getElementById("forgotName");
+  const forgotEmail = document.getElementById("forgotEmail");
+  const forgotNewPassword = document.getElementById("forgotNewPassword");
   let selectedRole = "customer";
 
+  if (showForgotBtn && forgotPanel) {
+    showForgotBtn.addEventListener("click", () => {
+      forgotPanel.classList.add("active");
+      forgotMessage.textContent = "";
+      forgotEmail.value = emailInput.value.trim();
+      forgotName.focus();
+    });
+  }
+
+  if (hideForgotBtn && forgotPanel) {
+    hideForgotBtn.addEventListener("click", () => {
+      forgotPanel.classList.remove("active");
+      forgotPasswordForm.reset();
+      forgotMessage.textContent = "";
+    });
+  }
+
   if (customerBtn && artisanBtn && loginBtn) {
-    customerBtn.addEventListener("click", () => {
+    customerBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       customerBtn.classList.add("active");
       artisanBtn.classList.remove("active");
       loginBtn.textContent = "Sign In as Customer";
       selectedRole = "customer";
     });
 
-    artisanBtn.addEventListener("click", () => {
+    artisanBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       artisanBtn.classList.add("active");
       customerBtn.classList.remove("active");
       loginBtn.textContent = "Sign In as Artisan";
@@ -319,156 +360,125 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Login form submission
-  const loginForm = document.getElementById("loginForm");
-  const loginMessage = document.getElementById("loginMessage");
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       loginMessage.textContent = "";
-      
-      if (loginBtn) {
-        loginBtn.disabled = true;
-        loginBtn.textContent = "Signing in...";
-      }
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Signing in...";
 
       try {
         const response = await fetch(`${window.API_BASE}/api/users/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            email: emailInput.value.trim(), 
-            password: passwordInput.value 
+          body: JSON.stringify({
+            email: emailInput.value.trim(),
+            password: passwordInput.value
           })
         });
 
         const result = await response.json();
-        
         if (!response.ok || !result.success) {
           loginMessage.style.color = "red";
           loginMessage.textContent = result.error || "Login failed";
-          if (loginBtn) {
-            loginBtn.disabled = false;
-            loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
-          }
+          loginBtn.disabled = false;
+          loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
           return;
         }
 
-        // Role validation
         if (selectedRole === "artisan" && !["artisan", "seller"].includes(result.user.role)) {
           loginMessage.style.color = "red";
-          loginMessage.textContent = "This account is not registered as an artisan/seller";
-          if (loginBtn) {
-            loginBtn.disabled = false;
-            loginBtn.textContent = "Sign In as Artisan";
-          }
+          loginMessage.textContent = "Please switch to Customer login for this account";
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Sign In as Artisan";
           return;
         }
-        
         if (selectedRole === "customer" && result.user.role !== "customer") {
           loginMessage.style.color = "red";
-          loginMessage.textContent = "Please use the Artisan login for this account";
-          if (loginBtn) {
-            loginBtn.disabled = false;
-            loginBtn.textContent = "Sign In as Customer";
-          }
+          loginMessage.textContent = "Please switch to Artisan login for this account";
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Sign In as Customer";
           return;
         }
 
         localStorage.setItem("token", result.token);
         localStorage.setItem("user", JSON.stringify(result.user));
-        
+
         loginMessage.style.color = "green";
-        loginMessage.textContent = "Login successful! Redirecting...";
+        loginMessage.textContent = "Login successful. Redirecting...";
 
         setTimeout(() => {
-          if (result.user.role === "admin") window.location.href = "admindashboard.html";
-          else if (["artisan", "seller"].includes(result.user.role)) window.location.href = "seller.html";
-          else window.location.href = "index.html";
+          if (result.user.role === "admin") {
+            window.location.href = "admindashboard.html";
+          } else if (["artisan", "seller"].includes(result.user.role)) {
+            window.location.href = "seller.html";
+          } else {
+            window.location.href = "index.html";
+          }
         }, 700);
-
       } catch (err) {
         loginMessage.style.color = "red";
         loginMessage.textContent = "Network error. Please try again.";
-        if (loginBtn) {
-          loginBtn.disabled = false;
-          loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
-        }
+        loginBtn.disabled = false;
+        loginBtn.textContent = selectedRole === "artisan" ? "Sign In as Artisan" : "Sign In as Customer";
       }
     });
   }
 
-  // Forgot password panel
-  const forgotPanel = document.getElementById("forgotPanel");
-  const showForgotBtn = document.getElementById("showForgotBtn");
-  const hideForgotBtn = document.getElementById("hideForgotBtn");
-  const sendResetLinkBtn = document.getElementById("sendResetLinkBtn");
-  const fpEmail = document.getElementById("fpEmail");
-  const fpMessage = document.getElementById("fpMessage");
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      forgotMessage.textContent = "";
 
-  if (showForgotBtn && forgotPanel) {
-    showForgotBtn.addEventListener("click", () => {
-      forgotPanel.classList.add("active");
-      if (emailInput.value.trim()) {
-        fpEmail.value = emailInput.value.trim();
-      }
-      fpMessage.innerHTML = "";
-    });
-  }
+      const name = forgotName.value.trim();
+      const email = forgotEmail.value.trim();
+      const newPassword = forgotNewPassword.value;
 
-  if (hideForgotBtn && forgotPanel) {
-    hideForgotBtn.addEventListener("click", () => {
-      forgotPanel.classList.remove("active");
-      fpEmail.value = "";
-      fpMessage.innerHTML = "";
-    });
-  }
-
-  // Send reset link
-  if (sendResetLinkBtn) {
-    sendResetLinkBtn.addEventListener("click", async () => {
-      const email = fpEmail.value.trim();
-      
-      if (!email) {
-        fpMessage.innerHTML = '<div class="message-error">Please enter your email address</div>';
+      if (!name || !email || !newPassword) {
+        forgotMessage.style.color = "red";
+        forgotMessage.textContent = "All fields are required";
         return;
       }
 
-      sendResetLinkBtn.disabled = true;
-      sendResetLinkBtn.textContent = "Sending...";
+      if (newPassword.length < 6) {
+        forgotMessage.style.color = "red";
+        forgotMessage.textContent = "Password must be at least 6 characters";
+        return;
+      }
+
+      resetPasswordBtn.disabled = true;
+      resetPasswordBtn.textContent = "Resetting...";
 
       try {
         const response = await fetch(`${window.API_BASE}/api/users/forgot-password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ name, email, newPassword })
         });
 
         const result = await response.json();
-
-        if (result.success) {
-          fpMessage.innerHTML = `
-            <div class="message-success">
-              ✅ If an account exists with this email, you will receive a password reset link shortly.
-            </div>
-          `;
-          // Don't close the panel, let user read the message
-          setTimeout(() => {
-            forgotPanel.classList.remove("active");
-            fpEmail.value = "";
-            fpMessage.innerHTML = "";
-          }, 4000);
-        } else {
-          fpMessage.innerHTML = `<div class="message-error">❌ ${result.error || "Something went wrong"}</div>`;
+        if (!response.ok || !result.success) {
+          forgotMessage.style.color = "red";
+          forgotMessage.textContent = result.error || "Failed to reset password";
+          resetPasswordBtn.disabled = false;
+          resetPasswordBtn.textContent = "Reset Password";
+          return;
         }
+
+        forgotMessage.style.color = "green";
+        forgotMessage.textContent = "Password reset successfully. You can sign in now.";
+        passwordInput.value = "";
+        forgotPasswordForm.reset();
+        setTimeout(() => {
+          forgotPanel.classList.remove("active");
+          resetPasswordBtn.disabled = false;
+          resetPasswordBtn.textContent = "Reset Password";
+        }, 1200);
       } catch (err) {
-        fpMessage.innerHTML = '<div class="message-error">❌ Network error. Please try again.</div>';
-      } finally {
-        sendResetLinkBtn.disabled = false;
-        sendResetLinkBtn.textContent = "Send Reset Link";
+        forgotMessage.style.color = "red";
+        forgotMessage.textContent = "Network error. Please try again.";
+        resetPasswordBtn.disabled = false;
+        resetPasswordBtn.textContent = "Reset Password";
       }
     });
   }
@@ -478,3 +488,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <script src="navbar.js"></script>
 </body>
 </html>
+
+
+
+
+

@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     match: [
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/,
       "Please add a valid email"
     ]
   },
@@ -59,15 +59,16 @@ const userSchema = new mongoose.Schema({
   },
   verificationToken: String,
   verificationTokenExpire: Date,
-
-  // 🔑 Password reset fields
   resetPasswordToken: String,
-  resetPasswordExpire: Date
-}, { 
-  timestamps: true // automatically adds createdAt and updatedAt
+  resetPasswordExpire: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
 });
 
-// Hash password before saving
 userSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -75,12 +76,10 @@ userSchema.pre("save", async function(next) {
   next();
 });
 
-// Compare entered password with stored hash
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT
 userSchema.methods.getSignedJwtToken = function() {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
@@ -89,11 +88,12 @@ userSchema.methods.getSignedJwtToken = function() {
   return jwt.sign(
     { id: this._id, role: this.role },
     secret,
-    { expiresIn: process.env.JWT_EXPIRE || "30d" }
+    {
+      expiresIn: process.env.JWT_EXPIRE || "30d"
+    }
   );
 };
 
-// Generate and hash reset password token
 userSchema.methods.getResetPasswordToken = function() {
   const resetToken = crypto.randomBytes(20).toString("hex");
 
@@ -102,13 +102,11 @@ userSchema.methods.getResetPasswordToken = function() {
     .update(resetToken)
     .digest("hex");
 
-  // ⏱ Expiry set to 15 minutes
-  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };
 
-// Generate and hash email verification token
 userSchema.methods.getEmailVerificationToken = function() {
   const verificationToken = crypto.randomBytes(20).toString("hex");
 
