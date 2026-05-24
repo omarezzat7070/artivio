@@ -12,8 +12,8 @@
 html[data-theme="dark"],
 body.dark-mode {
   color-scheme: dark;
-  --primary: #ffb4a6;
-  --primary-dark: #ffd2cb;
+  --primary: #ba442f;
+  --primary-dark: #622319;
   --dark: #fff1ec;
   --bg: #1a0f0e;
   --card: #2a1917;
@@ -27,7 +27,7 @@ body.dark-mode {
   --navbar-bg: rgba(30, 17, 15, 0.97);
   --navbar-border: #65403a;
   --navbar-text: #fff7f2;
-  --navbar-hover: #ffb4a6;
+  --navbar-hover: #9b3a28;
 }
 
 body.dark-mode {
@@ -421,7 +421,7 @@ body.dark-mode .badge-failed,
 body.dark-mode .status-failed,
 body.dark-mode .error {
   background: #3f1717 !important;
-  color: #ffb0aa !important;
+  color: #672723 !important;
 }
 
 body[dir="rtl"] .profile-dropdown {
