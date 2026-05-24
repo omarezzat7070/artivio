@@ -12,22 +12,22 @@
 html[data-theme="dark"],
 body.dark-mode {
   color-scheme: dark;
-  --primary: #d38a7d;
-  --primary-dark: #efb0a4;
-  --dark: #f4ddd7;
-  --bg: #14100f;
-  --card: #211817;
-  --border: #3a2a27;
-  --light-bg: #14100f;
-  --page-text: #f8ebe7;
-  --surface: #211817;
-  --surface-soft: #1a1312;
-  --muted-text: #d6c2bc;
-  --card-shadow: rgba(0, 0, 0, 0.45);
-  --navbar-bg: rgba(22, 16, 15, 0.96);
-  --navbar-border: #3a2a27;
-  --navbar-text: #f8ebe7;
-  --navbar-hover: #f0a194;
+  --primary: #ffb4a6;
+  --primary-dark: #ffd2cb;
+  --dark: #fff1ec;
+  --bg: #1a0f0e;
+  --card: #2a1917;
+  --border: #65403a;
+  --light-bg: #1a0f0e;
+  --page-text: #fff7f2;
+  --surface: #2a1917;
+  --surface-soft: #35211e;
+  --muted-text: #e4c8bf;
+  --card-shadow: rgba(0, 0, 0, 0.52);
+  --navbar-bg: rgba(30, 17, 15, 0.97);
+  --navbar-border: #65403a;
+  --navbar-text: #fff7f2;
+  --navbar-hover: #ffb4a6;
 }
 
 body.dark-mode {
@@ -234,7 +234,7 @@ body.dark-mode .nav-links {
 
 body.dark-mode .nav-toggle-group button.active,
 body.dark-mode .nav-toggle-group button:hover {
-  color: #2a1512;
+  color: #331513;
 }
 
 body.dark-mode main,
@@ -262,6 +262,24 @@ body.dark-mode .checkout-container,
 body.dark-mode .summary-card,
 body.dark-mode .modal-content,
 body.dark-mode .topbar,
+body.dark-mode .box,
+body.dark-mode .panel,
+body.dark-mode .part,
+body.dark-mode .info-box,
+body.dark-mode .upload-box,
+body.dark-mode .cart-item-row,
+body.dark-mode .order-item-row,
+body.dark-mode .part-card,
+body.dark-mode .method,
+body.dark-mode .filter-btn,
+body.dark-mode .search-box,
+body.dark-mode .cart-modal,
+body.dark-mode .cart-header,
+body.dark-mode .cart-footer,
+body.dark-mode .cart-item,
+body.dark-mode .cart-item-qty,
+body.dark-mode .item,
+body.dark-mode .line,
 body.dark-mode table {
   background: var(--surface) !important;
   border-color: var(--border) !important;
@@ -278,10 +296,26 @@ body.dark-mode .products,
 body.dark-mode .details,
 body.dark-mode .empty-state,
 body.dark-mode .summary-stats,
-body.dark-mode .progress-bg {
+body.dark-mode .progress-bg,
+body.dark-mode tbody,
+body.dark-mode tr,
+body.dark-mode .order,
+body.dark-mode .media,
+body.dark-mode .cart-summary-items,
+body.dark-mode .profile-header,
+body.dark-mode .avatar-container {
   background: var(--surface-soft) !important;
   color: var(--page-text) !important;
   border-color: var(--border) !important;
+}
+
+body.dark-mode .method.active,
+body.dark-mode .method:hover,
+body.dark-mode .filter-btn.active,
+body.dark-mode .filter-btn:hover {
+  background: #4a2b27 !important;
+  border-color: var(--primary) !important;
+  color: var(--page-text) !important;
 }
 
 body.dark-mode td,
@@ -298,27 +332,48 @@ body.dark-mode h4,
 body.dark-mode label,
 body.dark-mode p,
 body.dark-mode span,
-body.dark-mode li {
-  color: inherit;
+body.dark-mode li,
+body.dark-mode .info-value,
+body.dark-mode .cart-item-name-payment,
+body.dark-mode .cart-item-subtotal,
+body.dark-mode .order-total,
+body.dark-mode .cart-item-name,
+body.dark-mode .cart-total,
+body.dark-mode .upload-text,
+body.dark-mode .total {
+  color: var(--page-text) !important;
+}
+
+body.dark-mode small,
+body.dark-mode .muted,
+body.dark-mode .subtitle,
+body.dark-mode .description,
+body.dark-mode .note,
+body.dark-mode .info-label,
+body.dark-mode .label,
+body.dark-mode .upload-hint,
+body.dark-mode .order-customer,
+body.dark-mode .order-date {
+  color: var(--muted-text) !important;
 }
 
 body.dark-mode input,
 body.dark-mode select,
 body.dark-mode textarea {
-  background: #181211 !important;
+  background: #211412 !important;
   border-color: var(--border) !important;
   color: var(--page-text) !important;
 }
 
 body.dark-mode input::placeholder,
 body.dark-mode textarea::placeholder {
-  color: #a99590 !important;
+  color: #c6aaa1 !important;
 }
 
 body.dark-mode .btn-outline,
 body.dark-mode button.btn-outline,
 body.dark-mode .action-btn {
-  background: #2a1c1a !important;
+  background: #3a2421 !important;
   border-color: var(--border) !important;
   color: var(--navbar-hover) !important;
 }
@@ -327,6 +382,23 @@ body.dark-mode .btn,
 body.dark-mode button,
 body.dark-mode .signup-btn {
   border-color: transparent;
+}
+
+body.dark-mode .btn-primary,
+body.dark-mode .btn-view-all,
+body.dark-mode .edit-btn,
+body.dark-mode .save-btn,
+body.dark-mode button[type="submit"] {
+  background: var(--primary) !important;
+  color: #331513 !important;
+}
+
+body.dark-mode .cancel-btn,
+body.dark-mode .remove-part,
+body.dark-mode .btn-secondary {
+  background: #3a2421 !important;
+  color: var(--page-text) !important;
+  border-color: var(--border) !important;
 }
 
 body.dark-mode a {
