@@ -210,7 +210,7 @@
       html.dark-mode,
       body.dark-mode {
         color-scheme: dark;
-        --primary: #ffb4a6;
+        --primary: #6C2929;
         --primary-dark: #ffd2cb;
         --dark: #fff1ec;
         --bg: #1a0f0e;
@@ -225,7 +225,7 @@
         --navbar-bg: rgba(30, 17, 15, 0.97);
         --navbar-border: #65403a;
         --navbar-text: #fff7f2;
-        --navbar-hover: #ffb4a6;
+        --navbar-hover: #6C2929;
       }
 
       body.dark-mode {
@@ -253,7 +253,7 @@
       body.dark-mode .nav-links a:hover,
       body.dark-mode .profile-dropdown a:hover,
       body.dark-mode .brand-settings-toggle:hover {
-        color: #ffb4a6 !important;
+        color: #6C2929 !important;
       }
 
       body.dark-mode main,
@@ -338,7 +338,7 @@
       body.dark-mode .filter-btn.active,
       body.dark-mode .filter-btn:hover {
         background: #4a2b27 !important;
-        border-color: #ffb4a6 !important;
+        border-color: #6C2929 !important;
         color: #fff7f2 !important;
       }
 
@@ -405,7 +405,7 @@
       body.dark-mode .action-btn {
         background: #3a2421 !important;
         border-color: #65403a !important;
-        color: #ffb4a6 !important;
+        color: #6C2929 !important;
       }
 
       body.dark-mode .btn-primary,
@@ -414,7 +414,7 @@
       body.dark-mode .save-btn,
       body.dark-mode .signup-btn,
       body.dark-mode button[type="submit"] {
-        background: #ffb4a6 !important;
+        background: #6C2929 !important;
         color: #331513 !important;
       }
 
@@ -427,7 +427,7 @@
       }
 
       body.dark-mode a {
-        color: #ffb4a6;
+        color: #6C2929;
       }
 
       body.dark-mode img {
