@@ -226,6 +226,52 @@ body.dark-mode {
   color: #fff;
 }
 
+.password-toggle-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-toggle-wrap input[type="password"],
+.password-toggle-wrap input[type="text"] {
+  padding-right: 74px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto !important;
+  min-width: 54px;
+  margin: 0 !important;
+  padding: 5px 8px !important;
+  border: 1px solid rgba(108, 41, 41, 0.22) !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #6C2929 !important;
+  cursor: pointer;
+  font: 700 12px 'Segoe UI', sans-serif !important;
+  line-height: 1.2;
+}
+
+.password-toggle-btn:hover {
+  background: #faf6f5 !important;
+  border-color: #6C2929 !important;
+}
+
+body[dir="rtl"] .password-toggle-wrap input[type="password"],
+body[dir="rtl"] .password-toggle-wrap input[type="text"] {
+  padding-right: 12px;
+  padding-left: 74px;
+}
+
+body[dir="rtl"] .password-toggle-btn {
+  right: auto;
+  left: 8px;
+}
+
 body.dark-mode .navbar,
 body.dark-mode .profile-dropdown,
 body.dark-mode .nav-links {
@@ -399,6 +445,17 @@ body.dark-mode .btn-secondary {
   background: #3a2421 !important;
   color: var(--page-text) !important;
   border-color: var(--border) !important;
+}
+
+body.dark-mode .password-toggle-btn {
+  background: #3a2421 !important;
+  color: #fff7f2 !important;
+  border-color: var(--border) !important;
+}
+
+body.dark-mode .password-toggle-btn:hover {
+  background: #4a2b27 !important;
+  border-color: var(--primary) !important;
 }
 
 body.dark-mode a {

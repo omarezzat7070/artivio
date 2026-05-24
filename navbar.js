@@ -426,6 +426,17 @@
         border-color: #65403a !important;
       }
 
+      body.dark-mode .password-toggle-btn {
+        background: #3a2421 !important;
+        color: #fff7f2 !important;
+        border-color: #65403a !important;
+      }
+
+      body.dark-mode .password-toggle-btn:hover {
+        background: #4a2b27 !important;
+        border-color: #6C2929 !important;
+      }
+
       body.dark-mode a {
         color: #6C2929;
       }
@@ -690,6 +701,35 @@
     }
   }
 
+  function initPasswordToggles() {
+    document.querySelectorAll('input[type="password"]').forEach((input) => {
+      if (input.dataset.passwordToggleBound === "true") return;
+      input.dataset.passwordToggleBound = "true";
+
+      const wrapper = document.createElement("span");
+      wrapper.className = "password-toggle-wrap";
+      input.parentNode.insertBefore(wrapper, input);
+      wrapper.appendChild(input);
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "password-toggle-btn";
+      button.textContent = "Show";
+      button.setAttribute("aria-label", "Show password");
+      button.setAttribute("aria-pressed", "false");
+
+      button.addEventListener("click", () => {
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        button.textContent = isHidden ? "Hide" : "Show";
+        button.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+        button.setAttribute("aria-pressed", isHidden ? "true" : "false");
+      });
+
+      wrapper.appendChild(button);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
     applyTheme(getTheme());
     applyLanguage(getLanguage());
@@ -699,6 +739,7 @@
     updateLoginLink();
     bindPreferenceControls();
     translateKnownNavigationLinks();
+    initPasswordToggles();
   });
 
   window.addEventListener("storage", function(event) {
