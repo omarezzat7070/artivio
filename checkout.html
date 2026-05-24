@@ -162,6 +162,67 @@ button:disabled{
   color:#444;
 }
 
+.instapay-number {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:#fff;
+  border:1px solid #eadbd5;
+  border-radius:8px;
+  padding:12px;
+  margin-top:12px;
+  font-weight:bold;
+  color:#3d1616;
+}
+
+.upload-box {
+  border:2px dashed #6C2929;
+  border-radius:10px;
+  padding:20px;
+  text-align:center;
+  cursor:pointer;
+  background:#faf6f5;
+  margin-bottom:18px;
+  transition:background 0.2s, border-color 0.2s;
+}
+
+.upload-box:hover {
+  background:#f5ece8;
+  border-color:#4e1d1d;
+}
+
+.upload-box i {
+  font-size:30px;
+  color:#6C2929;
+  margin-bottom:8px;
+}
+
+.upload-box input {
+  display:none;
+}
+
+.upload-text {
+  color:#3d1616;
+  font-weight:bold;
+  margin-bottom:4px;
+}
+
+.upload-hint {
+  color:#777;
+  font-size:13px;
+}
+
+.receipt-preview {
+  display:none;
+  max-width:180px;
+  max-height:180px;
+  object-fit:cover;
+  border-radius:8px;
+  margin:0 auto 18px;
+  border:1px solid #eadbd5;
+}
+
 .cart-summary-items {
   margin-bottom: 20px;
   max-height: 300px;
@@ -386,9 +447,21 @@ button:disabled{
 <div id="instapayForm" class="hidden">
 <div class="info-box">
 Pay instantly using your InstaPay mobile wallet.
+<div class="instapay-number">
+<span>Send to InstaPay</span>
+<span>+201017001242</span>
+</div>
 </div>
 <label for="instapayPhone">InstaPay Phone Number</label>
 <input type="text" id="instapayPhone" placeholder="+20 100 123 4567">
+<label for="instapayReceipt">Payment Receipt</label>
+<label class="upload-box" for="instapayReceipt">
+<i class="fa-solid fa-cloud-arrow-up"></i>
+<div class="upload-text" id="receiptUploadText">Upload receipt image</div>
+<div class="upload-hint">JPG, PNG, WEBP, or GIF up to 5 MB</div>
+<input type="file" id="instapayReceipt" accept="image/*">
+</label>
+<img id="instapayReceiptPreview" class="receipt-preview" alt="InstaPay receipt preview">
 </div>
 
 <!-- CASH -->
@@ -754,8 +827,13 @@ async function processPayment() {
   } 
   else if (selectedMethod === 'instapay') {
     const phone = document.getElementById('instapayPhone').value.trim();
+    const receipt = document.getElementById('instapayReceipt').files[0];
     if (!phone) {
       alert('Please enter your InstaPay phone number.');
+      return;
+    }
+    if (!receipt) {
+      alert('Please upload your InstaPay payment receipt.');
       return;
     }
     paymentData = { phoneNumber: phone };
@@ -821,21 +899,43 @@ async function processPayment() {
       paymentMethod: selectedMethod
     };
     
+    let fetchOptions;
+    if (selectedMethod === 'instapay') {
+      const formData = new FormData();
+      formData.append('items', JSON.stringify(requestBody.items));
+      formData.append('successUrl', requestBody.successUrl);
+      formData.append('cancelUrl', requestBody.cancelUrl);
+      formData.append('payment', JSON.stringify(requestBody.payment));
+      formData.append('paymentMethod', requestBody.paymentMethod);
+      formData.append('instapayReceipt', document.getElementById('instapayReceipt').files[0]);
+
+      fetchOptions = {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        },
+        credentials: 'include',
+        body: formData
+      };
+    } else {
+      fetchOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestBody)
+      };
+    }
+
     console.log('?? Sending request to:', `${API_BASE}/api/payment/create-checkout-session`);
     console.log('?? Request headers:', {
-      'Content-Type': 'application/json',
+      'Content-Type': selectedMethod === 'instapay' ? 'multipart/form-data' : 'application/json',
       'Authorization': 'Bearer ' + token.substring(0, 20) + '...'
     });
     
-    const response = await fetch(`${API_BASE}/api/payment/create-checkout-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      credentials: 'include',
-      body: JSON.stringify(requestBody)
-    });
+    const response = await fetch(`${API_BASE}/api/payment/create-checkout-session`, fetchOptions);
     
     console.log('?? Response status:', response.status);
     console.log('?? Response status text:', response.statusText);
@@ -891,6 +991,41 @@ function formatExpiry(input) {
     value = value.substring(0, 2) + '/' + value.substring(2, 4);
   }
   input.value = value;
+}
+
+function handleReceiptPreview(input) {
+  const file = input.files && input.files[0];
+  const preview = document.getElementById('instapayReceiptPreview');
+  const uploadText = document.getElementById('receiptUploadText');
+
+  if (!file) {
+    preview.style.display = 'none';
+    preview.removeAttribute('src');
+    uploadText.textContent = 'Upload receipt image';
+    return;
+  }
+
+  if (!file.type.startsWith('image/')) {
+    alert('Please upload an image file.');
+    input.value = '';
+    preview.style.display = 'none';
+    preview.removeAttribute('src');
+    uploadText.textContent = 'Upload receipt image';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Receipt image must be 5 MB or smaller.');
+    input.value = '';
+    preview.style.display = 'none';
+    preview.removeAttribute('src');
+    uploadText.textContent = 'Upload receipt image';
+    return;
+  }
+
+  uploadText.textContent = file.name;
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
 }
 
 // Check auth on page load
@@ -978,6 +1113,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   const expiryInput = document.getElementById('expiry');
   if (expiryInput) {
     expiryInput.addEventListener('input', function(e) { formatExpiry(this); });
+  }
+
+  const receiptInput = document.getElementById('instapayReceipt');
+  if (receiptInput) {
+    receiptInput.addEventListener('change', function() { handleReceiptPreview(this); });
   }
 
   document.getElementById('payBtn').addEventListener('click', processPayment);

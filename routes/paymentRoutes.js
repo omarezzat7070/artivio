@@ -4,6 +4,56 @@ const { protect } = require('../middleware/auth');
 const Order = require('../models/order');
 const Course = require('../models/course');
 const crypto = require('crypto');
+const multer = require('multer');
+const { isCloudinaryConfigured, uploadToCloudinary } = require('../config/cloudinary');
+const { saveUploadLocally } = require('../config/localUpload');
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype || !file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image receipts are allowed'));
+    }
+    cb(null, true);
+  }
+});
+
+const uploadInstapayReceipt = (req, res, next) => {
+  upload.single('instapayReceipt')(req, res, (err) => {
+    if (!err) return next();
+
+    const message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'Receipt image must be 5 MB or smaller.'
+      : err.message || 'Failed to upload receipt image.';
+
+    return res.status(400).json({ error: message });
+  });
+};
+
+const parseBodyField = (value, fallback) => {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch (err) {
+    return fallback;
+  }
+};
+
+async function saveInstapayReceipt(file) {
+  if (!file) return '';
+
+  if (!isCloudinaryConfigured()) {
+    return saveUploadLocally(file, 'instapay-receipt');
+  }
+
+  const result = await uploadToCloudinary(file, {
+    folder: 'artivio/payments/instapay',
+    resource_type: 'image'
+  });
+  return result.secure_url;
+}
 
 async function enrollPaidOrderCourses(order) {
   if (!order || !order.hasCourse) return;
@@ -27,8 +77,10 @@ async function enrollPaidOrderCourses(order) {
 }
 
 // POST /api/payment/create-checkout-session
-router.post('/create-checkout-session', protect, async (req, res) => {
-  const { items, successUrl, cancelUrl, payment, paymentMethod } = req.body;
+router.post('/create-checkout-session', protect, uploadInstapayReceipt, async (req, res) => {
+  const items = parseBodyField(req.body.items, []);
+  const payment = parseBodyField(req.body.payment, {});
+  const { successUrl, cancelUrl, paymentMethod } = req.body;
   
   const selectedMethod = paymentMethod || 'card';
 
@@ -56,6 +108,10 @@ router.post('/create-checkout-session', protect, async (req, res) => {
       });
     }
 
+    const instapayReceipt = selectedMethod === 'instapay'
+      ? await saveInstapayReceipt(req.file)
+      : '';
+
     let paymentDetails = {};
     if (selectedMethod === 'card') {
       if (payment?.cardNumber) {
@@ -69,9 +125,17 @@ router.post('/create-checkout-session', protect, async (req, res) => {
         };
       }
     } else if (selectedMethod === 'instapay') {
+      if (!instapayReceipt) {
+        return res.status(400).json({
+          error: 'Please upload your InstaPay payment receipt.'
+        });
+      }
+
       paymentDetails = {
         type: 'instapay',
         phoneNumber: payment?.phoneNumber || '',
+        receiverNumber: '+201017001242',
+        receiptImage: instapayReceipt,
         status: 'completed'
       };
     } else if (selectedMethod === 'cash') {

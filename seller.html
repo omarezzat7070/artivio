@@ -545,6 +545,27 @@
     return `LE ${price}`;
   }
 
+  function formatMoney(amount) {
+    const value = Number(amount || 0);
+    return `LE ${Number.isInteger(value) ? value : value.toFixed(2)}`;
+  }
+
+  let courseEarnings = 0;
+  let productEarnings = 0;
+  function updateTotalEarnings() {
+    document.getElementById('totalEarnings').textContent = formatMoney(courseEarnings + productEarnings);
+  }
+
+  function calculateProductEarnings(orders) {
+    return (orders || []).reduce((orderTotal, order) => {
+      const itemsTotal = (order.orderedProducts || []).reduce((sum, item) => {
+        if ((item.sellerStatus || 'pending') === 'rejected') return sum;
+        return sum + (Number(item.price || 0) * Number(item.quantity || 1));
+      }, 0);
+      return orderTotal + itemsTotal;
+    }, 0);
+  }
+
   function formatStatus(status) {
     const s = (status || 'pending').toLowerCase();
     if (s === 'accepted') return 'Accepted';
@@ -778,14 +799,15 @@
       allMyCourses = (data.data || []).filter(c => c.artisan && (c.artisan._id === user.id || c.artisan === user.id));
       document.getElementById('courseCount').textContent = allMyCourses.length;
 
-      let totalStudents = 0, totalEarnings = 0;
+      let totalStudents = 0;
+      courseEarnings = 0;
       allMyCourses.forEach(c => {
         const s = c.students?.length || 0;
         totalStudents += s;
-        totalEarnings += c.price * s;
+        courseEarnings += Number(c.price || 0) * s;
       });
       document.getElementById('studentCount').textContent = totalStudents;
-      document.getElementById('totalEarnings').textContent = `LE ${totalEarnings}`;
+      updateTotalEarnings();
 
       const tbody = document.getElementById('coursesBody');
       if (!allMyCourses.length) {
@@ -818,6 +840,8 @@
       const res = await fetch(`${API_BASE}/api/orders/seller-product-orders`, { headers: authHeaders() });
       const data = await res.json();
       allSellerOrders = data.data || [];
+      productEarnings = calculateProductEarnings(allSellerOrders);
+      updateTotalEarnings();
       renderOrders(allSellerOrders);
     } catch (err) {
       document.getElementById('ordersContainer').innerHTML = '<p style="color:red">Failed to load orders.</p>';
@@ -921,6 +945,8 @@
           const item = order.orderedProducts.find(i => i._id === itemId);
           if (item) item.sellerStatus = status;
         }
+        productEarnings = calculateProductEarnings(allSellerOrders);
+        updateTotalEarnings();
         renderOrders(allSellerOrders);
       } else {
         alert(data.error || 'Failed to update status');
