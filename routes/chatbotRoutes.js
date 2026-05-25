@@ -67,7 +67,7 @@ function courseLine(c, i) {
 }
 
 // ── Build system prompt ──────────────────────────────────────────────────────
-function buildSystemPrompt() {
+function buildSystemPrompt(replyLanguage) {
   const productList = cachedProducts.length
     ? cachedProducts.map(productLine).join('\n')
     : 'No products available right now.';
@@ -78,7 +78,7 @@ function buildSystemPrompt() {
 
   return `You are Artivio Assistant — a smart, friendly assistant for Artivio, a handmade crafts marketplace.
 
-LANGUAGE RULE: Always detect the language of the user's message and reply in the SAME language. Arabic message = full Arabic reply. English message = English reply.
+LANGUAGE RULE: Reply only in ${replyLanguage === 'ar' ? 'Arabic' : 'English'} for the latest user message. Ignore the language of older chat history when choosing the reply language.
 
 CATALOG — use this for any product or course related questions:
 
@@ -145,12 +145,13 @@ async function callAI(systemPrompt, messages) {
 // ── Language detect (for fallback message only) ──────────────────────────────
 function detectLanguage(message) {
   const arabic = (message.match(/[\u0600-\u06FF]/g) || []).length;
-  return arabic > message.length * 0.2 ? 'ar' : 'en';
+  const latin = (message.match(/[A-Za-z]/g) || []).length;
+  return arabic > latin ? 'ar' : 'en';
 }
 
 function offlineFallback(lang) {
   return lang === 'ar'
-    ? 'عذراً، حدث خطأ مؤقت. يرجى المحاولة مرة أخرى.'
+    ? '\u0639\u0630\u0631\u0627\u060c \u062d\u062f\u062b \u062e\u0637\u0623 \u0645\u0624\u0642\u062a. \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.'
     : 'Sorry, something went wrong. Please try again.';
 }
 
@@ -164,6 +165,7 @@ router.post('/message', async (req, res) => {
     }
 
     await refreshCache();
+    const replyLanguage = detectLanguage(message);
 
     const chatSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
     let history = conversationHistory.get(chatSessionId) || { messages: [], timestamp: Date.now() };
@@ -171,10 +173,10 @@ router.post('/message', async (req, res) => {
     history.messages.push({ role: 'user', content: message });
     history.messages = history.messages.slice(-10);
 
-    let reply = await callAI(buildSystemPrompt(), history.messages);
+    let reply = await callAI(buildSystemPrompt(replyLanguage), history.messages);
 
     if (!reply) {
-      reply = offlineFallback(detectLanguage(message));
+      reply = offlineFallback(replyLanguage);
     }
 
     history.messages.push({ role: 'assistant', content: reply });
@@ -191,9 +193,10 @@ router.post('/message', async (req, res) => {
 
   } catch (error) {
     console.error('Chat error:', error.message);
+    const fallbackLanguage = detectLanguage(req.body?.message || '');
     res.json({
       success: true,
-      reply: 'Sorry, something went wrong. Please try again.'
+      reply: offlineFallback(fallbackLanguage)
     });
   }
 });
