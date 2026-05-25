@@ -534,7 +534,7 @@
       });
     });
 
-    document.querySelectorAll('.cancel-product-btn').forEach(btn => {
+    document.querySelectorAll('.cancel-order-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         const orderId = this.getAttribute('data-order-id');
         const itemId = this.getAttribute('data-item-id');
@@ -575,7 +575,7 @@
       }
 
       await loadPurchases();
-      alert('Product cancelled successfully.');
+      alert('order cancelled successfully.');
     } catch (err) {
       alert('Network error. Please try again.');
       button.disabled = false;
