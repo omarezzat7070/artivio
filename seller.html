@@ -145,6 +145,17 @@
     .no-orders { text-align: center; padding: 50px 20px; color: var(--gray); }
     .no-orders i { font-size: 48px; color: #ddd; display: block; margin-bottom: 14px; }
 
+    .course-sales-panel { margin-bottom: 22px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .course-sales-header { background: #f9f9f9; padding: 14px 18px; display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+    .course-sales-header h3 { color: var(--primary); font-size: 16px; margin: 0; }
+    .course-sales-total { color: var(--gray); font-size: 13px; font-weight: 600; }
+    .course-sales-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; }
+    .course-sale-card { display: flex; gap: 12px; padding: 14px 18px; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; align-items: center; }
+    .course-sale-img { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee; }
+    .course-sale-title { font-weight: 700; font-size: 14px; color: #333; margin-bottom: 4px; }
+    .course-sale-meta { color: var(--gray); font-size: 12px; line-height: 1.5; }
+    .course-sale-earnings { margin-left: auto; color: var(--primary); font-weight: 800; white-space: nowrap; }
+
     /* Responsive */
     @media (max-width: 768px) {
       .tabs { gap: 5px; }
@@ -234,7 +245,7 @@
     <div class="stat-card">
       <i class="fa-solid fa-users"></i>
       <div class="value" id="studentCount">0</div>
-      <div class="label">Total Students</div>
+      <div class="label">Paid Course Customers</div>
     </div>
     <div class="stat-card">
       <i class="fa-solid fa-dollar-sign"></i>
@@ -405,8 +416,9 @@
           <option value="accepted">Accepted</option>
           <option value="rejected">Rejected</option>
         </select>
-        <input type="text" id="orderSearch" oninput="filterOrders()" placeholder="Search by customer or product...">
+        <input type="text" id="orderSearch" oninput="filterOrders()" placeholder="Search by customer, product, or course...">
       </div>
+      <div id="courseSalesContainer"></div>
       <div id="ordersContainer">
         <p style="color:var(--gray)">Loading orders...</p>
       </div>
@@ -554,16 +566,6 @@
   let productEarnings = 0;
   function updateTotalEarnings() {
     document.getElementById('totalEarnings').textContent = formatMoney(courseEarnings + productEarnings);
-  }
-
-  function calculateProductEarnings(orders) {
-    return (orders || []).reduce((orderTotal, order) => {
-      const itemsTotal = (order.orderedProducts || []).reduce((sum, item) => {
-        if ((item.sellerStatus || 'pending') === 'rejected') return sum;
-        return sum + (Number(item.price || 0) * Number(item.quantity || 1));
-      }, 0);
-      return orderTotal + itemsTotal;
-    }, 0);
   }
 
   function formatStatus(status) {
@@ -799,16 +801,6 @@
       allMyCourses = (data.data || []).filter(c => c.artisan && (c.artisan._id === user.id || c.artisan === user.id));
       document.getElementById('courseCount').textContent = allMyCourses.length;
 
-      let totalStudents = 0;
-      courseEarnings = 0;
-      allMyCourses.forEach(c => {
-        const s = c.students?.length || 0;
-        totalStudents += s;
-        courseEarnings += Number(c.price || 0) * s;
-      });
-      document.getElementById('studentCount').textContent = totalStudents;
-      updateTotalEarnings();
-
       const tbody = document.getElementById('coursesBody');
       if (!allMyCourses.length) {
         tbody.innerHTML = '<tr><td colspan="6">No courses yet. Add your first course!</td></tr>';
@@ -834,14 +826,26 @@
   // LOAD SELLER ORDERS
   // =====================
   let allSellerOrders = [];
+  let allCourseSales = [];
 
   async function loadSellerOrders() {
     try {
-      const res = await fetch(`${API_BASE}/api/orders/seller-product-orders`, { headers: authHeaders() });
+      const res = await fetch(`${API_BASE}/api/orders/seller-sales-summary`, { headers: authHeaders() });
       const data = await res.json();
-      allSellerOrders = data.data || [];
-      productEarnings = calculateProductEarnings(allSellerOrders);
+      if (!res.ok || data.success === false) throw new Error(data.error || 'Failed to load sales summary');
+      const summary = data.data || {};
+
+      allSellerOrders = summary.productOrders || [];
+      allCourseSales = summary.courseSales || [];
+      productEarnings = Number(summary.earnings?.products || 0);
+      courseEarnings = Number(summary.earnings?.courses || 0);
+
+      if (summary.paidCourseCustomers !== undefined) {
+        document.getElementById('studentCount').textContent = summary.paidCourseCustomers;
+      }
+
       updateTotalEarnings();
+      renderCourseSales(allCourseSales);
       renderOrders(allSellerOrders);
     } catch (err) {
       document.getElementById('ordersContainer').innerHTML = '<p style="color:red">Failed to load orders.</p>';
@@ -860,7 +864,48 @@
         order.orderedProducts?.some(p => (p.sellerStatus || 'pending') === status);
       return matchSearch && matchStatus;
     });
+    renderCourseSales(allCourseSales.filter(course => !search || course.title?.toLowerCase().includes(search)));
     renderOrders(filtered);
+  }
+
+  function renderCourseSales(courseSales) {
+    const container = document.getElementById('courseSalesContainer');
+    if (!container) return;
+
+    if (!courseSales.length) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const totalCustomers = courseSales.reduce((sum, course) => sum + Number(course.paidCustomers || 0), 0);
+    const totalEarnings = courseSales.reduce((sum, course) => sum + Number(course.earnings || 0), 0);
+
+    container.innerHTML = `
+      <div class="course-sales-panel">
+        <div class="course-sales-header">
+          <h3><i class="fa-solid fa-video" style="margin-right:6px"></i>Paid Course Sales</h3>
+          <span class="course-sales-total">${totalCustomers} paid customers | ${formatMoney(totalEarnings)}</span>
+        </div>
+        <div class="course-sales-list">
+          ${courseSales.map(course => `
+            <div class="course-sale-card">
+              <img class="course-sale-img"
+                src="${course.image ? getMediaUrl(course.image) : 'assets/no-background.png'}"
+                onerror="this.src='assets/no-background.png'"
+                alt="${escapeHtml(course.title)}">
+              <div>
+                <div class="course-sale-title">${escapeHtml(course.title)}</div>
+                <div class="course-sale-meta">
+                  ${Number(course.paidCustomers || 0)} paid customers<br>
+                  ${Number(course.paidPurchases || 0)} paid purchases
+                </div>
+              </div>
+              <div class="course-sale-earnings">${formatMoney(course.earnings)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
   }
 
   function renderOrders(orders) {
@@ -940,14 +985,7 @@
       });
       const data = await res.json();
       if (res.ok) {
-        const order = allSellerOrders.find(o => o._id === orderId);
-        if (order) {
-          const item = order.orderedProducts.find(i => i._id === itemId);
-          if (item) item.sellerStatus = status;
-        }
-        productEarnings = calculateProductEarnings(allSellerOrders);
-        updateTotalEarnings();
-        renderOrders(allSellerOrders);
+        await loadSellerOrders();
       } else {
         alert(data.error || 'Failed to update status');
       }

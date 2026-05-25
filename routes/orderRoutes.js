@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/order');
 const { protect, authorize } = require('../middleware/auth');
-const mongoose = require('mongoose');
-const Product = mongoose.model('Product');
+const Product = require('../models/product');
+const Course = require('../models/course');
 
 const {
   getAllOrders,
@@ -37,6 +37,151 @@ router.get('/my-orders', protect, async (req, res) => {
 
 // Admin stats
 router.get('/admin/stats', protect, authorize('admin'), getOrderStats);
+
+async function getSellerProductOrders(sellerId) {
+  const sellerProducts = await Product.find({ artisan: sellerId });
+  const productIds = sellerProducts.map(p => p._id.toString());
+
+  if (productIds.length === 0) {
+    return { orders: [], earnings: 0 };
+  }
+
+  const orders = await Order.find({
+    'items.item': { $in: productIds },
+    'items.itemType': 'Product',
+    paymentStatus: 'paid'
+  })
+  .populate('user', 'name email phone address')
+  .populate('items.item')
+  .sort({ createdAt: -1 });
+
+  let earnings = 0;
+  const enrichedOrders = orders.map(order => {
+    const orderedProducts = order.items
+      .filter(item =>
+        item.itemType === 'Product' &&
+        item.item &&
+        productIds.includes(item.item._id.toString())
+      )
+      .map(item => {
+        const quantity = Number(item.quantity || 1);
+        const price = Number(item.price || 0);
+
+        if (item.status !== 'cancelled' && (item.sellerStatus || 'pending') !== 'rejected') {
+          earnings += price * quantity;
+        }
+
+        return {
+          _id: item._id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          status: item.status || 'active',
+          sellerStatus: item.sellerStatus || 'pending',
+          sellerStatusUpdatedAt: item.sellerStatusUpdatedAt,
+          image: item.item?.image || null,
+        };
+      });
+
+    return { ...order.toObject(), orderedProducts };
+  });
+
+  return { orders: enrichedOrders, earnings };
+}
+
+async function getSellerCourseSales(sellerId) {
+  const sellerCourses = await Course.find({ artisan: sellerId }).select('title price image category').lean();
+  const courseIds = sellerCourses.map(c => c._id.toString());
+
+  if (courseIds.length === 0) {
+    return { courseSales: [], earnings: 0, paidCustomers: 0 };
+  }
+
+  const courseById = new Map(sellerCourses.map(course => [course._id.toString(), course]));
+  const salesByCourse = new Map(sellerCourses.map(course => [
+    course._id.toString(),
+    {
+      _id: course._id,
+      title: course.title,
+      price: course.price,
+      image: course.image || null,
+      category: course.category || 'Course',
+      paidCustomers: 0,
+      paidPurchases: 0,
+      earnings: 0,
+      customerKeys: new Set()
+    }
+  ]));
+
+  const orders = await Order.find({
+    'items.item': { $in: courseIds },
+    'items.itemType': 'Course',
+    paymentStatus: 'paid'
+  })
+  .populate('user', 'name email')
+  .lean();
+
+  let earnings = 0;
+  for (const order of orders) {
+    const customerKey = order.user?._id?.toString()
+      || order.user?.email
+      || order.paymentDetails?.email
+      || order.paymentDetails?.deliveryEmail
+      || order._id.toString();
+
+    for (const item of order.items || []) {
+      const itemCourseId = item.item?.toString();
+      if (item.itemType !== 'Course' || item.status === 'cancelled' || !courseById.has(itemCourseId)) continue;
+
+      const quantity = Number(item.quantity || 1);
+      const itemEarnings = Number(item.price || 0) * quantity;
+      const sale = salesByCourse.get(itemCourseId);
+
+      sale.customerKeys.add(customerKey);
+      sale.paidPurchases += quantity;
+      sale.earnings += itemEarnings;
+      earnings += itemEarnings;
+    }
+  }
+
+  const courseSales = [...salesByCourse.values()]
+    .map(sale => {
+      sale.paidCustomers = sale.customerKeys.size;
+      delete sale.customerKeys;
+      return sale;
+    })
+    .filter(sale => sale.paidPurchases > 0)
+    .sort((a, b) => b.earnings - a.earnings);
+
+  const paidCustomers = courseSales.reduce((sum, sale) => sum + sale.paidCustomers, 0);
+  return { courseSales, earnings, paidCustomers };
+}
+
+router.get('/seller-sales-summary', protect, async (req, res) => {
+  try {
+    const [productSummary, courseSummary] = await Promise.all([
+      getSellerProductOrders(req.user._id),
+      getSellerCourseSales(req.user._id)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        productOrders: productSummary.orders,
+        courseSales: courseSummary.courseSales,
+        earnings: {
+          products: productSummary.earnings,
+          courses: courseSummary.earnings,
+          total: productSummary.earnings + courseSummary.earnings
+        },
+        paidCourseCustomers: courseSummary.paidCustomers
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching seller sales summary:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Seller's product orders — WITH customer info + product images populated
 router.get('/seller-product-orders', protect, async (req, res) => {
