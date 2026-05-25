@@ -138,7 +138,7 @@
       margin-left: 10px;
     }
 
-    .cancel-product-btn {
+    .cancel-order-btn {
       background: #b91c1c;
       color: white;
       padding: 8px 20px;
@@ -148,7 +148,7 @@
       font-weight: 600;
     }
 
-    .cancel-product-btn:disabled {
+    .cancel-order-btn:disabled {
       background: #9ca3af;
       cursor: not-allowed;
     }
@@ -164,7 +164,7 @@
       margin-top: 8px;
     }
 
-    .view-btn:hover, .track-btn:hover, .cancel-product-btn:hover {
+    .view-btn:hover, .track-btn:hover, .cancel-order-btn:hover {
       opacity: 0.9;
     }
 
@@ -522,7 +522,7 @@
         </div>
         <div class="button-group">
           <button class="track-btn" data-order-id="${product.orderId}">Track Order</button>
-          ${product.status === 'cancelled' ? '' : `<button class="cancel-product-btn" data-order-id="${product.orderId}" data-item-id="${product.orderItemId || product.id}">Cancel Product</button>`}
+          ${product.status === 'cancelled' ? '' : `<button class="cancel-order-btn" data-order-id="${product.orderId}" data-item-id="${product.orderItemId || product.id}">Cancel Order</button>`}
         </div>
       </div>
     `).join('');
@@ -550,7 +550,7 @@
       return;
     }
 
-    if (!confirm('Cancel this product from your purchase?')) return;
+    if (!confirm('Cancel this order?')) return;
 
     const originalText = button.textContent;
     button.disabled = true;
@@ -568,7 +568,7 @@
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        alert(data.error || 'Failed to cancel product');
+        alert(data.error || 'Failed to cancel order');
         button.disabled = false;
         button.textContent = originalText;
         return;
