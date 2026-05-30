@@ -3,6 +3,7 @@ const Order = require("../models/order");
 const asyncHandler = require("../middleware/asyncHandler");
 const { isCloudinaryConfigured, uploadToCloudinary } = require("../config/cloudinary");
 const { saveUploadLocally } = require("../config/localUpload");
+const { getLinkedCoursesForProduct } = require("../services/linkingService");
 
 const canAccessUnapprovedProduct = (req, product) => {
   if (!req.user) return false;
@@ -73,6 +74,34 @@ exports.getProduct = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: product
+  });
+});
+
+// GET smart course recommendations for a product
+exports.getLinkedCourses = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id).populate("artisan", "name email");
+
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      error: "Product not found"
+    });
+  }
+
+  if (product.moderationStatus !== "accepted" && !canAccessUnapprovedProduct(req, product)) {
+    return res.status(403).json({
+      success: false,
+      error: "This product is not publicly available"
+    });
+  }
+
+  const limit = Math.min(Math.max(Number(req.query.limit) || 4, 1), 12);
+  const courses = await getLinkedCoursesForProduct(product, limit);
+
+  res.status(200).json({
+    success: true,
+    count: courses.length,
+    data: courses
   });
 });
 

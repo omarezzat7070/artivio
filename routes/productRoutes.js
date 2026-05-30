@@ -12,7 +12,8 @@ const {
   updateProductModeration,
   getMyProducts,
   getBestSellingProducts,
-  getLowSellingProducts
+  getLowSellingProducts,
+  getLinkedCourses
 } = require('../controllers/productController');
 
 // Memory storage — productController handles Cloudinary upload from buffer
@@ -33,6 +34,7 @@ router.route('/')
 router.get('/mine',         protect, authorize('artisan', 'seller', 'admin'), getMyProducts);
 router.get('/best-selling', getBestSellingProducts);
 router.get('/low-selling',  getLowSellingProducts);
+router.get('/:id/linked-courses', optionalAuth, getLinkedCourses);
 
 router.get(  '/admin/pending',         protect, authorize('admin'), getPendingProducts);
 router.patch('/admin/:id/moderation',  protect, authorize('admin'), updateProductModeration);

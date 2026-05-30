@@ -99,7 +99,7 @@ exports.register = asyncHandler(async (req, res) => {
     });
   }
 
-  // Password strength validation (at least: uppercase, lowercase, number, special char)
+  // Password strength validation 
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);

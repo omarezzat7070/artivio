@@ -14,7 +14,8 @@ const {
   updateCourseModeration,
   addCoursePart,
   getPendingCourseParts,
-  updateCoursePartModeration
+  updateCoursePartModeration,
+  getLinkedProducts
 } = require('../controllers/courseController');
 
 // Allow up to 200 MB for lesson videos
@@ -42,6 +43,7 @@ router.get(  '/admin/pending',                       protect, authorize('admin')
 router.get(  '/admin/pending-parts',                 protect, authorize('admin'), getPendingCourseParts);
 router.patch('/admin/:id/moderation',                protect, authorize('admin'), updateCourseModeration);
 router.patch('/admin/:id/parts/:partId/moderation',  protect, authorize('admin'), updateCoursePartModeration);
+router.get(  '/:id/linked-products',                 optionalAuth, getLinkedProducts);
 
 router.route('/:id')
   .get(optionalAuth, getCourse)

@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { isCloudinaryConfigured, uploadToCloudinary } = require("../config/cloudinary");
 const { saveUploadLocally } = require("../config/localUpload");
+const { getLinkedProductsForCourse } = require("../services/linkingService");
 let ffmpeg;
 try {
   ffmpeg = require('fluent-ffmpeg');
@@ -213,6 +214,34 @@ exports.getCourse = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data
+  });
+});
+
+// GET smart product recommendations for a course
+exports.getLinkedProducts = asyncHandler(async (req, res) => {
+  const course = await Course.findById(req.params.id).populate("artisan", "name email");
+
+  if (!course) {
+    return res.status(404).json({
+      success: false,
+      error: "Course not found"
+    });
+  }
+
+  if (course.moderationStatus !== "accepted" && !canAccessUnapprovedCourse(req, course)) {
+    return res.status(403).json({
+      success: false,
+      error: "This course is not publicly available"
+    });
+  }
+
+  const limit = Math.min(Math.max(Number(req.query.limit) || 4, 1), 12);
+  const products = await getLinkedProductsForCourse(course, limit);
+
+  res.status(200).json({
+    success: true,
+    count: products.length,
+    data: products
   });
 });
 
