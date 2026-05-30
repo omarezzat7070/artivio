@@ -21,17 +21,21 @@ const tokenize = (text = "") => {
   return new Set(matches.filter((word) => word.length > 2 && !STOP_WORDS.has(word)));
 };
 
-const textOverlapScore = (sourceText, targetText) => {
+const textOverlapScore = (sourceText, targetText, ignoredTokens = new Set()) => {
   const sourceTokens = tokenize(sourceText);
   const targetTokens = tokenize(targetText);
   if (!sourceTokens.size || !targetTokens.size) return 0;
 
   let overlap = 0;
   sourceTokens.forEach((token) => {
+    if (ignoredTokens.has(token)) return;
     if (targetTokens.has(token)) overlap += 1;
   });
 
-  return Math.round((overlap / sourceTokens.size) * 20);
+  const searchableTokens = [...sourceTokens].filter((token) => !ignoredTokens.has(token));
+  if (!searchableTokens.length) return 0;
+
+  return Math.round((overlap / searchableTokens.length) * 20);
 };
 
 const attachScore = (item, score, reasons) => ({
@@ -48,31 +52,46 @@ const sortLinkedItems = (items) =>
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
 
+const shouldLink = ({ sameCategory, sameArtisan, overlap }) => {
+  if (sameArtisan && sameCategory) return true;
+  if (sameArtisan && overlap > 0) return true;
+  if (sameCategory && overlap > 0) return true;
+  return overlap >= 2;
+};
+
 const getLinkedCoursesForProduct = async (product, limit = 4) => {
   const courses = await Course.find({ moderationStatus: "accepted" })
     .populate("artisan", "name email");
 
   const productCategory = normalizeCategory(product.category);
+  const ignoredTokens = tokenize(product.category);
   const productArtisanId = getId(product.artisan);
-  const productText = `${product.name || ""} ${product.brief || ""} ${product.category || ""}`;
+  const productText = `${product.name || ""} ${product.brief || ""}`;
 
   const scored = courses.map((course) => {
     let score = 0;
     const reasons = [];
 
-    if (productCategory && normalizeCategory(course.category) === productCategory) {
+    const sameCategory = productCategory && normalizeCategory(course.category) === productCategory;
+    const sameArtisan = productArtisanId && getId(course.artisan) === productArtisanId;
+    const overlap = textOverlapScore(productText, `${course.title || ""} ${course.description || ""}`, ignoredTokens);
+
+    if (!shouldLink({ sameCategory, sameArtisan, overlap })) {
+      return attachScore(course, 0, []);
+    }
+
+    if (sameCategory) {
       score += 50;
       reasons.push("same category");
     }
 
-    if (productArtisanId && getId(course.artisan) === productArtisanId) {
+    if (sameArtisan) {
       score += 25;
       reasons.push("same artisan");
     }
 
-    const overlap = textOverlapScore(productText, `${course.title || ""} ${course.description || ""} ${course.category || ""}`);
     if (overlap > 0) {
-      score += overlap;
+      score += overlap * 2;
       reasons.push("matching keywords");
     }
 
@@ -92,26 +111,34 @@ const getLinkedProductsForCourse = async (course, limit = 4) => {
     .populate("artisan", "name email");
 
   const courseCategory = normalizeCategory(course.category);
+  const ignoredTokens = tokenize(course.category);
   const courseArtisanId = getId(course.artisan);
-  const courseText = `${course.title || ""} ${course.description || ""} ${course.category || ""}`;
+  const courseText = `${course.title || ""} ${course.description || ""}`;
 
   const scored = products.map((product) => {
     let score = 0;
     const reasons = [];
 
-    if (courseCategory && normalizeCategory(product.category) === courseCategory) {
+    const sameCategory = courseCategory && normalizeCategory(product.category) === courseCategory;
+    const sameArtisan = courseArtisanId && getId(product.artisan) === courseArtisanId;
+    const overlap = textOverlapScore(courseText, `${product.name || ""} ${product.brief || ""}`, ignoredTokens);
+
+    if (!shouldLink({ sameCategory, sameArtisan, overlap })) {
+      return attachScore(product, 0, []);
+    }
+
+    if (sameCategory) {
       score += 50;
       reasons.push("same category");
     }
 
-    if (courseArtisanId && getId(product.artisan) === courseArtisanId) {
+    if (sameArtisan) {
       score += 25;
       reasons.push("same artisan");
     }
 
-    const overlap = textOverlapScore(courseText, `${product.name || ""} ${product.brief || ""} ${product.category || ""}`);
     if (overlap > 0) {
-      score += overlap;
+      score += overlap * 2;
       reasons.push("matching keywords");
     }
 
