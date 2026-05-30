@@ -52,11 +52,8 @@ const sortLinkedItems = (items) =>
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
 
-const shouldLink = ({ sameCategory, sameArtisan, overlap }) => {
-  if (sameArtisan && sameCategory) return true;
-  if (sameArtisan && overlap > 0) return true;
-  if (sameCategory && overlap > 0) return true;
-  return overlap >= 2;
+const shouldLink = ({ sameCategory }) => {
+  return Boolean(sameCategory);
 };
 
 const getLinkedCoursesForProduct = async (product, limit = 4) => {
